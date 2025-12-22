@@ -35,6 +35,13 @@ export default function TabLayout() {
           animation: 'none',
         }}
       >
+        <Stack.Screen 
+          key="index" 
+          name="index"
+          options={{
+            headerShown: false,
+          }}
+        />
         <Stack.Screen key="home" name="(home)" />
         <Stack.Screen key="budget" name="budget" />
         <Stack.Screen key="abo" name="abo" />
