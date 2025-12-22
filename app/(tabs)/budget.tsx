@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   balanceAmount: {
-    fontSize: 48,
+    fontSize: 46,
     fontWeight: '900',
     color: colors.text,
   },

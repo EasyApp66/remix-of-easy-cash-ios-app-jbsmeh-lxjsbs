@@ -98,11 +98,13 @@ export default function HomeScreen() {
                 <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
                   Tracke dein{'\n'}
                   <Text style={styles.greenText}>BUDGET</Text>
-                  {'\n\n\n\n'}
+                  {'\n\n'}
                   und deine{'\n'}
                   <Text style={styles.greenText}>ABOs</Text>
                 </Text>
               </View>
+              {/* 20 pixel spacer after "und deine ABOs" */}
+              <View style={{ height: 20 }} />
             </View>
 
             <View style={styles.loginSection}>
