@@ -354,7 +354,7 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card - NEW LAYOUT */}
+        {/* Account Balance Card - Title top-left, Number bottom-right */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceNewLayout}>
             <TouchableOpacity 
@@ -430,7 +430,7 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid - UNIFORM SIZE */}
+        {/* Budget Items Grid - Numbers smaller and bottom-right */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -849,7 +849,7 @@ const styles = StyleSheet.create({
   balanceLabelContainer: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    left: 0,
   },
   balanceLabel: {
     fontSize: 16,
@@ -859,7 +859,7 @@ const styles = StyleSheet.create({
   balanceAmountContainer: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
+    right: 0,
   },
   balanceAmount: {
     fontSize: 48,
@@ -962,10 +962,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   budgetItemAmountContainer: {
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
   },
   budgetItemAmount: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '900',
     color: colors.text,
   },
