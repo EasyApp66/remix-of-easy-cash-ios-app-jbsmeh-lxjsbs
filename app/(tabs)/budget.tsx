@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 
@@ -8,6 +8,15 @@ interface BudgetItem {
   id: string;
   name: string;
   amount: number;
+  isPinned: boolean;
+}
+
+interface MonthData {
+  id: string;
+  name: string;
+  isPinned: boolean;
+  budgetItems: BudgetItem[];
+  accountBalance: number;
 }
 
 const MONTHS = [
@@ -16,45 +25,326 @@ const MONTHS = [
 ];
 
 export default function BudgetScreen() {
-  const [selectedMonth, setSelectedMonth] = useState('DEZEMBER');
-  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([
-    { id: '1', name: 'SPAREN', amount: 1500 },
-    { id: '2', name: 'KRANKEN KASSE', amount: 450 },
-    { id: '3', name: 'ESSEN', amount: 650 },
-    { id: '4', name: 'MIETE', amount: 2500 },
-    { id: '5', name: 'SPAREN', amount: 1146 },
-    { id: '6', name: 'SPAREN', amount: 1146 },
+  const [months, setMonths] = useState<MonthData[]>([
+    {
+      id: '1',
+      name: 'DEZEMBER',
+      isPinned: false,
+      accountBalance: 13556,
+      budgetItems: [
+        { id: '1', name: 'SPAREN', amount: 1500, isPinned: false },
+        { id: '2', name: 'KRANKEN KASSE', amount: 450, isPinned: false },
+        { id: '3', name: 'ESSEN', amount: 650, isPinned: false },
+        { id: '4', name: 'MIETE', amount: 2500, isPinned: false },
+        { id: '5', name: 'SPAREN', amount: 1146, isPinned: false },
+        { id: '6', name: 'SPAREN', amount: 1146, isPinned: false },
+      ],
+    },
+    {
+      id: '2',
+      name: 'JANUAR',
+      isPinned: false,
+      accountBalance: 15000,
+      budgetItems: [
+        { id: '7', name: 'MIETE', amount: 2500, isPinned: false },
+        { id: '8', name: 'ESSEN', amount: 800, isPinned: false },
+      ],
+    },
   ]);
+  
+  const [selectedMonthId, setSelectedMonthId] = useState('1');
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
+  
+  // Month menu state
+  const [showMonthMenu, setShowMonthMenu] = useState(false);
+  const [selectedMonthForMenu, setSelectedMonthForMenu] = useState<string | null>(null);
+  
+  // Item menu state
+  const [showItemMenu, setShowItemMenu] = useState(false);
+  const [selectedItemForMenu, setSelectedItemForMenu] = useState<string | null>(null);
+  
+  // Edit modals
+  const [showEditBalanceModal, setShowEditBalanceModal] = useState(false);
+  const [showEditBalanceLabelModal, setShowEditBalanceLabelModal] = useState(false);
+  const [editBalanceValue, setEditBalanceValue] = useState('');
+  const [editBalanceLabel, setEditBalanceLabel] = useState('KONTOSTAND');
+  
+  const [showEditItemNameModal, setShowEditItemNameModal] = useState(false);
+  const [showEditItemAmountModal, setShowEditItemAmountModal] = useState(false);
+  const [editItemName, setEditItemName] = useState('');
+  const [editItemAmount, setEditItemAmount] = useState('');
+  
+  const [showEditMonthNameModal, setShowEditMonthNameModal] = useState(false);
+  const [editMonthName, setEditMonthName] = useState('');
 
-  const accountBalance = 13556;
+  const selectedMonth = months.find(m => m.id === selectedMonthId);
+  const accountBalance = selectedMonth?.accountBalance || 0;
+  const budgetItems = selectedMonth?.budgetItems || [];
+  
+  // Sort items: pinned first, then by creation order
+  const sortedBudgetItems = [...budgetItems].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return 0;
+  });
+  
+  // Sort months: pinned first, then by creation order
+  const sortedMonths = [...months].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return 0;
+  });
+
   const totalExpenses = budgetItems.reduce((sum, item) => sum + item.amount, 0);
   const remaining = accountBalance - totalExpenses;
 
   const handleAddItem = () => {
-    if (newItemName && newItemAmount) {
+    if (newItemName && newItemAmount && selectedMonth) {
       const newItem: BudgetItem = {
         id: Date.now().toString(),
         name: newItemName.toUpperCase(),
         amount: parseFloat(newItemAmount),
+        isPinned: false,
       };
-      setBudgetItems([...budgetItems, newItem]);
+      
+      setMonths(months.map(m => 
+        m.id === selectedMonthId 
+          ? { ...m, budgetItems: [...m.budgetItems, newItem] }
+          : m
+      ));
+      
       setNewItemName('');
       setNewItemAmount('');
       setShowAddModal(false);
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    setBudgetItems(budgetItems.filter(item => item.id !== id));
+  const handleDeleteItem = (itemId: string) => {
+    setMonths(months.map(m => 
+      m.id === selectedMonthId 
+        ? { ...m, budgetItems: m.budgetItems.filter(item => item.id !== itemId) }
+        : m
+    ));
   };
 
-  const cycleMonth = () => {
-    const currentIndex = MONTHS.indexOf(selectedMonth);
-    const nextIndex = (currentIndex + 1) % MONTHS.length;
-    setSelectedMonth(MONTHS[nextIndex]);
+  const handleDeleteMonth = (monthId: string) => {
+    if (months.length === 1) {
+      Alert.alert('Fehler', 'Sie müssen mindestens einen Monat haben.');
+      return;
+    }
+    
+    setMonths(months.filter(m => m.id !== monthId));
+    
+    // If we deleted the selected month, select the first remaining month
+    if (monthId === selectedMonthId) {
+      const remainingMonths = months.filter(m => m.id !== monthId);
+      if (remainingMonths.length > 0) {
+        setSelectedMonthId(remainingMonths[0].id);
+      }
+    }
+  };
+
+  const handleAddMonth = () => {
+    const newMonth: MonthData = {
+      id: Date.now().toString(),
+      name: 'NEUER MONAT',
+      isPinned: false,
+      accountBalance: 0,
+      budgetItems: [],
+    };
+    setMonths([...months, newMonth]);
+    setSelectedMonthId(newMonth.id);
+  };
+
+  const handleLongPressMonth = (monthId: string) => {
+    setSelectedMonthForMenu(monthId);
+    setShowMonthMenu(true);
+  };
+
+  const handlePinMonth = () => {
+    if (selectedMonthForMenu) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthForMenu 
+          ? { ...m, isPinned: !m.isPinned }
+          : m
+      ));
+    }
+    setShowMonthMenu(false);
+    setSelectedMonthForMenu(null);
+  };
+
+  const handleDuplicateMonth = () => {
+    if (selectedMonthForMenu) {
+      const monthToDuplicate = months.find(m => m.id === selectedMonthForMenu);
+      if (monthToDuplicate) {
+        const duplicatedMonth: MonthData = {
+          ...monthToDuplicate,
+          id: Date.now().toString(),
+          name: `${monthToDuplicate.name} (KOPIE)`,
+          isPinned: false,
+          budgetItems: monthToDuplicate.budgetItems.map(item => ({
+            ...item,
+            id: `${Date.now()}-${item.id}`,
+            isPinned: false,
+          })),
+        };
+        setMonths([...months, duplicatedMonth]);
+      }
+    }
+    setShowMonthMenu(false);
+    setSelectedMonthForMenu(null);
+  };
+
+  const handleRenameMonth = () => {
+    const month = months.find(m => m.id === selectedMonthForMenu);
+    if (month) {
+      setEditMonthName(month.name);
+      setShowMonthMenu(false);
+      setShowEditMonthNameModal(true);
+    }
+  };
+
+  const handleSaveMonthName = () => {
+    if (selectedMonthForMenu && editMonthName) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthForMenu 
+          ? { ...m, name: editMonthName.toUpperCase() }
+          : m
+      ));
+    }
+    setShowEditMonthNameModal(false);
+    setSelectedMonthForMenu(null);
+    setEditMonthName('');
+  };
+
+  const handleLongPressItem = (itemId: string) => {
+    setSelectedItemForMenu(itemId);
+    setShowItemMenu(true);
+  };
+
+  const handlePinItem = () => {
+    if (selectedItemForMenu) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthId 
+          ? {
+              ...m,
+              budgetItems: m.budgetItems.map(item =>
+                item.id === selectedItemForMenu
+                  ? { ...item, isPinned: !item.isPinned }
+                  : item
+              ),
+            }
+          : m
+      ));
+    }
+    setShowItemMenu(false);
+    setSelectedItemForMenu(null);
+  };
+
+  const handleDuplicateItem = () => {
+    if (selectedItemForMenu) {
+      const itemToDuplicate = budgetItems.find(item => item.id === selectedItemForMenu);
+      if (itemToDuplicate) {
+        const duplicatedItem: BudgetItem = {
+          ...itemToDuplicate,
+          id: Date.now().toString(),
+          isPinned: false,
+        };
+        
+        setMonths(months.map(m => 
+          m.id === selectedMonthId 
+            ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
+            : m
+        ));
+      }
+    }
+    setShowItemMenu(false);
+    setSelectedItemForMenu(null);
+  };
+
+  const handleRenameItem = () => {
+    const item = budgetItems.find(i => i.id === selectedItemForMenu);
+    if (item) {
+      setEditItemName(item.name);
+      setShowItemMenu(false);
+      setShowEditItemNameModal(true);
+    }
+  };
+
+  const handleEditItemAmount = () => {
+    const item = budgetItems.find(i => i.id === selectedItemForMenu);
+    if (item) {
+      setEditItemAmount(item.amount.toString());
+      setShowItemMenu(false);
+      setShowEditItemAmountModal(true);
+    }
+  };
+
+  const handleSaveItemName = () => {
+    if (selectedItemForMenu && editItemName) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthId 
+          ? {
+              ...m,
+              budgetItems: m.budgetItems.map(item =>
+                item.id === selectedItemForMenu
+                  ? { ...item, name: editItemName.toUpperCase() }
+                  : item
+              ),
+            }
+          : m
+      ));
+    }
+    setShowEditItemNameModal(false);
+    setSelectedItemForMenu(null);
+    setEditItemName('');
+  };
+
+  const handleSaveItemAmount = () => {
+    if (selectedItemForMenu && editItemAmount) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthId 
+          ? {
+              ...m,
+              budgetItems: m.budgetItems.map(item =>
+                item.id === selectedItemForMenu
+                  ? { ...item, amount: parseFloat(editItemAmount) }
+                  : item
+              ),
+            }
+          : m
+      ));
+    }
+    setShowEditItemAmountModal(false);
+    setSelectedItemForMenu(null);
+    setEditItemAmount('');
+  };
+
+  const handleEditBalance = () => {
+    setEditBalanceValue(accountBalance.toString());
+    setShowEditBalanceModal(true);
+  };
+
+  const handleSaveBalance = () => {
+    if (editBalanceValue) {
+      setMonths(months.map(m => 
+        m.id === selectedMonthId 
+          ? { ...m, accountBalance: parseFloat(editBalanceValue) }
+          : m
+      ));
+    }
+    setShowEditBalanceModal(false);
+    setEditBalanceValue('');
+  };
+
+  const handleEditBalanceLabel = () => {
+    setShowEditBalanceLabelModal(true);
+  };
+
+  const handleSaveBalanceLabel = () => {
+    setShowEditBalanceLabelModal(false);
   };
 
   return (
@@ -66,12 +356,18 @@ export default function BudgetScreen() {
       >
         {/* Account Balance Card */}
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>KONTOSTAND</Text>
+          <View style={styles.balanceHeader}>
+            <TouchableOpacity onPress={handleEditBalanceLabel}>
+              <Text style={[styles.balanceLabel, { fontSize: 18 }]}>{editBalanceLabel}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleEditBalance}>
+              <Text style={styles.balanceAmount}>{accountBalance.toLocaleString('de-DE')}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.balanceIndicators}>
             <View style={[styles.indicator, styles.activeIndicator]} />
             <View style={styles.indicator} />
           </View>
-          <Text style={styles.balanceAmount}>{accountBalance.toLocaleString('de-DE')}</Text>
         </View>
 
         {/* Total and Remaining */}
@@ -82,13 +378,15 @@ export default function BudgetScreen() {
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>BLEIBT</Text>
-            <Text style={[styles.summaryAmount, styles.remainingAmount]}>{remaining.toLocaleString('de-DE')}</Text>
+            <Text style={[styles.summaryAmount, remaining < 0 ? styles.negativeAmount : styles.remainingAmount]}>
+              {remaining.toLocaleString('de-DE')}
+            </Text>
           </View>
         </View>
 
-        {/* Month Selector */}
-        <View style={styles.monthSelector}>
-          <TouchableOpacity style={styles.addButton}>
+        {/* Month Selector - Horizontal Scroll */}
+        <View style={styles.monthSelectorContainer}>
+          <TouchableOpacity style={styles.addMonthButton} onPress={handleAddMonth}>
             <IconSymbol 
               ios_icon_name="plus.circle.fill" 
               android_material_icon_name="add-circle" 
@@ -96,62 +394,88 @@ export default function BudgetScreen() {
               color={colors.green} 
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.monthButton} onPress={cycleMonth}>
-            <Text style={styles.monthText}>{selectedMonth}</Text>
-            <IconSymbol 
-              ios_icon_name="xmark.circle.fill" 
-              android_material_icon_name="cancel" 
-              size={20} 
-              color={colors.red} 
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.monthButton}>
-            <Text style={styles.monthText}>JANUAR</Text>
-            <IconSymbol 
-              ios_icon_name="xmark.circle.fill" 
-              android_material_icon_name="cancel" 
-              size={20} 
-              color={colors.red} 
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.exampleButton}>
-            <Text style={styles.exampleText}>BEISPIEL</Text>
-          </TouchableOpacity>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.monthScrollView}
+            contentContainerStyle={styles.monthScrollContent}
+          >
+            {sortedMonths.map((month, index) => (
+              <React.Fragment key={index}>
+                <TouchableOpacity 
+                  style={[
+                    styles.monthButton,
+                    month.id === selectedMonthId && styles.selectedMonthButton,
+                    month.isPinned && styles.pinnedMonthButton,
+                  ]}
+                  onPress={() => setSelectedMonthId(month.id)}
+                  onLongPress={() => handleLongPressMonth(month.id)}
+                  delayLongPress={500}
+                >
+                  <Text style={styles.monthText}>{month.name}</Text>
+                  <TouchableOpacity onPress={() => handleDeleteMonth(month.id)}>
+                    <IconSymbol 
+                      ios_icon_name="xmark.circle.fill" 
+                      android_material_icon_name="cancel" 
+                      size={20} 
+                      color={colors.red} 
+                    />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </React.Fragment>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Budget Items Grid */}
         <View style={styles.budgetGrid}>
-          {budgetItems.map((item, index) => (
-            <View key={index} style={styles.budgetItem}>
-              <View style={styles.budgetItemHeader}>
-                <Text style={styles.budgetItemName}>{item.name}</Text>
-                <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
-                  <IconSymbol 
-                    ios_icon_name="xmark.circle.fill" 
-                    android_material_icon_name="cancel" 
-                    size={20} 
-                    color={colors.red} 
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.budgetItemAmount}>{item.amount.toLocaleString('de-DE')}</Text>
-            </View>
+          {sortedBudgetItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <TouchableOpacity
+                style={[
+                  styles.budgetItem,
+                  item.isPinned && styles.pinnedBudgetItem,
+                ]}
+                onLongPress={() => handleLongPressItem(item.id)}
+                delayLongPress={500}
+                activeOpacity={0.7}
+              >
+                <View style={styles.budgetItemHeader}>
+                  <Text style={styles.budgetItemName}>{item.name}</Text>
+                  <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
+                    <IconSymbol 
+                      ios_icon_name="xmark.circle.fill" 
+                      android_material_icon_name="cancel" 
+                      size={20} 
+                      color={colors.red} 
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.budgetItemAmountContainer}>
+                  <Text style={styles.budgetItemAmount}>{item.amount.toLocaleString('de-DE')}</Text>
+                </View>
+              </TouchableOpacity>
+            </React.Fragment>
           ))}
         </View>
 
-        {/* Add Button */}
-        <TouchableOpacity 
-          style={styles.floatingAddButton}
-          onPress={() => setShowAddModal(true)}
-        >
-          <IconSymbol 
-            ios_icon_name="plus.circle.fill" 
-            android_material_icon_name="add-circle" 
-            size={56} 
-            color={colors.green} 
-          />
-        </TouchableOpacity>
+        {/* Spacer for floating button */}
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Floating Add Button - Fixed to bottom right */}
+      <TouchableOpacity 
+        style={styles.floatingAddButton}
+        onPress={() => setShowAddModal(true)}
+      >
+        <IconSymbol 
+          ios_icon_name="plus.circle.fill" 
+          android_material_icon_name="add-circle" 
+          size={56} 
+          color={colors.green} 
+        />
+      </TouchableOpacity>
 
       {/* Add Item Modal */}
       <Modal
@@ -199,6 +523,299 @@ export default function BudgetScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Month Menu Modal */}
+      <Modal
+        visible={showMonthMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setShowMonthMenu(false);
+          setSelectedMonthForMenu(null);
+        }}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowMonthMenu(false);
+            setSelectedMonthForMenu(null);
+          }}
+        >
+          <View style={styles.menuContent}>
+            <TouchableOpacity style={styles.menuItem} onPress={handlePinMonth}>
+              <Text style={styles.menuItemText}>
+                {months.find(m => m.id === selectedMonthForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateMonth}>
+              <Text style={styles.menuItemText}>Duplizieren</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleRenameMonth}>
+              <Text style={styles.menuItemText}>Namen anpassen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.cancelMenuItem]}
+              onPress={() => {
+                setShowMonthMenu(false);
+                setSelectedMonthForMenu(null);
+              }}
+            >
+              <Text style={styles.menuItemText}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Item Menu Modal */}
+      <Modal
+        visible={showItemMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setShowItemMenu(false);
+          setSelectedItemForMenu(null);
+        }}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowItemMenu(false);
+            setSelectedItemForMenu(null);
+          }}
+        >
+          <View style={styles.menuContent}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleRenameItem}>
+              <Text style={styles.menuItemText}>Namen anpassen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleEditItemAmount}>
+              <Text style={styles.menuItemText}>Zahl anpassen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateItem}>
+              <Text style={styles.menuItemText}>Duplizieren</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handlePinItem}>
+              <Text style={styles.menuItemText}>
+                {budgetItems.find(i => i.id === selectedItemForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.cancelMenuItem]}
+              onPress={() => {
+                setShowItemMenu(false);
+                setSelectedItemForMenu(null);
+              }}
+            >
+              <Text style={styles.menuItemText}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Balance Modal */}
+      <Modal
+        visible={showEditBalanceModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditBalanceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Kontostand anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Betrag"
+              placeholderTextColor={colors.textSecondary}
+              value={editBalanceValue}
+              onChangeText={setEditBalanceValue}
+              keyboardType="numeric"
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditBalanceModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveBalance}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Balance Label Modal */}
+      <Modal
+        visible={showEditBalanceLabelModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditBalanceLabelModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Bezeichnung anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Bezeichnung"
+              placeholderTextColor={colors.textSecondary}
+              value={editBalanceLabel}
+              onChangeText={setEditBalanceLabel}
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditBalanceLabelModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveBalanceLabel}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Item Name Modal */}
+      <Modal
+        visible={showEditItemNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditItemNameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Namen anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              placeholderTextColor={colors.textSecondary}
+              value={editItemName}
+              onChangeText={setEditItemName}
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditItemNameModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveItemName}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Item Amount Modal */}
+      <Modal
+        visible={showEditItemAmountModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditItemAmountModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Zahl anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Betrag"
+              placeholderTextColor={colors.textSecondary}
+              value={editItemAmount}
+              onChangeText={setEditItemAmount}
+              keyboardType="numeric"
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditItemAmountModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveItemAmount}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Month Name Modal */}
+      <Modal
+        visible={showEditMonthNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditMonthNameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Monatsnamen anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              placeholderTextColor={colors.textSecondary}
+              value={editMonthName}
+              onChangeText={setEditMonthName}
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditMonthNameModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveMonthName}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -222,11 +839,16 @@ const styles = StyleSheet.create({
     padding: 24,
     marginBottom: 16,
   },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   balanceLabel: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 12,
   },
   balanceIndicators: {
     flexDirection: 'row',
@@ -272,14 +894,24 @@ const styles = StyleSheet.create({
   remainingAmount: {
     color: colors.green,
   },
-  monthSelector: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-    flexWrap: 'wrap',
+  negativeAmount: {
+    color: colors.red,
   },
-  addButton: {
+  monthSelectorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addMonthButton: {
     padding: 8,
+    marginRight: 8,
+  },
+  monthScrollView: {
+    flex: 1,
+  },
+  monthScrollContent: {
+    gap: 8,
+    paddingRight: 16,
   },
   monthButton: {
     flexDirection: 'row',
@@ -289,19 +921,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     gap: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedMonthButton: {
+    backgroundColor: colors.grey,
+  },
+  pinnedMonthButton: {
+    borderColor: colors.green,
   },
   monthText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  exampleButton: {
-    backgroundColor: colors.cardBackground,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-  },
-  exampleText: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
@@ -318,6 +947,11 @@ const styles = StyleSheet.create({
     width: '48%',
     minHeight: 140,
     justifyContent: 'space-between',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  pinnedBudgetItem: {
+    borderColor: colors.green,
   },
   budgetItemHeader: {
     flexDirection: 'row',
@@ -331,15 +965,20 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
   },
+  budgetItemAmountContainer: {
+    alignItems: 'flex-end',
+    marginTop: 8,
+  },
   budgetItemAmount: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     color: colors.text,
   },
   floatingAddButton: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 100,
     right: 24,
+    zIndex: 100,
   },
   modalOverlay: {
     flex: 1,
@@ -390,5 +1029,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  menuContent: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 8,
+    width: '80%',
+    maxWidth: 300,
+  },
+  menuItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey,
+  },
+  cancelMenuItem: {
+    borderBottomWidth: 0,
+  },
+  menuItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
   },
 });

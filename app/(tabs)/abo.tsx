@@ -50,7 +50,7 @@ export default function AboScreen() {
       >
         {/* Header Card */}
         <View style={styles.headerCard}>
-          <Text style={styles.headerLabel}>ABOS COUNTER</Text>
+          <Text style={[styles.headerLabel, { fontSize: 18 }]}>ABOS COUNTER</Text>
           <View style={styles.balanceIndicators}>
             <View style={styles.indicator} />
             <View style={[styles.indicator, styles.activeIndicator]} />
