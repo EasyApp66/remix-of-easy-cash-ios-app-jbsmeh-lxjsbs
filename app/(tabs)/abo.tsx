@@ -168,7 +168,7 @@ export default function AboScreen() {
           <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
         </View>
 
-        {/* Subscriptions List - numbers center-left aligned with text */}
+        {/* Subscriptions List - name on left, amount on right */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
@@ -471,18 +471,21 @@ const styles = StyleSheet.create({
   },
   subscriptionContent: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   subscriptionName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 8,
+    flex: 1,
   },
   subscriptionAmount: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    marginLeft: 16,
   },
   floatingAddButton: {
     position: 'absolute',
