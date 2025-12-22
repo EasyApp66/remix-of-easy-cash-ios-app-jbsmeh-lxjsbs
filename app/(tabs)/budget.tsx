@@ -354,19 +354,21 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card */}
+        {/* Account Balance Card - NEW LAYOUT */}
         <View style={styles.balanceCard}>
-          <View style={styles.balanceHeader}>
-            <TouchableOpacity onPress={handleEditBalanceLabel}>
-              <Text style={[styles.balanceLabel, { fontSize: 18 }]}>{editBalanceLabel}</Text>
+          <View style={styles.balanceNewLayout}>
+            <TouchableOpacity 
+              onPress={handleEditBalanceLabel}
+              style={styles.balanceLabelContainer}
+            >
+              <Text style={styles.balanceLabel}>{editBalanceLabel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleEditBalance}>
+            <TouchableOpacity 
+              onPress={handleEditBalance}
+              style={styles.balanceAmountContainer}
+            >
               <Text style={styles.balanceAmount}>{accountBalance.toLocaleString('de-DE')}</Text>
             </TouchableOpacity>
-          </View>
-          <View style={styles.balanceIndicators}>
-            <View style={[styles.indicator, styles.activeIndicator]} />
-            <View style={styles.indicator} />
           </View>
         </View>
 
@@ -428,7 +430,7 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid */}
+        {/* Budget Items Grid - UNIFORM SIZE */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -464,7 +466,7 @@ export default function BudgetScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Add Button - Fixed to bottom right */}
+      {/* Floating Add Button - Fixed to bottom right at same height as menu */}
       <TouchableOpacity 
         style={styles.floatingAddButton}
         onPress={() => setShowAddModal(true)}
@@ -838,31 +840,26 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
+    minHeight: 140,
   },
-  balanceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+  balanceNewLayout: {
+    flex: 1,
+    position: 'relative',
+  },
+  balanceLabelContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
   balanceLabel: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
   },
-  balanceIndicators: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.grey,
-  },
-  activeIndicator: {
-    backgroundColor: colors.green,
+  balanceAmountContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
   },
   balanceAmount: {
     fontSize: 48,
@@ -945,7 +942,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     width: '48%',
-    minHeight: 140,
+    height: 140,
     justifyContent: 'space-between',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -957,7 +954,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
   },
   budgetItemName: {
     fontSize: 14,
@@ -966,11 +962,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   budgetItemAmountContainer: {
-    alignItems: 'flex-end',
-    marginTop: 8,
+    alignItems: 'flex-start',
   },
   budgetItemAmount: {
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: '900',
     color: colors.text,
   },
