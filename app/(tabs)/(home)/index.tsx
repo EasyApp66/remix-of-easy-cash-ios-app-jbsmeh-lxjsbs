@@ -90,15 +90,15 @@ export default function HomeScreen() {
         {/* Welcome Screen */}
         <View style={[styles.page, { width }]}>
           <View style={styles.welcomeContainer}>
-            <View style={styles.headerSection}>
+            <View style={[styles.headerSection, { marginBottom: 3 }]}>
               <Text style={styles.welcomeTitle}>
                 Hello! I&apos;m <Text style={styles.greenText}>EASY CASH</Text>
               </Text>
               <View style={styles.subtitleContainer}>
-                <Text style={[styles.welcomeSubtitle, { fontSize: 37 }]}>
+                <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
                   Tracke dein{'\n'}
                   <Text style={styles.greenText}>BUDGET</Text>
-                  {'\n\n'}
+                  {'\n\n\n\n'}
                   und deine{'\n'}
                   <Text style={styles.greenText}>ABOs</Text>
                 </Text>
@@ -106,7 +106,7 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.loginSection}>
-              <TouchableOpacity style={[styles.loginButton, styles.emailButton, { backgroundColor: "#A0FF6B" }]}>
+              <TouchableOpacity style={[styles.loginButton, styles.emailButton, { backgroundColor: "#A0FF6B", marginBottom: 1 }]}>
                 <IconSymbol 
                   ios_icon_name="envelope.fill" 
                   android_material_icon_name="email" 
@@ -198,11 +198,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   welcomeSubtitle: {
-    fontSize: 32,
+    fontSize: 48,
     fontWeight: '900',
     color: colors.text,
     textAlign: 'left',
-    lineHeight: 40,
+    lineHeight: 56,
   },
   greenText: {
     color: colors.green,
