@@ -1,10 +1,12 @@
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [language, setLanguage] = useState<'de' | 'en'>('de');
   const [budgetView, setBudgetView] = useState<'cards' | 'list'>('cards');
@@ -18,12 +20,26 @@ export default function ProfileScreen() {
     setBudgetView(budgetView === 'cards' ? 'list' : 'cards');
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(!isLoggedIn);
+    if (isLoggedIn) {
+      // Navigate to welcome screen when logging out
+      router.push('/(tabs)/(home)');
+    }
+  };
+
+  const handleRestorePremium = () => {
+    console.log('Restore Premium');
+    // Navigate to welcome screen
+    router.push('/(tabs)/(home)');
+  };
+
   const menuItems = [
     {
       title: isLoggedIn ? 'Ausloggen' : 'Einloggen',
       icon: 'person',
       iosIcon: 'person.fill',
-      onPress: () => setIsLoggedIn(!isLoggedIn),
+      onPress: handleLogout,
     },
     {
       title: `Sprache ändern: ${language === 'de' ? 'Deutsch' : 'English'}`,
@@ -41,7 +57,7 @@ export default function ProfileScreen() {
       title: 'Premium Wiederherstellen',
       icon: 'restore',
       iosIcon: 'arrow.clockwise',
-      onPress: () => console.log('Restore Premium'),
+      onPress: handleRestorePremium,
     },
     {
       title: 'Premium Kaufen',

@@ -1,10 +1,60 @@
 
-import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform } from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform, Animated } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+
+// Snowflake component
+const Snowflake = ({ delay }: { delay: number }) => {
+  const translateY = useRef(new Animated.Value(-50)).current;
+  const translateX = useRef(new Animated.Value(Math.random() * width)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const startAnimation = () => {
+      translateY.setValue(-50);
+      translateX.setValue(Math.random() * width);
+      opacity.setValue(0);
+
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: height + 50,
+            duration: 8000 + Math.random() * 4000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0.6 + Math.random() * 0.4,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start(() => startAnimation());
+    };
+
+    startAnimation();
+  }, [delay]);
+
+  const size = 4 + Math.random() * 6;
+
+  return (
+    <Animated.View
+      style={[
+        styles.snowflake,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          transform: [{ translateX }, { translateY }],
+          opacity,
+        },
+      ]}
+    />
+  );
+};
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -16,8 +66,18 @@ export default function HomeScreen() {
     setCurrentPage(page);
   };
 
+  // Generate snowflakes with random delays
+  const snowflakes = Array.from({ length: 50 }, (_, i) => (
+    <Snowflake key={i} delay={Math.random() * 5000} />
+  ));
+
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
+      <View style={styles.snowContainer}>
+        {snowflakes}
+      </View>
+
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -32,18 +92,21 @@ export default function HomeScreen() {
           <View style={styles.welcomeContainer}>
             <View style={styles.headerSection}>
               <Text style={styles.welcomeTitle}>
-                Hello! I&apos;m <Text style={styles.greenText}>Easy Budget</Text>
+                Hello! I&apos;m <Text style={styles.greenText}>EASY CASH</Text>
               </Text>
-              <Text style={styles.welcomeSubtitle}>
-                Tracke dein{'\n'}
-                <Text style={styles.greenText}>BUDGET</Text>
-                {'\n'}und deine{'\n'}
-                <Text style={styles.greenText}>ABOs</Text>
-              </Text>
+              <View style={styles.subtitleContainer}>
+                <Text style={[styles.welcomeSubtitle, { fontSize: 37 }]}>
+                  Tracke dein{'\n'}
+                  <Text style={styles.greenText}>BUDGET</Text>
+                  {'\n\n'}
+                  und deine{'\n'}
+                  <Text style={styles.greenText}>ABOs</Text>
+                </Text>
+              </View>
             </View>
 
             <View style={styles.loginSection}>
-              <TouchableOpacity style={[styles.loginButton, styles.emailButton]}>
+              <TouchableOpacity style={[styles.loginButton, styles.emailButton, { backgroundColor: "#A0FF6B" }]}>
                 <IconSymbol 
                   ios_icon_name="envelope.fill" 
                   android_material_icon_name="email" 
@@ -63,20 +126,6 @@ export default function HomeScreen() {
                 <Text style={[styles.loginButtonText, styles.appleButtonText]}>Mit Apple fortfahren</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.loginButton, styles.googleButton]}>
-                <IconSymbol 
-                  ios_icon_name="g.circle.fill" 
-                  android_material_icon_name="g-translate" 
-                  size={20} 
-                  color="#FFFFFF" 
-                />
-                <Text style={styles.loginButtonText}>Mit Google fortfahren</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity>
-                <Text style={styles.moreOptionsText}>Mit weiteren Optionen fortfahren</Text>
-              </TouchableOpacity>
-
               <Text style={styles.termsText}>
                 Indem du fortfährst, bestätigst du, dass du die{'\n'}
                 <Text style={styles.termsLink}>Nutzungsbedingungen</Text> und die <Text style={styles.termsLink}>Datenschutzerklärung</Text>
@@ -93,12 +142,6 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Page Indicators */}
-      <View style={styles.pageIndicators}>
-        <View style={[styles.indicator, currentPage === 0 && styles.activeIndicator]} />
-        <View style={[styles.indicator, currentPage === 1 && styles.activeIndicator]} />
-      </View>
     </View>
   );
 }
@@ -108,8 +151,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  snowContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+    pointerEvents: 'none',
+  },
+  snowflake: {
+    position: 'absolute',
+    backgroundColor: '#FFFFFF',
+  },
   scrollView: {
     flex: 1,
+    zIndex: 2,
   },
   page: {
     justifyContent: 'center',
@@ -126,21 +183,26 @@ const styles = StyleSheet.create({
   headerSection: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
   },
   welcomeTitle: {
     fontSize: 32,
     fontWeight: '700',
     color: colors.text,
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 40,
+    alignSelf: 'flex-start',
+  },
+  subtitleContainer: {
+    alignSelf: 'flex-start',
   },
   welcomeSubtitle: {
-    fontSize: 48,
+    fontSize: 32,
     fontWeight: '900',
     color: colors.text,
-    textAlign: 'center',
-    lineHeight: 56,
+    textAlign: 'left',
+    lineHeight: 40,
   },
   greenText: {
     color: colors.green,
@@ -148,6 +210,7 @@ const styles = StyleSheet.create({
   loginSection: {
     width: '100%',
     gap: 12,
+    marginBottom: 0,
   },
   loginButton: {
     flexDirection: 'row',
@@ -164,9 +227,6 @@ const styles = StyleSheet.create({
   appleButton: {
     backgroundColor: '#FFFFFF',
   },
-  googleButton: {
-    backgroundColor: '#424242',
-  },
   loginButtonText: {
     fontSize: 16,
     fontWeight: '600',
@@ -174,13 +234,6 @@ const styles = StyleSheet.create({
   },
   appleButtonText: {
     color: '#000000',
-  },
-  moreOptionsText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    textDecorationLine: 'underline',
   },
   termsText: {
     fontSize: 12,
@@ -209,22 +262,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-  },
-  pageIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 100,
-    gap: 8,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.grey,
-  },
-  activeIndicator: {
-    backgroundColor: colors.green,
-    width: 24,
   },
 });

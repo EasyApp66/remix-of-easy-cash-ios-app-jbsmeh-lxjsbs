@@ -8,20 +8,38 @@ interface Subscription {
   id: string;
   name: string;
   amount: number;
+  isPinned: boolean;
 }
 
 export default function AboScreen() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([
-    { id: '1', name: 'Netflix', amount: 15 },
-    { id: '2', name: 'Disney +', amount: 13 },
-    { id: '3', name: 'Apple Care', amount: 15 },
+    { id: '1', name: 'Netflix', amount: 15, isPinned: false },
+    { id: '2', name: 'Disney +', amount: 13, isPinned: false },
+    { id: '3', name: 'Apple Care', amount: 15, isPinned: false },
   ]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubAmount, setNewSubAmount] = useState('');
 
+  // Menu state
+  const [showSubMenu, setShowSubMenu] = useState(false);
+  const [selectedSubForMenu, setSelectedSubForMenu] = useState<string | null>(null);
+
+  // Edit modals
+  const [showEditNameModal, setShowEditNameModal] = useState(false);
+  const [showEditAmountModal, setShowEditAmountModal] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+
   const totalAmount = 13556;
   const totalSubscriptions = subscriptions.length;
+
+  // Sort subscriptions: pinned first
+  const sortedSubscriptions = [...subscriptions].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return 0;
+  });
 
   const handleAddSubscription = () => {
     if (newSubName && newSubAmount) {
@@ -29,6 +47,7 @@ export default function AboScreen() {
         id: Date.now().toString(),
         name: newSubName,
         amount: parseFloat(newSubAmount),
+        isPinned: false,
       };
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
@@ -41,6 +60,91 @@ export default function AboScreen() {
     setSubscriptions(subscriptions.filter(sub => sub.id !== id));
   };
 
+  const handleLongPressSub = (subId: string) => {
+    setSelectedSubForMenu(subId);
+    setShowSubMenu(true);
+  };
+
+  const handlePinSub = () => {
+    if (selectedSubForMenu) {
+      setSubscriptions(subscriptions.map(sub =>
+        sub.id === selectedSubForMenu
+          ? { ...sub, isPinned: !sub.isPinned }
+          : sub
+      ));
+    }
+    setShowSubMenu(false);
+    setSelectedSubForMenu(null);
+  };
+
+  const handleDuplicateSub = () => {
+    if (selectedSubForMenu) {
+      const subToDuplicate = subscriptions.find(sub => sub.id === selectedSubForMenu);
+      if (subToDuplicate) {
+        const duplicatedSub: Subscription = {
+          ...subToDuplicate,
+          id: Date.now().toString(),
+          isPinned: false,
+        };
+        setSubscriptions([...subscriptions, duplicatedSub]);
+      }
+    }
+    setShowSubMenu(false);
+    setSelectedSubForMenu(null);
+  };
+
+  const handleRenameSub = () => {
+    const sub = subscriptions.find(s => s.id === selectedSubForMenu);
+    if (sub) {
+      setEditName(sub.name);
+      setShowSubMenu(false);
+      setShowEditNameModal(true);
+    }
+  };
+
+  const handleEditSubAmount = () => {
+    const sub = subscriptions.find(s => s.id === selectedSubForMenu);
+    if (sub) {
+      setEditAmount(sub.amount.toString());
+      setShowSubMenu(false);
+      setShowEditAmountModal(true);
+    }
+  };
+
+  const handleDeleteFromMenu = () => {
+    if (selectedSubForMenu) {
+      handleDeleteSubscription(selectedSubForMenu);
+    }
+    setShowSubMenu(false);
+    setSelectedSubForMenu(null);
+  };
+
+  const handleSaveName = () => {
+    if (selectedSubForMenu && editName) {
+      setSubscriptions(subscriptions.map(sub =>
+        sub.id === selectedSubForMenu
+          ? { ...sub, name: editName }
+          : sub
+      ));
+    }
+    setShowEditNameModal(false);
+    setSelectedSubForMenu(null);
+    setEditName('');
+  };
+
+  const handleSaveAmount = () => {
+    if (selectedSubForMenu && editAmount) {
+      setSubscriptions(subscriptions.map(sub =>
+        sub.id === selectedSubForMenu
+          ? { ...sub, amount: parseFloat(editAmount) }
+          : sub
+      ));
+    }
+    setShowEditAmountModal(false);
+    setSelectedSubForMenu(null);
+    setEditAmount('');
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -48,45 +152,58 @@ export default function AboScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card */}
+        {/* Header Card - removed green dots */}
         <View style={styles.headerCard}>
           <Text style={[styles.headerLabel, { fontSize: 18 }]}>ABOS COUNTER</Text>
-          <View style={styles.balanceIndicators}>
-            <View style={styles.indicator} />
-            <View style={[styles.indicator, styles.activeIndicator]} />
-          </View>
           <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
         </View>
 
-        {/* Total Subscriptions */}
+        {/* Total Subscriptions - number moved to bottom right */}
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>TOTAL</Text>
           <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
         </View>
 
-        {/* Subscriptions List */}
+        {/* Subscriptions List - clickable with menu, number bottom right */}
         <View style={styles.subscriptionsList}>
-          {subscriptions.map((subscription, index) => (
-            <View key={index} style={styles.subscriptionItem}>
-              <Text style={styles.subscriptionName}>{subscription.name}</Text>
-              <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
-            </View>
+          {sortedSubscriptions.map((subscription, index) => (
+            <React.Fragment key={index}>
+              <TouchableOpacity
+                style={[
+                  styles.subscriptionItem,
+                  subscription.isPinned && styles.pinnedSubscriptionItem,
+                ]}
+                onLongPress={() => handleLongPressSub(subscription.id)}
+                delayLongPress={500}
+                activeOpacity={0.7}
+              >
+                <View style={styles.subscriptionContent}>
+                  <Text style={styles.subscriptionName}>{subscription.name}</Text>
+                  <View style={styles.subscriptionAmountContainer}>
+                    <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </React.Fragment>
           ))}
         </View>
 
-        {/* Add Button */}
-        <TouchableOpacity 
-          style={styles.floatingAddButton}
-          onPress={() => setShowAddModal(true)}
-        >
-          <IconSymbol 
-            ios_icon_name="plus.circle.fill" 
-            android_material_icon_name="add-circle" 
-            size={56} 
-            color={colors.green} 
-          />
-        </TouchableOpacity>
+        {/* Spacer for floating button */}
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Floating Add Button - Fixed to bottom right */}
+      <TouchableOpacity 
+        style={styles.floatingAddButton}
+        onPress={() => setShowAddModal(true)}
+      >
+        <IconSymbol 
+          ios_icon_name="plus.circle.fill" 
+          android_material_icon_name="add-circle" 
+          size={56} 
+          color={colors.green} 
+        />
+      </TouchableOpacity>
 
       {/* Add Subscription Modal */}
       <Modal
@@ -134,6 +251,139 @@ export default function AboScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Subscription Menu Modal */}
+      <Modal
+        visible={showSubMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setShowSubMenu(false);
+          setSelectedSubForMenu(null);
+        }}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowSubMenu(false);
+            setSelectedSubForMenu(null);
+          }}
+        >
+          <View style={styles.menuContent}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleRenameSub}>
+              <Text style={styles.menuItemText}>Namen anpassen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleEditSubAmount}>
+              <Text style={styles.menuItemText}>Zahl anpassen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handlePinSub}>
+              <Text style={styles.menuItemText}>
+                {subscriptions.find(s => s.id === selectedSubForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateSub}>
+              <Text style={styles.menuItemText}>Duplizieren</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuItem} onPress={handleDeleteFromMenu}>
+              <Text style={[styles.menuItemText, { color: colors.red }]}>Löschen</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.cancelMenuItem]}
+              onPress={() => {
+                setShowSubMenu(false);
+                setSelectedSubForMenu(null);
+              }}
+            >
+              <Text style={styles.menuItemText}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Name Modal */}
+      <Modal
+        visible={showEditNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditNameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Namen anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              placeholderTextColor={colors.textSecondary}
+              value={editName}
+              onChangeText={setEditName}
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditNameModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveName}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Amount Modal */}
+      <Modal
+        visible={showEditAmountModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditAmountModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Zahl anpassen</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Betrag"
+              placeholderTextColor={colors.textSecondary}
+              value={editAmount}
+              onChangeText={setEditAmount}
+              keyboardType="numeric"
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditAmountModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={handleSaveAmount}
+              >
+                <Text style={styles.modalButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -161,21 +411,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 12,
-  },
-  balanceIndicators: {
-    flexDirection: 'row',
-    gap: 8,
     marginBottom: 16,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.grey,
-  },
-  activeIndicator: {
-    backgroundColor: colors.green,
   },
   headerAmount: {
     fontSize: 48,
@@ -187,19 +423,24 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    position: 'relative',
+    minHeight: 80,
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
+    position: 'absolute',
+    top: 20,
+    left: 20,
   },
   totalAmount: {
     fontSize: 24,
     fontWeight: '700',
     color: colors.text,
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
   },
   subscriptionsList: {
     gap: 12,
@@ -208,14 +449,29 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBackground,
     borderRadius: 16,
     padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    minHeight: 80,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  pinnedSubscriptionItem: {
+    borderColor: colors.green,
+  },
+  subscriptionContent: {
+    flex: 1,
+    position: 'relative',
   },
   subscriptionName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  subscriptionAmountContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
   },
   subscriptionAmount: {
     fontSize: 18,
@@ -224,8 +480,9 @@ const styles = StyleSheet.create({
   },
   floatingAddButton: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 100,
     right: 24,
+    zIndex: 100,
   },
   modalOverlay: {
     flex: 1,
@@ -276,5 +533,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  menuContent: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 8,
+    width: '80%',
+    maxWidth: 300,
+  },
+  menuItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey,
+  },
+  cancelMenuItem: {
+    borderBottomWidth: 0,
+  },
+  menuItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
   },
 });

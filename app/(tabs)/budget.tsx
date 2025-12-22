@@ -354,7 +354,7 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card - Title top-left, Number bottom-right */}
+        {/* Account Balance Card - Title top-left, Number bottom-right, moved lower */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceNewLayout}>
             <TouchableOpacity 
@@ -858,7 +858,7 @@ const styles = StyleSheet.create({
   },
   balanceAmountContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -8,
     right: 0,
   },
   balanceAmount: {
