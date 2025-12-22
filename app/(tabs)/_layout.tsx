@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Stack } from 'expo-router';
 import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
@@ -12,10 +13,22 @@ export default function TabLayout() {
       label: 'Home',
     },
     {
+      name: 'budget',
+      route: '/(tabs)/budget',
+      icon: 'account-balance-wallet',
+      label: 'Budget',
+    },
+    {
+      name: 'abo',
+      route: '/(tabs)/abo',
+      icon: 'subscriptions',
+      label: 'Abos',
+    },
+    {
       name: 'profile',
       route: '/(tabs)/profile',
       icon: 'person',
-      label: 'Profile',
+      label: 'Profil',
     },
   ];
 
@@ -25,10 +38,12 @@ export default function TabLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'none', // Remove fade animation to prevent black screen flash
+          animation: 'none',
         }}
       >
         <Stack.Screen key="home" name="(home)" />
+        <Stack.Screen key="budget" name="budget" />
+        <Stack.Screen key="abo" name="abo" />
         <Stack.Screen key="profile" name="profile" />
       </Stack>
       <FloatingTabBar tabs={tabs} />

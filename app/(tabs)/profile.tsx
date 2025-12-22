@@ -1,91 +1,225 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
+import React, { useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch } from "react-native";
+import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
 
 export default function ProfileScreen() {
-  const theme = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [language, setLanguage] = useState<'de' | 'en'>('de');
+  const [budgetView, setBudgetView] = useState<'cards' | 'list'>('cards');
+  const [isPremium, setIsPremium] = useState(false);
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'de' ? 'en' : 'de');
+  };
+
+  const toggleBudgetView = () => {
+    setBudgetView(budgetView === 'cards' ? 'list' : 'cards');
+  };
+
+  const menuItems = [
+    {
+      title: isLoggedIn ? 'Ausloggen' : 'Einloggen',
+      icon: 'person',
+      iosIcon: 'person.fill',
+      onPress: () => setIsLoggedIn(!isLoggedIn),
+    },
+    {
+      title: `Sprache ändern: ${language === 'de' ? 'Deutsch' : 'English'}`,
+      icon: 'language',
+      iosIcon: 'globe',
+      onPress: toggleLanguage,
+    },
+    {
+      title: `Budget Ansicht: ${budgetView === 'cards' ? '2-Spalten-Karten' : 'Breite Rechtecke'}`,
+      icon: 'view-module',
+      iosIcon: 'square.grid.2x2',
+      onPress: toggleBudgetView,
+    },
+    {
+      title: 'Premium Wiederherstellen',
+      icon: 'restore',
+      iosIcon: 'arrow.clockwise',
+      onPress: () => console.log('Restore Premium'),
+    },
+    {
+      title: 'Premium Kaufen',
+      icon: 'star',
+      iosIcon: 'star.fill',
+      onPress: () => console.log('Buy Premium'),
+    },
+    {
+      title: 'AGB',
+      icon: 'description',
+      iosIcon: 'doc.text',
+      onPress: () => console.log('AGB'),
+    },
+    {
+      title: 'Nutzungsbedingungen',
+      icon: 'gavel',
+      iosIcon: 'doc.text.fill',
+      onPress: () => console.log('Terms'),
+    },
+    {
+      title: 'Datenschutzerklärung',
+      icon: 'privacy-tip',
+      iosIcon: 'lock.shield',
+      onPress: () => console.log('Privacy'),
+    },
+    {
+      title: 'Impressum',
+      icon: 'info',
+      iosIcon: 'info.circle',
+      onPress: () => console.log('Impressum'),
+    },
+    {
+      title: 'Support',
+      icon: 'support-agent',
+      iosIcon: 'questionmark.circle',
+      onPress: () => console.log('Support'),
+    },
+    {
+      title: 'Bug Melden',
+      icon: 'bug-report',
+      iosIcon: 'ant.fill',
+      onPress: () => console.log('Report Bug'),
+    },
+  ];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={[
-          styles.contentContainer,
-          Platform.OS !== 'ios' && styles.contentContainerWithTabBar
-        ]}
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <GlassView style={[
-          styles.profileHeader,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <IconSymbol ios_icon_name="person.circle.fill" android_material_icon_name="person" size={80} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        {/* User Info Section */}
+        <View style={styles.userSection}>
+          <View style={styles.avatarContainer}>
+            <IconSymbol 
+              ios_icon_name="person.circle.fill" 
+              android_material_icon_name="account-circle" 
+              size={80} 
+              color={colors.green} 
+            />
+          </View>
+          <Text style={styles.userName}>Max Mustermann</Text>
+          <Text style={styles.userEmail}>max.mustermann@email.com</Text>
+          <View style={styles.premiumBadge}>
+            <Text style={styles.premiumText}>Premium: {isPremium ? 'Ja' : 'Nein'}</Text>
+          </View>
+        </View>
 
-        <GlassView style={[
-          styles.section,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="phone.fill" android_material_icon_name="phone" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="location.fill" android_material_icon_name="location-on" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
-          </View>
-        </GlassView>
+        {/* Menu Items */}
+        <View style={styles.menuSection}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={styles.menuItem}
+              onPress={item.onPress}
+            >
+              <View style={styles.menuItemLeft}>
+                <IconSymbol 
+                  ios_icon_name={item.iosIcon} 
+                  android_material_icon_name={item.icon} 
+                  size={24} 
+                  color={colors.text} 
+                />
+                <Text style={styles.menuItemText}>{item.title}</Text>
+              </View>
+              <IconSymbol 
+                ios_icon_name="chevron.right" 
+                android_material_icon_name="chevron-right" 
+                size={20} 
+                color={colors.textSecondary} 
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* App Version */}
+        <View style={styles.versionSection}>
+          <Text style={styles.versionText}>App Version 1.00.00</Text>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    // backgroundColor handled dynamically
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  contentContainer: {
-    padding: 20,
+  scrollView: {
+    flex: 1,
   },
-  contentContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
+  scrollContent: {
+    paddingTop: Platform.OS === 'android' ? 60 : 80,
+    paddingBottom: 120,
   },
-  profileHeader: {
+  userSection: {
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey,
+  },
+  avatarContainer: {
     marginBottom: 16,
-    gap: 12,
   },
-  name: {
+  userName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    // color handled dynamically
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
   },
-  email: {
+  userEmail: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.textSecondary,
+    marginBottom: 16,
   },
-  section: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 12,
+  premiumBadge: {
+    backgroundColor: colors.cardBackground,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
-  infoRow: {
+  premiumText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  menuSection: {
+    paddingVertical: 16,
+  },
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey,
   },
-  infoText: {
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
+  },
+  menuItemText: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.text,
+    flex: 1,
+  },
+  versionSection: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  versionText: {
+    fontSize: 14,
+    color: colors.textSecondary,
   },
 });
