@@ -1,60 +1,11 @@
 
-import React, { useRef, useState, useEffect } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform, Animated } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
+import SnowAnimation from "@/components/SnowAnimation";
 
-const { width, height } = Dimensions.get('window');
-
-// Snowflake component
-const Snowflake = ({ delay }: { delay: number }) => {
-  const translateY = useRef(new Animated.Value(-50)).current;
-  const translateX = useRef(new Animated.Value(Math.random() * width)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const startAnimation = () => {
-      translateY.setValue(-50);
-      translateX.setValue(Math.random() * width);
-      opacity.setValue(0);
-
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.parallel([
-          Animated.timing(translateY, {
-            toValue: height + 50,
-            duration: 8000 + Math.random() * 4000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0.6 + Math.random() * 0.4,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ]),
-      ]).start(() => startAnimation());
-    };
-
-    startAnimation();
-  }, [delay]);
-
-  const size = 4 + Math.random() * 6;
-
-  return (
-    <Animated.View
-      style={[
-        styles.snowflake,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          transform: [{ translateX }, { translateY }],
-          opacity,
-        },
-      ]}
-    />
-  );
-};
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -66,17 +17,10 @@ export default function HomeScreen() {
     setCurrentPage(page);
   };
 
-  // Generate snowflakes with random delays
-  const snowflakes = Array.from({ length: 50 }, (_, i) => (
-    <Snowflake key={i} delay={Math.random() * 5000} />
-  ));
-
   return (
     <View style={styles.container}>
       {/* Snow animation background */}
-      <View style={styles.snowContainer}>
-        {snowflakes}
-      </View>
+      <SnowAnimation />
 
       <ScrollView
         ref={scrollViewRef}
@@ -152,19 +96,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  snowContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
-  snowflake: {
-    position: 'absolute',
-    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,

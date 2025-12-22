@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
+import SnowAnimation from "@/components/SnowAnimation";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -24,14 +25,14 @@ export default function ProfileScreen() {
     setIsLoggedIn(!isLoggedIn);
     if (isLoggedIn) {
       // Navigate to welcome screen when logging out
-      router.push('/(tabs)/(home)');
+      router.replace('/(tabs)/(home)');
     }
   };
 
   const handleRestorePremium = () => {
     console.log('Restore Premium');
     // Navigate to welcome screen
-    router.push('/(tabs)/(home)');
+    router.replace('/(tabs)/(home)');
   };
 
   const menuItems = [
@@ -105,6 +106,9 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
+      <SnowAnimation />
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -170,6 +174,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    zIndex: 1,
   },
   scrollContent: {
     paddingTop: Platform.OS === 'android' ? 60 : 80,

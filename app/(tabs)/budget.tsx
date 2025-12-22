@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
+import SnowAnimation from "@/components/SnowAnimation";
 
 interface BudgetItem {
   id: string;
@@ -349,6 +350,9 @@ export default function BudgetScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
+      <SnowAnimation />
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -361,13 +365,13 @@ export default function BudgetScreen() {
               onPress={handleEditBalanceLabel}
               style={styles.balanceLabelContainer}
             >
-              <Text style={styles.balanceLabel}>{editBalanceLabel}</Text>
+              <Text style={[styles.balanceLabel, { fontSize: 19 }]}>{editBalanceLabel}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleEditBalance}
               style={styles.balanceAmountContainer}
             >
-              <Text style={styles.balanceAmount}>{accountBalance.toLocaleString('de-DE')}</Text>
+              <Text style={[styles.balanceAmount, { marginBottom: 1, fontSize: 37 }]}>{accountBalance.toLocaleString('de-DE')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -430,7 +434,7 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid - Numbers smaller and bottom-right */}
+        {/* Budget Items Grid - Numbers smaller and closer to bottom */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -829,6 +833,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    zIndex: 1,
   },
   scrollContent: {
     padding: 16,
@@ -963,9 +968,10 @@ const styles = StyleSheet.create({
   },
   budgetItemAmountContainer: {
     alignItems: 'flex-end',
+    marginBottom: 4,
   },
   budgetItemAmount: {
-    fontSize: 18,
+    fontSize: 21,
     fontWeight: '900',
     color: colors.text,
   },

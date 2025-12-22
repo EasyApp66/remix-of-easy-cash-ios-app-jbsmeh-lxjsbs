@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
+import SnowAnimation from "@/components/SnowAnimation";
 
 interface Subscription {
   id: string;
@@ -147,24 +148,27 @@ export default function AboScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
+      <SnowAnimation />
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card - removed green dots */}
+        {/* Header Card - number moved to bottom right */}
         <View style={styles.headerCard}>
-          <Text style={[styles.headerLabel, { fontSize: 18 }]}>ABOS COUNTER</Text>
+          <Text style={styles.headerLabel}>ABOS COUNTER</Text>
           <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
         </View>
 
-        {/* Total Subscriptions - number moved to bottom right */}
+        {/* Total Subscriptions - TOTAL text center-left, number bottom right */}
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>TOTAL</Text>
           <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
         </View>
 
-        {/* Subscriptions List - clickable with menu, number bottom right */}
+        {/* Subscriptions List - numbers center-left aligned with text */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
@@ -179,9 +183,7 @@ export default function AboScreen() {
               >
                 <View style={styles.subscriptionContent}>
                   <Text style={styles.subscriptionName}>{subscription.name}</Text>
-                  <View style={styles.subscriptionAmountContainer}>
-                    <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
-                  </View>
+                  <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
                 </View>
               </TouchableOpacity>
             </React.Fragment>
@@ -395,6 +397,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    zIndex: 1,
   },
   scrollContent: {
     padding: 16,
@@ -406,17 +409,24 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
+    position: 'relative',
+    minHeight: 120,
   },
   headerLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 16,
+    position: 'absolute',
+    top: 24,
+    left: 24,
   },
   headerAmount: {
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: '900',
     color: colors.text,
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
   },
   totalCard: {
     backgroundColor: colors.cardBackground,
@@ -425,14 +435,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     position: 'relative',
     minHeight: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
     position: 'absolute',
-    top: 20,
+    top: '50%',
     left: 20,
+    transform: [{ translateY: -8 }],
   },
   totalAmount: {
     fontSize: 24,
@@ -458,20 +471,13 @@ const styles = StyleSheet.create({
   },
   subscriptionContent: {
     flex: 1,
-    position: 'relative',
+    justifyContent: 'center',
   },
   subscriptionName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  subscriptionAmountContainer: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
+    marginBottom: 8,
   },
   subscriptionAmount: {
     fontSize: 18,
