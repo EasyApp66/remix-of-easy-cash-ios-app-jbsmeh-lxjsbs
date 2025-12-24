@@ -1,14 +1,15 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, signOut } = useAuth();
   const [language, setLanguage] = useState<'de' | 'en'>('de');
   const [budgetView, setBudgetView] = useState<'cards' | 'list'>('cards');
   const [isPremium, setIsPremium] = useState(false);
@@ -21,23 +22,22 @@ export default function ProfileScreen() {
     setBudgetView(budgetView === 'cards' ? 'list' : 'cards');
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(!isLoggedIn);
-    if (isLoggedIn) {
-      // Navigate to welcome screen when logging out
+  const handleLogout = async () => {
+    if (user) {
+      await signOut();
       router.replace('/(tabs)/(home)');
+    } else {
+      router.push('/(tabs)/(home)/login');
     }
   };
 
   const handleRestorePremium = () => {
     console.log('Restore Premium');
-    // Navigate to welcome screen
-    router.replace('/(tabs)/(home)');
   };
 
   const menuItems = [
     {
-      title: isLoggedIn ? 'Ausloggen' : 'Einloggen',
+      title: user ? 'Ausloggen' : 'Einloggen',
       icon: 'person',
       iosIcon: 'person.fill',
       onPress: handleLogout,
@@ -124,8 +124,19 @@ export default function ProfileScreen() {
               color={colors.green} 
             />
           </View>
-          <Text style={styles.userName}>Max Mustermann</Text>
-          <Text style={styles.userEmail}>max.mustermann@email.com</Text>
+          {user ? (
+            <>
+              <Text style={styles.userName}>
+                {user.email?.split('@')[0] || 'User'}
+              </Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.userName}>Gast</Text>
+              <Text style={styles.userEmail}>Nicht angemeldet</Text>
+            </>
+          )}
           <View style={styles.premiumBadge}>
             <Text style={styles.premiumText}>Premium: {isPremium ? 'Ja' : 'Nein'}</Text>
           </View>

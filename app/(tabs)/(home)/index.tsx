@@ -1,6 +1,7 @@
 
 import React, { useRef, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
@@ -8,6 +9,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -15,6 +17,10 @@ export default function HomeScreen() {
     const offsetX = event.nativeEvent.contentOffset.x;
     const page = Math.round(offsetX / width);
     setCurrentPage(page);
+  };
+
+  const handleEmailLogin = () => {
+    router.push('/(tabs)/(home)/login');
   };
 
   return (
@@ -52,14 +58,17 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.loginSection}>
-              <TouchableOpacity style={[styles.loginButton, styles.emailButton, { backgroundColor: "#A0FF6B", marginBottom: 1 }]}>
+              <TouchableOpacity 
+                style={[styles.loginButton, styles.emailButton, { backgroundColor: colors.green, marginBottom: 1 }]}
+                onPress={handleEmailLogin}
+              >
                 <IconSymbol 
                   ios_icon_name="envelope.fill" 
                   android_material_icon_name="email" 
                   size={20} 
-                  color="#FFFFFF" 
+                  color={colors.background} 
                 />
-                <Text style={styles.loginButtonText}>Mit E-Mail fortfahren</Text>
+                <Text style={[styles.loginButtonText, { color: colors.background }]}>Mit E-Mail fortfahren</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.loginButton, styles.appleButton]}>
