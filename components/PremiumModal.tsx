@@ -22,9 +22,9 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
     onClose();
     // TODO: Implement payment processing
     Alert.alert(
-      'Zahlung',
-      `${type === 'onetime' ? 'Einmalige Zahlung' : 'Monatliches Abo'} wird verarbeitet...`,
-      [{ text: 'OK' }]
+      t('payment'),
+      `${type === 'onetime' ? t('oneTimePaymentText') : t('monthlySubscriptionText')} ${t('paymentProcessing')}`,
+      [{ text: t('ok') }]
     );
   };
 
@@ -44,20 +44,18 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
         {/* Modal Content */}
         <View style={styles.modalContentWrapper}>
           <View style={styles.modalContent}>
-            {/* Close Button - only show if canClose is true */}
-            {canClose && (
-              <Pressable 
-                style={styles.closeButton}
-                onPress={onClose}
-              >
-                <IconSymbol 
-                  ios_icon_name="xmark.circle.fill" 
-                  android_material_icon_name="close" 
-                  size={32} 
-                  color={colors.text} 
-                />
-              </Pressable>
-            )}
+            {/* Close Button - ALWAYS show it now */}
+            <Pressable 
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <IconSymbol 
+                ios_icon_name="xmark.circle.fill" 
+                android_material_icon_name="close" 
+                size={32} 
+                color={colors.text} 
+              />
+            </Pressable>
 
             {/* Title */}
             <View style={styles.modalHeader}>

@@ -49,17 +49,17 @@ export default function ProfileScreen() {
         console.log('Mail composer result:', result);
       } else {
         Alert.alert(
-          'Email nicht verfügbar',
-          'Bitte richten Sie ein E-Mail-Konto auf Ihrem Gerät ein.',
-          [{ text: 'OK' }]
+          t('emailNotAvailable'),
+          t('emailNotAvailableMessage'),
+          [{ text: t('ok') }]
         );
       }
     } catch (error) {
       console.error('Error opening mail composer:', error);
       Alert.alert(
-        'Fehler',
-        'E-Mail konnte nicht geöffnet werden.',
-        [{ text: 'OK' }]
+        t('error'),
+        t('emailCouldNotOpen'),
+        [{ text: t('ok') }]
       );
     }
   };
@@ -69,9 +69,9 @@ export default function ProfileScreen() {
     setShowPremiumModal(false);
     // TODO: Implement payment processing
     Alert.alert(
-      'Zahlung',
-      `${type === 'onetime' ? 'Einmalige Zahlung' : 'Monatliches Abo'} wird verarbeitet...`,
-      [{ text: 'OK' }]
+      t('payment'),
+      `${type === 'onetime' ? t('oneTimePaymentText') : t('monthlySubscriptionText')} ${t('paymentProcessing')}`,
+      [{ text: t('ok') }]
     );
   };
 

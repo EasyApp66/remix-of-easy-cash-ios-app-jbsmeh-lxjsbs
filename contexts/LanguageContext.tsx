@@ -65,7 +65,7 @@ const translations: Translations = {
   
   // Premium Popup
   premiumTitle: { de: 'Premium Kaufen', en: 'Buy Premium' },
-  premiumDescription: { de: 'Erhalten Sie unbegrenzte App-Funktionen:', en: 'Get unlimited app features:' },
+  premiumDescription: { de: 'Erhalte unbegrenzte App-Funktionen:', en: 'Get unlimited app features:' },
   premiumFeature1: { de: '• Unbegrenzte Abo Counter', en: '• Unlimited Subscription Counter' },
   premiumFeature2: { de: '• Unbegrenzte Ausgabenliste', en: '• Unlimited Expense List' },
   premiumFeature3: { de: '• Unbegrenzte Monate', en: '• Unlimited Months' },
@@ -76,7 +76,24 @@ const translations: Translations = {
   close: { de: 'Schließen', en: 'Close' },
   or: { de: 'ODER', en: 'OR' },
   premiumRequired: { de: 'Premium erforderlich', en: 'Premium Required' },
-  premiumRequiredMessage: { de: 'Sie haben das kostenlose Limit erreicht. Bitte upgraden Sie auf Premium, um fortzufahren.', en: 'You have reached the free limit. Please upgrade to Premium to continue.' },
+  premiumRequiredMessage: { de: 'Du hast das kostenlose Limit erreicht. Bitte upgrade auf Premium, um fortzufahren.', en: 'You have reached the free limit. Please upgrade to Premium to continue.' },
+  
+  // Legal Pages - Headers
+  legalAgbTitle: { de: 'Allgemeine Geschäftsbedingungen', en: 'Terms and Conditions' },
+  legalPrivacyTitle: { de: 'Datenschutzerklärung', en: 'Privacy Policy' },
+  legalImprintTitle: { de: 'Impressum', en: 'Imprint' },
+  legalTermsTitle: { de: 'Nutzungsbedingungen', en: 'Terms of Use' },
+  
+  // Email alerts
+  emailNotAvailable: { de: 'Email nicht verfügbar', en: 'Email not available' },
+  emailNotAvailableMessage: { de: 'Bitte richte ein E-Mail-Konto auf deinem Gerät ein.', en: 'Please set up an email account on your device.' },
+  error: { de: 'Fehler', en: 'Error' },
+  emailCouldNotOpen: { de: 'E-Mail konnte nicht geöffnet werden.', en: 'Email could not be opened.' },
+  ok: { de: 'OK', en: 'OK' },
+  payment: { de: 'Zahlung', en: 'Payment' },
+  paymentProcessing: { de: 'wird verarbeitet...', en: 'is being processed...' },
+  oneTimePaymentText: { de: 'Einmalige Zahlung', en: 'One-Time Payment' },
+  monthlySubscriptionText: { de: 'Monatliches Abo', en: 'Monthly Subscription' },
 };
 
 interface LanguageContextType {
