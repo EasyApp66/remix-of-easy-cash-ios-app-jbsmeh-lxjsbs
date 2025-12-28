@@ -1,22 +1,18 @@
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const [language, setLanguage] = useState<'de' | 'en'>('de');
+  const { language, toggleLanguage, t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
-
-  const toggleLanguage = () => {
-    console.log('Toggle language');
-    setLanguage(language === 'de' ? 'en' : 'de');
-  };
 
   const handleLogout = async () => {
     console.log('Handle logout/login');
@@ -34,31 +30,36 @@ export default function ProfileScreen() {
 
   const menuItems = [
     {
-      title: user ? 'Ausloggen' : 'Einloggen',
+      id: 'auth',
+      title: user ? t('logout') : t('login'),
       icon: 'person',
       iosIcon: 'person.fill',
       onPress: handleLogout,
     },
     {
-      title: `Sprache ändern: ${language === 'de' ? 'Deutsch' : 'English'}`,
+      id: 'language',
+      title: `${t('changeLanguage')}: ${language === 'de' ? 'Deutsch' : 'English'}`,
       icon: 'language',
       iosIcon: 'globe',
       onPress: toggleLanguage,
     },
     {
-      title: 'Premium Wiederherstellen',
+      id: 'restore',
+      title: t('restorePremium'),
       icon: 'restore',
       iosIcon: 'arrow.clockwise',
       onPress: handleRestorePremium,
     },
     {
-      title: 'Premium Kaufen',
+      id: 'buy',
+      title: t('buyPremium'),
       icon: 'star',
       iosIcon: 'star.fill',
       onPress: () => console.log('Buy Premium'),
     },
     {
-      title: 'AGB',
+      id: 'agb',
+      title: t('agb'),
       icon: 'description',
       iosIcon: 'doc.text',
       onPress: () => {
@@ -67,7 +68,8 @@ export default function ProfileScreen() {
       },
     },
     {
-      title: 'Nutzungsbedingungen',
+      id: 'terms',
+      title: t('terms'),
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
       onPress: () => {
@@ -76,7 +78,8 @@ export default function ProfileScreen() {
       },
     },
     {
-      title: 'Datenschutzerklärung',
+      id: 'privacy',
+      title: t('privacy'),
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
       onPress: () => {
@@ -85,7 +88,8 @@ export default function ProfileScreen() {
       },
     },
     {
-      title: 'Impressum',
+      id: 'imprint',
+      title: t('imprint'),
       icon: 'info',
       iosIcon: 'info.circle',
       onPress: () => {
@@ -94,13 +98,15 @@ export default function ProfileScreen() {
       },
     },
     {
-      title: 'Support',
+      id: 'support',
+      title: t('support'),
       icon: 'support-agent',
       iosIcon: 'questionmark.circle',
       onPress: () => console.log('Support'),
     },
     {
-      title: 'Bug Melden',
+      id: 'bug',
+      title: t('reportBug'),
       icon: 'bug-report',
       iosIcon: 'ant.fill',
       onPress: () => console.log('Report Bug'),
@@ -128,28 +134,30 @@ export default function ProfileScreen() {
             />
           </View>
           {user ? (
-            <>
+            <React.Fragment>
               <Text style={styles.userName}>
                 {user.email?.split('@')[0] || 'User'}
               </Text>
               <Text style={styles.userEmail}>{user.email}</Text>
-            </>
+            </React.Fragment>
           ) : (
-            <>
-              <Text style={styles.userName}>Gast</Text>
-              <Text style={styles.userEmail}>Nicht angemeldet</Text>
-            </>
+            <React.Fragment>
+              <Text style={styles.userName}>{t('guest')}</Text>
+              <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
+            </React.Fragment>
           )}
           <View style={styles.premiumBadge}>
-            <Text style={styles.premiumText}>Premium: {isPremium ? 'Ja' : 'Nein'}</Text>
+            <Text style={styles.premiumText}>
+              {t('premium')}: {isPremium ? t('yes') : t('no')}
+            </Text>
           </View>
         </View>
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
+          {menuItems.map((item) => (
             <Pressable 
-              key={index} 
+              key={item.id}
               style={({ pressed }) => [
                 styles.menuItem,
                 pressed && styles.menuItemPressed
@@ -180,7 +188,7 @@ export default function ProfileScreen() {
 
         {/* App Version */}
         <View style={styles.versionSection}>
-          <Text style={styles.versionText}>App Version 1.00.00</Text>
+          <Text style={styles.versionText}>{t('appVersion')} 1.00.00</Text>
         </View>
       </ScrollView>
     </View>
