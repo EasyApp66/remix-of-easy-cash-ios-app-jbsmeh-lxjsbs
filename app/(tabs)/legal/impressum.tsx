@@ -5,9 +5,11 @@ import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ImpressumScreen() {
   const router = useRouter();
+  const { t, language } = useLanguage();
 
   return (
     <View style={styles.container}>
@@ -25,7 +27,7 @@ export default function ImpressumScreen() {
             color={colors.text} 
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Impressum</Text>
+        <Text style={styles.headerTitle}>{t('imprint')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -35,62 +37,45 @@ export default function ImpressumScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>Impressum</Text>
+          <Text style={styles.title}>{t('legalImprintTitle')}</Text>
           
-          <Text style={styles.sectionTitle}>Angaben gemäss Schweizer Recht</Text>
+          <Text style={styles.sectionTitle}>{t('imprintAccordingToSwissLaw')}</Text>
           <Text style={styles.text}>
             Easy Budget{'\n'}
             Ivan Mirosnic{'\n'}
             Ahornstrasse{'\n'}
             8600 Dübendorf{'\n'}
-            Schweiz
+            {language === 'de' ? 'Schweiz' : 'Switzerland'}
           </Text>
 
-          <Text style={styles.sectionTitle}>Kontakt</Text>
+          <Text style={styles.sectionTitle}>{t('imprintContact')}</Text>
           <Text style={styles.text}>
-            E-Mail: Über Support-Funktion in der App erreichbar
+            {t('imprintContactText')}
           </Text>
 
-          <Text style={styles.sectionTitle}>Haftungsausschluss</Text>
+          <Text style={styles.sectionTitle}>{t('imprintDisclaimer')}</Text>
           <Text style={styles.text}>
-            Der Autor übernimmt keinerlei Gewähr hinsichtlich der inhaltlichen Richtigkeit, 
-            Genauigkeit, Aktualität, Zuverlässigkeit und Vollständigkeit der Informationen.
-            {'\n\n'}
-            Haftungsansprüche gegen den Autor wegen Schäden materieller oder immaterieller Art, 
-            welche aus dem Zugriff oder der Nutzung bzw. Nichtnutzung der veröffentlichten 
-            Informationen, durch Missbrauch der Verbindung oder durch technische Störungen 
-            entstanden sind, werden ausgeschlossen.
+            {t('imprintDisclaimerText')}
           </Text>
 
-          <Text style={styles.sectionTitle}>Haftung für Links</Text>
+          <Text style={styles.sectionTitle}>{t('imprintLiabilityForLinks')}</Text>
           <Text style={styles.text}>
-            Verweise und Links auf Webseiten Dritter liegen ausserhalb unseres Verantwortungsbereichs. 
-            Es wird jegliche Verantwortung für solche Webseiten abgelehnt. Der Zugriff und die 
-            Nutzung solcher Webseiten erfolgen auf eigene Gefahr des Nutzers oder der Nutzerin.
+            {t('imprintLiabilityForLinksText')}
           </Text>
 
-          <Text style={styles.sectionTitle}>Urheberrechte</Text>
+          <Text style={styles.sectionTitle}>{t('imprintCopyright')}</Text>
           <Text style={styles.text}>
-            Die Urheber- und alle anderen Rechte an Inhalten, Bildern, Fotos oder anderen Dateien 
-            auf dieser App gehören ausschliesslich Ivan Mirosnic oder den speziell genannten 
-            Rechtsinhabern. Für die Reproduktion jeglicher Elemente ist die schriftliche Zustimmung 
-            der Urheberrechtsträger im Voraus einzuholen.
+            {t('imprintCopyrightText')}
           </Text>
 
-          <Text style={styles.sectionTitle}>Anwendbares Recht</Text>
+          <Text style={styles.sectionTitle}>{t('imprintApplicableLaw')}</Text>
           <Text style={styles.text}>
-            Auf diese App und deren Nutzung ist ausschliesslich Schweizer Recht anwendbar. 
-            Gerichtsstand ist Zürich, Schweiz.
+            {t('imprintApplicableLawText')}
           </Text>
 
-          <Text style={styles.sectionTitle}>Zahlungsinformationen</Text>
+          <Text style={styles.sectionTitle}>{t('imprintPaymentInfo')}</Text>
           <Text style={styles.text}>
-            Diese App bietet kostenpflichtige Premium-Funktionen an. Es stehen folgende 
-            Zahlungsoptionen zur Verfügung:{'\n\n'}
-            - Einmalige Zahlung für lebenslangen Zugang{'\n'}
-            - Monatliches Abonnement mit automatischer Verlängerung{'\n\n'}
-            Die Zahlungsabwicklung erfolgt über die jeweiligen App-Store-Anbieter (Apple App Store, 
-            Google Play Store). Es gelten deren Zahlungs- und Rückerstattungsbedingungen.
+            {t('imprintPaymentInfoText')}
           </Text>
         </View>
       </ScrollView>

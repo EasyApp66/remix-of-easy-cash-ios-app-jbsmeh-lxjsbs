@@ -5,11 +5,13 @@ import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -21,6 +23,14 @@ export default function HomeScreen() {
 
   const handleEmailLogin = () => {
     router.push('/(tabs)/(home)/login');
+  };
+
+  const handleTermsPress = () => {
+    router.push('/(tabs)/legal/nutzungsbedingungen');
+  };
+
+  const handlePrivacyPress = () => {
+    router.push('/(tabs)/legal/datenschutz');
   };
 
   return (
@@ -42,15 +52,15 @@ export default function HomeScreen() {
           <View style={styles.welcomeContainer}>
             <View style={[styles.headerSection, { marginBottom: 3 }]}>
               <Text style={styles.welcomeTitle}>
-                Hallo! Ich bin <Text style={styles.greenText}>EASY BUDGET</Text>
+                {t('welcomeGreeting')} <Text style={styles.greenText}>EASY BUDGET</Text>
               </Text>
               <View style={styles.subtitleContainer}>
                 <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
-                  Tracke dein{'\n'}
+                  {t('welcomeTrackBudget')}{'\n'}
                   <Text style={styles.greenText}>BUDGET</Text>
                   {'\n\n'}
-                  und deine{'\n'}
-                  <Text style={styles.greenText}>ABOs</Text>
+                  {t('welcomeAnd')}{'\n'}
+                  <Text style={styles.greenText}>ABOS</Text>
                 </Text>
               </View>
               {/* 20 pixel spacer after "und deine ABOs" */}
@@ -68,7 +78,7 @@ export default function HomeScreen() {
                   size={20} 
                   color={colors.background} 
                 />
-                <Text style={[styles.loginButtonText, { color: colors.background }]}>Mit E-Mail fortfahren</Text>
+                <Text style={[styles.loginButtonText, { color: colors.background }]}>{t('continueWithEmail')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.loginButton, styles.appleButton]}>
@@ -78,12 +88,12 @@ export default function HomeScreen() {
                   size={20} 
                   color="#000000" 
                 />
-                <Text style={[styles.loginButtonText, styles.appleButtonText]}>Mit Apple fortfahren</Text>
+                <Text style={[styles.loginButtonText, styles.appleButtonText]}>{t('continueWithApple')}</Text>
               </TouchableOpacity>
 
               <Text style={styles.termsText}>
-                Indem du fortfährst, bestätigst du, dass du die{'\n'}
-                <Text style={styles.termsLink}>Nutzungsbedingungen</Text> und die <Text style={styles.termsLink}>Datenschutzerklärung</Text>
+                {t('welcomeTermsText')}{'\n'}
+                <Text style={styles.termsLink} onPress={handleTermsPress}>{t('terms')}</Text> {t('welcomeTermsAnd')} <Text style={styles.termsLink} onPress={handlePrivacyPress}>{t('privacy')}</Text>
               </Text>
             </View>
           </View>
@@ -186,6 +196,7 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     textDecorationLine: 'underline',
+    color: colors.green,
   },
   swipeIndicatorContainer: {
     flex: 1,

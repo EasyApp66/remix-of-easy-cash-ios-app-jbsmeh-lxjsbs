@@ -28,12 +28,18 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
     );
   };
 
+  const handleClosePress = () => {
+    console.log('Close button pressed, canClose:', canClose);
+    // Always allow closing now
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={canClose ? onClose : undefined}
+      onRequestClose={handleClosePress}
     >
       {/* Full screen glass-style background */}
       <View style={styles.fullScreenOverlay}>
@@ -44,10 +50,10 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
         {/* Modal Content */}
         <View style={styles.modalContentWrapper}>
           <View style={styles.modalContent}>
-            {/* Close Button - ALWAYS show it now */}
+            {/* Close Button - ALWAYS functional now */}
             <Pressable 
               style={styles.closeButton}
-              onPress={onClose}
+              onPress={handleClosePress}
             >
               <IconSymbol 
                 ios_icon_name="xmark.circle.fill" 

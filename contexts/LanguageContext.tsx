@@ -31,6 +31,15 @@ const translations: Translations = {
   yes: { de: 'Ja', en: 'Yes' },
   no: { de: 'Nein', en: 'No' },
   
+  // Welcome Screen
+  welcomeGreeting: { de: 'Hallo! Ich bin', en: 'Hello! I am' },
+  welcomeTrackBudget: { de: 'Tracke dein', en: 'Track your' },
+  welcomeAnd: { de: 'und deine', en: 'and your' },
+  continueWithEmail: { de: 'Mit E-Mail fortfahren', en: 'Continue with Email' },
+  continueWithApple: { de: 'Mit Apple fortfahren', en: 'Continue with Apple' },
+  welcomeTermsText: { de: 'Indem du fortfährst, bestätigst du, dass du die', en: 'By continuing, you confirm that you have read the' },
+  welcomeTermsAnd: { de: 'und die', en: 'and the' },
+  
   // Budget Screen
   accountBalance: { de: 'KONTOSTAND', en: 'ACCOUNT BALANCE' },
   total: { de: 'TOTAL', en: 'TOTAL' },
@@ -83,6 +92,36 @@ const translations: Translations = {
   legalPrivacyTitle: { de: 'Datenschutzerklärung', en: 'Privacy Policy' },
   legalImprintTitle: { de: 'Impressum', en: 'Imprint' },
   legalTermsTitle: { de: 'Nutzungsbedingungen', en: 'Terms of Use' },
+  
+  // Impressum Content
+  imprintAccordingToSwissLaw: { de: 'Angaben gemäss Schweizer Recht', en: 'Information according to Swiss Law' },
+  imprintContact: { de: 'Kontakt', en: 'Contact' },
+  imprintContactText: { de: 'E-Mail: Über Support-Funktion in der App erreichbar', en: 'Email: Available via Support function in the app' },
+  imprintDisclaimer: { de: 'Haftungsausschluss', en: 'Disclaimer' },
+  imprintDisclaimerText: { 
+    de: 'Der Autor übernimmt keinerlei Gewähr hinsichtlich der inhaltlichen Richtigkeit, Genauigkeit, Aktualität, Zuverlässigkeit und Vollständigkeit der Informationen.\n\nHaftungsansprüche gegen den Autor wegen Schäden materieller oder immaterieller Art, welche aus dem Zugriff oder der Nutzung bzw. Nichtnutzung der veröffentlichten Informationen, durch Missbrauch der Verbindung oder durch technische Störungen entstanden sind, werden ausgeschlossen.',
+    en: 'The author assumes no liability for the correctness, accuracy, timeliness, reliability and completeness of the information.\n\nLiability claims against the author for material or immaterial damages arising from access to or use or non-use of the published information, misuse of the connection or technical faults are excluded.'
+  },
+  imprintLiabilityForLinks: { de: 'Haftung für Links', en: 'Liability for Links' },
+  imprintLiabilityForLinksText: {
+    de: 'Verweise und Links auf Webseiten Dritter liegen ausserhalb unseres Verantwortungsbereichs. Es wird jegliche Verantwortung für solche Webseiten abgelehnt. Der Zugriff und die Nutzung solcher Webseiten erfolgen auf eigene Gefahr des Nutzers oder der Nutzerin.',
+    en: 'References and links to third-party websites are outside our area of responsibility. Any responsibility for such websites is disclaimed. Access to and use of such websites is at the user\'s own risk.'
+  },
+  imprintCopyright: { de: 'Urheberrechte', en: 'Copyright' },
+  imprintCopyrightText: {
+    de: 'Die Urheber- und alle anderen Rechte an Inhalten, Bildern, Fotos oder anderen Dateien auf dieser App gehören ausschliesslich Ivan Mirosnic oder den speziell genannten Rechtsinhabern. Für die Reproduktion jeglicher Elemente ist die schriftliche Zustimmung der Urheberrechtsträger im Voraus einzuholen.',
+    en: 'The copyright and all other rights to content, images, photos or other files in this app belong exclusively to Ivan Mirosnic or the specifically named rights holders. Written consent of the copyright holders must be obtained in advance for the reproduction of any elements.'
+  },
+  imprintApplicableLaw: { de: 'Anwendbares Recht', en: 'Applicable Law' },
+  imprintApplicableLawText: {
+    de: 'Auf diese App und deren Nutzung ist ausschliesslich Schweizer Recht anwendbar. Gerichtsstand ist Zürich, Schweiz.',
+    en: 'Swiss law applies exclusively to this app and its use. Place of jurisdiction is Zurich, Switzerland.'
+  },
+  imprintPaymentInfo: { de: 'Zahlungsinformationen', en: 'Payment Information' },
+  imprintPaymentInfoText: {
+    de: 'Diese App bietet kostenpflichtige Premium-Funktionen an. Es stehen folgende Zahlungsoptionen zur Verfügung:\n\n- Einmalige Zahlung für lebenslangen Zugang\n- Monatliches Abonnement mit automatischer Verlängerung\n\nDie Zahlungsabwicklung erfolgt über die jeweiligen App-Store-Anbieter (Apple App Store, Google Play Store). Es gelten deren Zahlungs- und Rückerstattungsbedingungen.',
+    en: 'This app offers paid premium features. The following payment options are available:\n\n- One-time payment for lifetime access\n- Monthly subscription with automatic renewal\n\nPayment processing is handled by the respective app store providers (Apple App Store, Google Play Store). Their payment and refund terms apply.'
+  },
   
   // Email alerts
   emailNotAvailable: { de: 'Email nicht verfügbar', en: 'Email not available' },
