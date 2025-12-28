@@ -17,10 +17,12 @@ import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import SnowAnimation from '@/components/SnowAnimation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signUp, resetPassword } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,7 +33,7 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Fehler', 'Bitte E-Mail und Passwort eingeben');
+      Alert.alert(t('loginError'), t('loginErrorMessage'));
       return;
     }
 
@@ -41,14 +43,14 @@ export default function LoginScreen() {
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) {
-          Alert.alert('Fehler', error.message || 'Registrierung fehlgeschlagen');
+          Alert.alert(t('error'), error.message || t('registrationError'));
         } else {
           Alert.alert(
-            'Erfolgreich registriert!',
-            'Bitte überprüfe deine E-Mail, um dein Konto zu bestätigen.',
+            t('registrationSuccess'),
+            t('verifyEmailMessage'),
             [
               {
-                text: 'OK',
+                text: t('ok'),
                 onPress: () => {
                   setIsSignUp(false);
                   setPassword('');
@@ -60,13 +62,13 @@ export default function LoginScreen() {
       } else {
         const { error } = await signIn(email, password);
         if (error) {
-          Alert.alert('Fehler', error.message || 'Anmeldung fehlgeschlagen');
+          Alert.alert(t('error'), error.message || t('loginFailed'));
         } else {
           router.replace('/(tabs)/budget');
         }
       }
     } catch (error: any) {
-      Alert.alert('Fehler', error.message || 'Ein Fehler ist aufgetreten');
+      Alert.alert(t('error'), error.message || t('genericError'));
     } finally {
       setLoading(false);
     }
@@ -74,25 +76,25 @@ export default function LoginScreen() {
 
   const handleForgotPassword = () => {
     if (!email) {
-      Alert.alert('E-Mail erforderlich', 'Bitte gib deine E-Mail-Adresse ein');
+      Alert.alert(t('emailRequired'), t('enterEmailAddress'));
       return;
     }
 
     Alert.alert(
-      'Passwort zurücksetzen',
-      'Möchtest du einen Link zum Zurücksetzen des Passworts an diese E-Mail senden?',
+      t('resetPasswordTitle'),
+      t('resetPasswordMessage'),
       [
-        { text: 'Abbrechen', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Senden',
+          text: t('send'),
           onPress: async () => {
             setLoading(true);
             const { error } = await resetPassword(email);
             setLoading(false);
             if (error) {
-              Alert.alert('Fehler', error.message || 'Fehler beim Senden der E-Mail');
+              Alert.alert(t('error'), error.message || t('resetEmailError'));
             } else {
-              Alert.alert('Erfolg', 'Überprüfe deine E-Mail für den Zurücksetzungslink');
+              Alert.alert(t('success'), t('resetEmailSuccess'));
             }
           },
         },
@@ -134,22 +136,20 @@ export default function LoginScreen() {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>
-              {isSignUp ? 'Konto erstellen' : 'Willkommen zurück'}
+              {isSignUp ? t('createAccount') : t('welcomeBack')}
             </Text>
             <Text style={styles.subtitle}>
-              {isSignUp
-                ? 'Erstelle ein Konto, um deine Daten zu speichern'
-                : 'Melde dich an, um fortzufahren'}
+              {isSignUp ? t('createAccountSubtitle') : t('signInSubtitle')}
             </Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>E-Mail</Text>
+              <Text style={styles.label}>{t('email')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="deine@email.com"
+                placeholder={t('emailPlaceholder')}
                 placeholderTextColor={colors.textSecondary}
                 value={email}
                 onChangeText={setEmail}
@@ -161,10 +161,10 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Passwort</Text>
+              <Text style={styles.label}>{t('password')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 placeholderTextColor={colors.textSecondary}
                 value={password}
                 onChangeText={setPassword}
@@ -182,7 +182,7 @@ export default function LoginScreen() {
                 disabled={loading}
               >
                 <Text style={styles.forgotPasswordText}>
-                  Passwort vergessen?
+                  {t('forgotPassword')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -196,7 +196,7 @@ export default function LoginScreen() {
                 <ActivityIndicator color={colors.background} />
               ) : (
                 <Text style={styles.submitButtonText}>
-                  {isSignUp ? 'Registrieren' : 'Anmelden'}
+                  {isSignUp ? t('signUp') : t('signIn')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -210,11 +210,9 @@ export default function LoginScreen() {
               disabled={loading}
             >
               <Text style={styles.switchModeText}>
-                {isSignUp
-                  ? 'Hast du bereits ein Konto? '
-                  : 'Noch kein Konto? '}
+                {isSignUp ? t('haveAccount') : t('noAccount')}{' '}
                 <Text style={styles.switchModeLink}>
-                  {isSignUp ? 'Anmelden' : 'Registrieren'}
+                  {isSignUp ? t('signIn') : t('signUp')}
                 </Text>
               </Text>
             </TouchableOpacity>
@@ -227,7 +225,7 @@ export default function LoginScreen() {
                 disabled={loading}
               >
                 <Text style={styles.skipButtonText}>
-                  Überspringen (Test-Version)
+                  {t('skipTestVersion')}
                 </Text>
               </TouchableOpacity>
             )}

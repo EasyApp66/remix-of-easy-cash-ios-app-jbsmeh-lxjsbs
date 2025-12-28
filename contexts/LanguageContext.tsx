@@ -56,21 +56,53 @@ const translations: Translations = {
   rename: { de: 'Namen anpassen', en: 'Rename' },
   editAmount: { de: 'Zahl anpassen', en: 'Edit Amount' },
   delete: { de: 'Löschen', en: 'Delete' },
+  namePlaceholder: { de: 'Name (z.B. ESSEN)', en: 'Name (e.g. FOOD)' },
+  amountPlaceholder: { de: 'Betrag', en: 'Amount' },
+  adjustBalance: { de: 'Kontostand anpassen', en: 'Adjust Balance' },
+  adjustLabel: { de: 'Bezeichnung anpassen', en: 'Adjust Label' },
+  labelPlaceholder: { de: 'Bezeichnung', en: 'Label' },
+  adjustMonthName: { de: 'Monatsnamen anpassen', en: 'Adjust Month Name' },
+  errorMinimumMonth: { de: 'Du musst mindestens einen Monat haben.', en: 'You must have at least one month.' },
+  errorTitle: { de: 'Fehler', en: 'Error' },
   
   // Abo Screen
   abosCounter: { de: 'ABOS COUNTER', en: 'SUBSCRIPTIONS COUNTER' },
   addNewSubscription: { de: 'Neues Abo hinzufügen', en: 'Add New Subscription' },
+  subscriptionNamePlaceholder: { de: 'Name (z.B. Spotify)', en: 'Name (e.g. Spotify)' },
+  subscriptionAmountPlaceholder: { de: 'Betrag pro Monat', en: 'Amount per month' },
   
-  // Auth Screen
+  // Auth Screen / Login
   email: { de: 'E-Mail', en: 'Email' },
   password: { de: 'Passwort', en: 'Password' },
   signIn: { de: 'Anmelden', en: 'Sign In' },
   signUp: { de: 'Registrieren', en: 'Sign Up' },
   forgotPassword: { de: 'Passwort vergessen?', en: 'Forgot Password?' },
   noAccount: { de: 'Noch kein Konto?', en: 'No account yet?' },
-  haveAccount: { de: 'Bereits ein Konto?', en: 'Already have an account?' },
+  haveAccount: { de: 'Hast du bereits ein Konto?', en: 'Already have an account?' },
   resetPassword: { de: 'Passwort zurücksetzen', en: 'Reset Password' },
   sendResetLink: { de: 'Link senden', en: 'Send Reset Link' },
+  createAccount: { de: 'Konto erstellen', en: 'Create Account' },
+  welcomeBack: { de: 'Willkommen zurück', en: 'Welcome Back' },
+  createAccountSubtitle: { de: 'Erstelle ein Konto, um deine Daten zu speichern', en: 'Create an account to save your data' },
+  signInSubtitle: { de: 'Melde dich an, um fortzufahren', en: 'Sign in to continue' },
+  emailPlaceholder: { de: 'deine@email.com', en: 'your@email.com' },
+  passwordPlaceholder: { de: '••••••••', en: '••••••••' },
+  skipTestVersion: { de: 'Überspringen (Test-Version)', en: 'Skip (Test Version)' },
+  loginError: { de: 'Fehler', en: 'Error' },
+  loginErrorMessage: { de: 'Bitte E-Mail und Passwort eingeben', en: 'Please enter email and password' },
+  registrationError: { de: 'Registrierung fehlgeschlagen', en: 'Registration failed' },
+  loginFailed: { de: 'Anmeldung fehlgeschlagen', en: 'Login failed' },
+  registrationSuccess: { de: 'Erfolgreich registriert!', en: 'Successfully registered!' },
+  verifyEmailMessage: { de: 'Bitte überprüfe deine E-Mail, um dein Konto zu bestätigen.', en: 'Please check your email to verify your account.' },
+  emailRequired: { de: 'E-Mail erforderlich', en: 'Email required' },
+  enterEmailAddress: { de: 'Bitte gib deine E-Mail-Adresse ein', en: 'Please enter your email address' },
+  resetPasswordTitle: { de: 'Passwort zurücksetzen', en: 'Reset Password' },
+  resetPasswordMessage: { de: 'Möchtest du einen Link zum Zurücksetzen des Passworts an diese E-Mail senden?', en: 'Do you want to send a password reset link to this email?' },
+  send: { de: 'Senden', en: 'Send' },
+  resetEmailError: { de: 'Fehler beim Senden der E-Mail', en: 'Error sending email' },
+  resetEmailSuccess: { de: 'Überprüfe deine E-Mail für den Zurücksetzungslink', en: 'Check your email for the reset link' },
+  success: { de: 'Erfolg', en: 'Success' },
+  genericError: { de: 'Ein Fehler ist aufgetreten', en: 'An error occurred' },
   
   // Premium Popup
   premiumTitle: { de: 'Premium Kaufen', en: 'Buy Premium' },
@@ -92,6 +124,9 @@ const translations: Translations = {
   legalPrivacyTitle: { de: 'Datenschutzerklärung', en: 'Privacy Policy' },
   legalImprintTitle: { de: 'Impressum', en: 'Imprint' },
   legalTermsTitle: { de: 'Nutzungsbedingungen', en: 'Terms of Use' },
+  
+  // Legal Pages - Common
+  legalBack: { de: 'Zurück', en: 'Back' },
   
   // Impressum Content
   imprintAccordingToSwissLaw: { de: 'Angaben gemäss Schweizer Recht', en: 'Information according to Swiss Law' },

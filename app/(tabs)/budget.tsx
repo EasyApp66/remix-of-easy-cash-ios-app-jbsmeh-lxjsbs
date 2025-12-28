@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { PremiumModal } from "@/components/PremiumModal";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BudgetItem {
   id: string;
@@ -28,6 +29,7 @@ const MONTHS = [
 ];
 
 export default function BudgetScreen() {
+  const { t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
   const [months, setMonths] = useState<MonthData[]>([
     {
@@ -146,7 +148,7 @@ export default function BudgetScreen() {
 
   const handleDeleteMonth = (monthId: string) => {
     if (months.length === 1) {
-      Alert.alert('Fehler', 'Sie müssen mindestens einen Monat haben.');
+      Alert.alert(t('errorTitle'), t('errorMinimumMonth'));
       return;
     }
     
@@ -393,11 +395,11 @@ export default function BudgetScreen() {
         {/* Total and Remaining */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>TOTAL</Text>
+            <Text style={styles.summaryLabel}>{t('total')}</Text>
             <Text style={styles.summaryAmount}>{totalExpenses.toLocaleString('de-DE')}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>BLEIBT</Text>
+            <Text style={styles.summaryLabel}>{t('remaining')}</Text>
             <Text style={[styles.summaryAmount, remaining < 0 ? styles.negativeAmount : styles.remainingAmount]}>
               {remaining.toLocaleString('de-DE')}
             </Text>
@@ -513,11 +515,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Neues Budget hinzufügen</Text>
+            <Text style={styles.modalTitle}>{t('addNewBudget')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Name (z.B. ESSEN)"
+              placeholder={t('namePlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={newItemName}
               onChangeText={setNewItemName}
@@ -525,7 +527,7 @@ export default function BudgetScreen() {
             
             <TextInput
               style={styles.input}
-              placeholder="Betrag"
+              placeholder={t('amountPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={newItemAmount}
               onChangeText={setNewItemAmount}
@@ -537,14 +539,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowAddModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleAddItem}
               >
-                <Text style={styles.modalButtonText}>Hinzufügen</Text>
+                <Text style={styles.addModalButtonText}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -572,16 +574,16 @@ export default function BudgetScreen() {
           <View style={styles.menuContent}>
             <TouchableOpacity style={styles.menuItem} onPress={handlePinMonth}>
               <Text style={styles.menuItemText}>
-                {months.find(m => m.id === selectedMonthForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+                {months.find(m => m.id === selectedMonthForMenu)?.isPinned ? t('unpin') : t('pin')}
               </Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateMonth}>
-              <Text style={styles.menuItemText}>Duplizieren</Text>
+              <Text style={styles.menuItemText}>{t('duplicate')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.menuItem} onPress={handleRenameMonth}>
-              <Text style={styles.menuItemText}>Namen anpassen</Text>
+              <Text style={styles.menuItemText}>{t('rename')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -591,7 +593,7 @@ export default function BudgetScreen() {
                 setSelectedMonthForMenu(null);
               }}
             >
-              <Text style={styles.menuItemText}>Abbrechen</Text>
+              <Text style={styles.menuItemText}>{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -617,20 +619,20 @@ export default function BudgetScreen() {
         >
           <View style={styles.menuContent}>
             <TouchableOpacity style={styles.menuItem} onPress={handleRenameItem}>
-              <Text style={styles.menuItemText}>Namen anpassen</Text>
+              <Text style={styles.menuItemText}>{t('rename')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.menuItem} onPress={handleEditItemAmount}>
-              <Text style={styles.menuItemText}>Zahl anpassen</Text>
+              <Text style={styles.menuItemText}>{t('editAmount')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateItem}>
-              <Text style={styles.menuItemText}>Duplizieren</Text>
+              <Text style={styles.menuItemText}>{t('duplicate')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.menuItem} onPress={handlePinItem}>
               <Text style={styles.menuItemText}>
-                {budgetItems.find(i => i.id === selectedItemForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+                {budgetItems.find(i => i.id === selectedItemForMenu)?.isPinned ? t('unpin') : t('pin')}
               </Text>
             </TouchableOpacity>
             
@@ -641,7 +643,7 @@ export default function BudgetScreen() {
                 setSelectedItemForMenu(null);
               }}
             >
-              <Text style={styles.menuItemText}>Abbrechen</Text>
+              <Text style={styles.menuItemText}>{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -656,11 +658,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Kontostand anpassen</Text>
+            <Text style={styles.modalTitle}>{t('adjustBalance')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Betrag"
+              placeholder={t('amountPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={editBalanceValue}
               onChangeText={setEditBalanceValue}
@@ -673,14 +675,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditBalanceModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveBalance}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -696,11 +698,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Bezeichnung anpassen</Text>
+            <Text style={styles.modalTitle}>{t('adjustLabel')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Bezeichnung"
+              placeholder={t('labelPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={editBalanceLabel}
               onChangeText={setEditBalanceLabel}
@@ -712,14 +714,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditBalanceLabelModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveBalanceLabel}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -735,11 +737,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Namen anpassen</Text>
+            <Text style={styles.modalTitle}>{t('rename')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Name"
+              placeholder={t('name')}
               placeholderTextColor={colors.textSecondary}
               value={editItemName}
               onChangeText={setEditItemName}
@@ -751,14 +753,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditItemNameModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveItemName}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -774,11 +776,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Zahl anpassen</Text>
+            <Text style={styles.modalTitle}>{t('editAmount')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Betrag"
+              placeholder={t('amountPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={editItemAmount}
               onChangeText={setEditItemAmount}
@@ -791,14 +793,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditItemAmountModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveItemAmount}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -814,11 +816,11 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Monatsnamen anpassen</Text>
+            <Text style={styles.modalTitle}>{t('adjustMonthName')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Name"
+              placeholder={t('name')}
               placeholderTextColor={colors.textSecondary}
               value={editMonthName}
               onChangeText={setEditMonthName}
@@ -830,14 +832,14 @@ export default function BudgetScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditMonthNameModal(false)}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveMonthName}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1051,6 +1053,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  addModalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000', // Changed to black for better contrast
   },
   menuContent: {
     backgroundColor: colors.cardBackground,

@@ -29,8 +29,8 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
   };
 
   const handleClosePress = () => {
-    console.log('Close button pressed, canClose:', canClose);
-    // Always allow closing now
+    console.log('Close button pressed in PremiumModal');
+    // Always allow closing - this fixes the issue
     onClose();
   };
 
@@ -50,10 +50,11 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
         {/* Modal Content */}
         <View style={styles.modalContentWrapper}>
           <View style={styles.modalContent}>
-            {/* Close Button - ALWAYS functional now */}
+            {/* Close Button - ALWAYS visible and functional */}
             <Pressable 
               style={styles.closeButton}
               onPress={handleClosePress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <IconSymbol 
                 ios_icon_name="xmark.circle.fill" 
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   payButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.background,
+    color: '#000000', // Changed from colors.background to black for better contrast
   },
   orSeparatorContainer: {
     flexDirection: 'row',

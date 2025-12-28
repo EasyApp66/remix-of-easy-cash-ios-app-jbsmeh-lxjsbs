@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { PremiumModal } from "@/components/PremiumModal";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Subscription {
   id: string;
@@ -15,6 +16,7 @@ interface Subscription {
 }
 
 export default function AboScreen() {
+  const { t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -175,7 +177,7 @@ export default function AboScreen() {
         <View style={styles.headerCard}>
           <View style={styles.headerLayout}>
             <View style={styles.headerLabelContainer}>
-              <Text style={styles.headerLabel}>ABOS COUNTER</Text>
+              <Text style={styles.headerLabel}>{t('abosCounter')}</Text>
             </View>
             <View style={styles.headerAmountContainer}>
               <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
@@ -185,7 +187,7 @@ export default function AboScreen() {
 
         {/* Total Subscriptions - TOTAL text center-left */}
         <View style={styles.totalCard}>
-          <Text style={styles.totalLabel}>TOTAL</Text>
+          <Text style={styles.totalLabel}>{t('total')}</Text>
           <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
         </View>
 
@@ -248,11 +250,11 @@ export default function AboScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Neues Abo hinzufügen</Text>
+            <Text style={styles.modalTitle}>{t('addNewSubscription')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Name (z.B. Spotify)"
+              placeholder={t('subscriptionNamePlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={newSubName}
               onChangeText={setNewSubName}
@@ -260,7 +262,7 @@ export default function AboScreen() {
             
             <TextInput
               style={styles.input}
-              placeholder="Betrag pro Monat"
+              placeholder={t('subscriptionAmountPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={newSubAmount}
               onChangeText={setNewSubAmount}
@@ -273,7 +275,7 @@ export default function AboScreen() {
                 onPress={() => setShowAddModal(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -281,7 +283,7 @@ export default function AboScreen() {
                 onPress={handleAddSubscription}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Hinzufügen</Text>
+                <Text style={styles.addModalButtonText}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -312,7 +314,7 @@ export default function AboScreen() {
               onPress={handleRenameSub}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuItemText}>Namen anpassen</Text>
+              <Text style={styles.menuItemText}>{t('rename')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -320,7 +322,7 @@ export default function AboScreen() {
               onPress={handleEditSubAmount}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuItemText}>Zahl anpassen</Text>
+              <Text style={styles.menuItemText}>{t('editAmount')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -329,7 +331,7 @@ export default function AboScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.menuItemText}>
-                {subscriptions.find(s => s.id === selectedSubForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
+                {subscriptions.find(s => s.id === selectedSubForMenu)?.isPinned ? t('unpin') : t('pin')}
               </Text>
             </TouchableOpacity>
             
@@ -338,7 +340,7 @@ export default function AboScreen() {
               onPress={handleDuplicateSub}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuItemText}>Duplizieren</Text>
+              <Text style={styles.menuItemText}>{t('duplicate')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -346,7 +348,7 @@ export default function AboScreen() {
               onPress={handleDeleteFromMenu}
               activeOpacity={0.7}
             >
-              <Text style={[styles.menuItemText, { color: colors.red }]}>Löschen</Text>
+              <Text style={[styles.menuItemText, { color: colors.red }]}>{t('delete')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -357,7 +359,7 @@ export default function AboScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuItemText}>Abbrechen</Text>
+              <Text style={styles.menuItemText}>{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -372,11 +374,11 @@ export default function AboScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Namen anpassen</Text>
+            <Text style={styles.modalTitle}>{t('rename')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Name"
+              placeholder={t('name')}
               placeholderTextColor={colors.textSecondary}
               value={editName}
               onChangeText={setEditName}
@@ -389,7 +391,7 @@ export default function AboScreen() {
                 onPress={() => setShowEditNameModal(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -397,7 +399,7 @@ export default function AboScreen() {
                 onPress={handleSaveName}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -413,11 +415,11 @@ export default function AboScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Zahl anpassen</Text>
+            <Text style={styles.modalTitle}>{t('editAmount')}</Text>
             
             <TextInput
               style={styles.input}
-              placeholder="Betrag"
+              placeholder={t('amountPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={editAmount}
               onChangeText={setEditAmount}
@@ -431,7 +433,7 @@ export default function AboScreen() {
                 onPress={() => setShowEditAmountModal(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Abbrechen</Text>
+                <Text style={styles.modalButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -439,7 +441,7 @@ export default function AboScreen() {
                 onPress={handleSaveAmount}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>Speichern</Text>
+                <Text style={styles.addModalButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -603,6 +605,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  addModalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000', // Changed to black for better contrast
   },
   menuContent: {
     backgroundColor: colors.cardBackground,
