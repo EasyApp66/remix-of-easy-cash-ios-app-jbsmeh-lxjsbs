@@ -37,79 +37,60 @@ export default function ImpressumScreen() {
         <View style={styles.contentContainer}>
           <Text style={styles.title}>Impressum</Text>
           
-          <Text style={styles.sectionTitle}>Angaben gemäß § 5 TMG</Text>
+          <Text style={styles.sectionTitle}>Angaben gemäss Schweizer Recht</Text>
           <Text style={styles.text}>
-            Easy Cash{'\n'}
-            Musterstraße 123{'\n'}
-            12345 Musterstadt{'\n'}
-            Deutschland
-          </Text>
-
-          <Text style={styles.sectionTitle}>Vertreten durch</Text>
-          <Text style={styles.text}>
-            Max Mustermann{'\n'}
-            Geschäftsführer
+            Easy Budget{'\n'}
+            Ivan Mirosnic{'\n'}
+            Ahornstrasse{'\n'}
+            8600 Dübendorf{'\n'}
+            Schweiz
           </Text>
 
           <Text style={styles.sectionTitle}>Kontakt</Text>
           <Text style={styles.text}>
-            Telefon: +49 (0) 123 456789{'\n'}
-            E-Mail: kontakt@easycash.de{'\n'}
-            Website: www.easycash.de
+            E-Mail: Über Support-Funktion in der App erreichbar
           </Text>
 
-          <Text style={styles.sectionTitle}>Registereintrag</Text>
+          <Text style={styles.sectionTitle}>Haftungsausschluss</Text>
           <Text style={styles.text}>
-            Eintragung im Handelsregister{'\n'}
-            Registergericht: Amtsgericht Musterstadt{'\n'}
-            Registernummer: HRB 12345
-          </Text>
-
-          <Text style={styles.sectionTitle}>Umsatzsteuer-ID</Text>
-          <Text style={styles.text}>
-            Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz:{'\n'}
-            DE123456789
-          </Text>
-
-          <Text style={styles.sectionTitle}>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</Text>
-          <Text style={styles.text}>
-            Max Mustermann{'\n'}
-            Musterstraße 123{'\n'}
-            12345 Musterstadt
-          </Text>
-
-          <Text style={styles.sectionTitle}>Streitschlichtung</Text>
-          <Text style={styles.text}>
-            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: 
-            https://ec.europa.eu/consumers/odr{'\n\n'}
-            Unsere E-Mail-Adresse finden Sie oben im Impressum.{'\n\n'}
-            Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer 
-            Verbraucherschlichtungsstelle teilzunehmen.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Haftung für Inhalte</Text>
-          <Text style={styles.text}>
-            Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten 
-            nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als 
-            Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde 
-            Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige 
-            Tätigkeit hinweisen.
+            Der Autor übernimmt keinerlei Gewähr hinsichtlich der inhaltlichen Richtigkeit, 
+            Genauigkeit, Aktualität, Zuverlässigkeit und Vollständigkeit der Informationen.
+            {'\n\n'}
+            Haftungsansprüche gegen den Autor wegen Schäden materieller oder immaterieller Art, 
+            welche aus dem Zugriff oder der Nutzung bzw. Nichtnutzung der veröffentlichten 
+            Informationen, durch Missbrauch der Verbindung oder durch technische Störungen 
+            entstanden sind, werden ausgeschlossen.
           </Text>
 
           <Text style={styles.sectionTitle}>Haftung für Links</Text>
           <Text style={styles.text}>
-            Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen 
-            Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. 
-            Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber 
-            der Seiten verantwortlich.
+            Verweise und Links auf Webseiten Dritter liegen ausserhalb unseres Verantwortungsbereichs. 
+            Es wird jegliche Verantwortung für solche Webseiten abgelehnt. Der Zugriff und die 
+            Nutzung solcher Webseiten erfolgen auf eigene Gefahr des Nutzers oder der Nutzerin.
           </Text>
 
-          <Text style={styles.sectionTitle}>Urheberrecht</Text>
+          <Text style={styles.sectionTitle}>Urheberrechte</Text>
           <Text style={styles.text}>
-            Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen 
-            dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art 
-            der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen 
-            Zustimmung des jeweiligen Autors bzw. Erstellers.
+            Die Urheber- und alle anderen Rechte an Inhalten, Bildern, Fotos oder anderen Dateien 
+            auf dieser App gehören ausschliesslich Ivan Mirosnic oder den speziell genannten 
+            Rechtsinhabern. Für die Reproduktion jeglicher Elemente ist die schriftliche Zustimmung 
+            der Urheberrechtsträger im Voraus einzuholen.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Anwendbares Recht</Text>
+          <Text style={styles.text}>
+            Auf diese App und deren Nutzung ist ausschliesslich Schweizer Recht anwendbar. 
+            Gerichtsstand ist Zürich, Schweiz.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Zahlungsinformationen</Text>
+          <Text style={styles.text}>
+            Diese App bietet kostenpflichtige Premium-Funktionen an. Es stehen folgende 
+            Zahlungsoptionen zur Verfügung:{'\n\n'}
+            - Einmalige Zahlung für lebenslangen Zugang{'\n'}
+            - Monatliches Abonnement mit automatischer Verlängerung{'\n\n'}
+            Die Zahlungsabwicklung erfolgt über die jeweiligen App-Store-Anbieter (Apple App Store, 
+            Google Play Store). Es gelten deren Zahlungs- und Rückerstattungsbedingungen.
           </Text>
         </View>
       </ScrollView>

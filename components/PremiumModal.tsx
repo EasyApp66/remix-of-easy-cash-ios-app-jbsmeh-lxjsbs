@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, Alert, Dimensions } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 interface PremiumModalProps {
   visible: boolean;
@@ -34,89 +35,97 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
       animationType="fade"
       onRequestClose={canClose ? onClose : undefined}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          {/* Close Button - only show if canClose is true */}
-          {canClose && (
-            <Pressable 
-              style={styles.closeButton}
-              onPress={onClose}
-            >
+      {/* Full screen glass-style background */}
+      <View style={styles.fullScreenOverlay}>
+        <BlurView intensity={20} tint="dark" style={styles.blurView}>
+          <View style={styles.glassBackground} />
+        </BlurView>
+        
+        {/* Modal Content */}
+        <View style={styles.modalContentWrapper}>
+          <View style={styles.modalContent}>
+            {/* Close Button - only show if canClose is true */}
+            {canClose && (
+              <Pressable 
+                style={styles.closeButton}
+                onPress={onClose}
+              >
+                <IconSymbol 
+                  ios_icon_name="xmark.circle.fill" 
+                  android_material_icon_name="close" 
+                  size={32} 
+                  color={colors.text} 
+                />
+              </Pressable>
+            )}
+
+            {/* Title */}
+            <View style={styles.modalHeader}>
               <IconSymbol 
-                ios_icon_name="xmark.circle.fill" 
-                android_material_icon_name="close" 
-                size={32} 
-                color={colors.text} 
+                ios_icon_name="star.fill" 
+                android_material_icon_name="star" 
+                size={48} 
+                color={colors.green} 
               />
-            </Pressable>
-          )}
-
-          {/* Title */}
-          <View style={styles.modalHeader}>
-            <IconSymbol 
-              ios_icon_name="star.fill" 
-              android_material_icon_name="star" 
-              size={48} 
-              color={colors.green} 
-            />
-            <Text style={styles.modalTitle}>{t('premiumTitle')}</Text>
-          </View>
-
-          {/* Description */}
-          {!canClose && (
-            <Text style={styles.warningText}>{t('premiumRequiredMessage')}</Text>
-          )}
-          <Text style={styles.modalDescription}>{t('premiumDescription')}</Text>
-
-          {/* Features List */}
-          <View style={styles.featuresList}>
-            <Text style={styles.featureText}>{t('premiumFeature1')}</Text>
-            <Text style={styles.featureText}>{t('premiumFeature2')}</Text>
-            <Text style={styles.featureText}>{t('premiumFeature3')}</Text>
-          </View>
-
-          {/* Payment Options */}
-          <View style={styles.paymentOptions}>
-            {/* One-Time Payment */}
-            <Pressable 
-              style={({ pressed }) => [
-                styles.paymentButton,
-                pressed && styles.paymentButtonPressed
-              ]}
-              onPress={() => handleBuyPremium('onetime')}
-            >
-              <View style={styles.paymentButtonContent}>
-                <Text style={styles.paymentButtonTitle}>{t('oneTimePayment')}</Text>
-                <Text style={styles.paymentButtonPrice}>CHF 10.00</Text>
-              </View>
-              <View style={styles.payButton}>
-                <Text style={styles.payButtonText}>{t('pay')}</Text>
-              </View>
-            </Pressable>
-
-            {/* OR Separator */}
-            <View style={styles.orSeparatorContainer}>
-              <View style={styles.orLine} />
-              <Text style={styles.orText}>{t('or')}</Text>
-              <View style={styles.orLine} />
+              <Text style={styles.modalTitle}>{t('premiumTitle')}</Text>
             </View>
 
-            {/* Monthly Subscription */}
-            <Pressable 
-              style={({ pressed }) => [
-                styles.paymentButton,
-                pressed && styles.paymentButtonPressed
-              ]}
-              onPress={() => handleBuyPremium('monthly')}
-            >
-              <View style={styles.paymentButtonContent}>
-                <Text style={styles.paymentButtonTitle}>{t('monthlySubscription')}</Text>
-                <Text style={styles.paymentButtonPrice}>CHF 1.00{t('perMonth')}</Text>
+            {/* Description */}
+            {!canClose && (
+              <Text style={styles.warningText}>{t('premiumRequiredMessage')}</Text>
+            )}
+            <Text style={styles.modalDescription}>{t('premiumDescription')}</Text>
+
+            {/* Features List */}
+            <View style={styles.featuresList}>
+              <Text style={styles.featureText}>{t('premiumFeature1')}</Text>
+              <Text style={styles.featureText}>{t('premiumFeature2')}</Text>
+              <Text style={styles.featureText}>{t('premiumFeature3')}</Text>
+            </View>
+
+            {/* Payment Options */}
+            <View style={styles.paymentOptions}>
+              {/* One-Time Payment */}
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.paymentButton,
+                  pressed && styles.paymentButtonPressed
+                ]}
+                onPress={() => handleBuyPremium('onetime')}
+              >
+                <View style={styles.paymentButtonContent}>
+                  <Text style={styles.paymentButtonTitle}>{t('oneTimePayment')}</Text>
+                  <Text style={styles.paymentButtonPrice}>CHF 10.00</Text>
+                </View>
+                <View style={styles.payButton}>
+                  <Text style={styles.payButtonText}>{t('pay')}</Text>
+                </View>
+              </Pressable>
+
+              {/* OR Separator */}
+              <View style={styles.orSeparatorContainer}>
+                <View style={styles.orLine} />
+                <Text style={styles.orText}>{t('or')}</Text>
+                <View style={styles.orLine} />
               </View>
-              <View style={styles.payButton}>
-                <Text style={styles.payButtonText}>{t('pay')}</Text>
-              </View>
-            </Pressable>
+
+              {/* Monthly Subscription */}
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.paymentButton,
+                  pressed && styles.paymentButtonPressed
+                ]}
+                onPress={() => handleBuyPremium('monthly')}
+              >
+                <View style={styles.paymentButtonContent}>
+                  <Text style={styles.paymentButtonTitle}>{t('monthlySubscription')}</Text>
+                  <Text style={styles.paymentButtonPrice}>CHF 1.00{t('perMonth')}</Text>
+                </View>
+                <View style={styles.payButton}>
+                  <Text style={styles.payButtonText}>{t('pay')}</Text>
+                </View>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -125,9 +134,33 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  fullScreenOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    width: width,
+    height: height,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  blurView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  glassBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(50, 50, 50, 0.75)',
+    width: '100%',
+    height: '100%',
+  },
+  modalContentWrapper: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -140,6 +173,14 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     maxHeight: height * 0.75,
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
   },
   closeButton: {
     position: 'absolute',
@@ -147,7 +188,7 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 10,
     padding: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
   },
   modalHeader: {

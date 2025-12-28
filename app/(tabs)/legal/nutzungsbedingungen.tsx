@@ -39,8 +39,10 @@ export default function NutzungsbedingungenScreen() {
           
           <Text style={styles.sectionTitle}>1. Akzeptanz der Bedingungen</Text>
           <Text style={styles.text}>
-            Durch die Nutzung von Easy Cash akzeptieren Sie diese Nutzungsbedingungen in vollem Umfang. 
+            Durch die Nutzung von Easy Budget akzeptieren Sie diese Nutzungsbedingungen in vollem Umfang. 
             Wenn Sie mit diesen Bedingungen nicht einverstanden sind, dürfen Sie die App nicht nutzen.
+            {'\n\n'}
+            Diese Bedingungen unterliegen dem Schweizer Recht.
           </Text>
 
           <Text style={styles.sectionTitle}>2. Registrierung und Konto</Text>
@@ -53,7 +55,7 @@ export default function NutzungsbedingungenScreen() {
 
           <Text style={styles.sectionTitle}>3. Erlaubte Nutzung</Text>
           <Text style={styles.text}>
-            Sie dürfen die App ausschließlich für legale Zwecke nutzen. Folgende Handlungen sind untersagt:{'\n\n'}
+            Sie dürfen die App ausschliesslich für legale Zwecke nutzen. Folgende Handlungen sind untersagt:{'\n\n'}
             - Missbrauch der App für illegale Aktivitäten{'\n'}
             - Verbreitung von Malware oder schädlichem Code{'\n'}
             - Versuch, die Sicherheit der App zu kompromittieren{'\n'}
@@ -64,15 +66,26 @@ export default function NutzungsbedingungenScreen() {
           <Text style={styles.sectionTitle}>4. Ihre Daten</Text>
           <Text style={styles.text}>
             Sie behalten alle Rechte an den Daten, die Sie in der App eingeben. Wir verwenden 
-            Ihre Daten nur gemäß unserer Datenschutzerklärung.
+            Ihre Daten nur gemäss unserer Datenschutzerklärung und den geltenden Schweizer 
+            Datenschutzbestimmungen.
           </Text>
 
-          <Text style={styles.sectionTitle}>5. Premium-Abonnement</Text>
+          <Text style={styles.sectionTitle}>5. Premium-Funktionen und Zahlungen</Text>
           <Text style={styles.text}>
-            - Premium-Abonnements verlängern sich automatisch{'\n'}
-            - Sie können Ihr Abonnement jederzeit kündigen{'\n'}
-            - Bei Kündigung bleibt der Zugang bis zum Ende des bezahlten Zeitraums bestehen{'\n'}
-            - Rückerstattungen erfolgen gemäß den Richtlinien des App Stores
+            Die App bietet kostenpflichtige Premium-Funktionen an. Es stehen zwei Zahlungsoptionen 
+            zur Verfügung:{'\n\n'}
+            <Text style={styles.boldText}>a) Einmalige Zahlung</Text>{'\n'}
+            - Einmaliger Kaufpreis für lebenslangen Zugang zu allen Premium-Funktionen{'\n'}
+            - Keine automatische Verlängerung{'\n'}
+            - Keine wiederkehrenden Gebühren{'\n\n'}
+            <Text style={styles.boldText}>b) Monatliches Abonnement</Text>{'\n'}
+            - Monatliche Zahlung für Zugang zu allen Premium-Funktionen{'\n'}
+            - Automatische Verlängerung am Ende jedes Abrechnungszeitraums{'\n'}
+            - Kündigung jederzeit möglich{'\n'}
+            - Bei Kündigung bleibt der Zugang bis zum Ende des bezahlten Zeitraums bestehen{'\n\n'}
+            Die Zahlungsabwicklung erfolgt über die jeweiligen App-Store-Anbieter (Apple App Store, 
+            Google Play Store). Rückerstattungen erfolgen gemäss den Richtlinien des jeweiligen 
+            App Stores und den geltenden Schweizer Konsumentenschutzbestimmungen.
           </Text>
 
           <Text style={styles.sectionTitle}>6. Verfügbarkeit</Text>
@@ -89,7 +102,7 @@ export default function NutzungsbedingungenScreen() {
 
           <Text style={styles.sectionTitle}>8. Beendigung</Text>
           <Text style={styles.text}>
-            Wir können Ihr Konto bei Verstoß gegen diese Bedingungen ohne Vorankündigung sperren 
+            Wir können Ihr Konto bei Verstoss gegen diese Bedingungen ohne Vorankündigung sperren 
             oder löschen. Sie können Ihr Konto jederzeit selbst löschen.
           </Text>
 
@@ -97,9 +110,17 @@ export default function NutzungsbedingungenScreen() {
           <Text style={styles.text}>
             Die App wird &quot;wie besehen&quot; bereitgestellt. Wir übernehmen keine Garantie für 
             die Richtigkeit, Vollständigkeit oder Aktualität der bereitgestellten Informationen.
+            {'\n\n'}
+            Die Haftung richtet sich nach den Bestimmungen des Schweizer Obligationenrechts (OR).
           </Text>
 
-          <Text style={styles.sectionTitle}>10. Kontakt</Text>
+          <Text style={styles.sectionTitle}>10. Anwendbares Recht und Gerichtsstand</Text>
+          <Text style={styles.text}>
+            Auf diese Nutzungsbedingungen ist ausschliesslich Schweizer Recht anwendbar. 
+            Gerichtsstand ist Zürich, Schweiz.
+          </Text>
+
+          <Text style={styles.sectionTitle}>11. Kontakt</Text>
           <Text style={styles.text}>
             Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns bitte über die 
             Support-Funktion in der App.
@@ -165,5 +186,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 24,
     marginBottom: 16,
+  },
+  boldText: {
+    fontWeight: '700',
+    color: colors.text,
   },
 });
