@@ -4,6 +4,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInp
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { PremiumModal } from "@/components/PremiumModal";
+import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 
 interface Subscription {
   id: string;
@@ -13,6 +15,7 @@ interface Subscription {
 }
 
 export default function AboScreen() {
+  const [isPremium, setIsPremium] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
@@ -31,6 +34,14 @@ export default function AboScreen() {
   // Calculate total amount from subscriptions
   const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
+
+  // Premium enforcement hook
+  const { shouldShowPremiumModal } = usePremiumEnforcement({
+    monthsCount: 0, // This will be passed from budget screen
+    maxExpensesPerMonth: 0, // This will be passed from budget screen
+    subscriptionsCount: totalSubscriptions,
+    isPremium,
+  });
 
   // Sort subscriptions: pinned first
   const sortedSubscriptions = [...subscriptions].sort((a, b) => {
@@ -220,6 +231,13 @@ export default function AboScreen() {
           color={colors.green} 
         />
       </TouchableOpacity>
+
+      {/* Premium Enforcement Modal */}
+      <PremiumModal 
+        visible={shouldShowPremiumModal}
+        onClose={() => console.log('Premium modal closed')}
+        canClose={false}
+      />
 
       {/* Add Subscription Modal */}
       <Modal

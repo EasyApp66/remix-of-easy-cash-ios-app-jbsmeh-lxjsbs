@@ -1,9 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { PremiumModal } from "@/components/PremiumModal";
+import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 
 interface BudgetItem {
   id: string;
@@ -26,6 +28,7 @@ const MONTHS = [
 ];
 
 export default function BudgetScreen() {
+  const [isPremium, setIsPremium] = useState(false);
   const [months, setMonths] = useState<MonthData[]>([
     {
       id: '1',
@@ -83,6 +86,17 @@ export default function BudgetScreen() {
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const accountBalance = selectedMonth?.accountBalance || 0;
   const budgetItems = selectedMonth?.budgetItems || [];
+  
+  // Calculate max expenses per month for premium enforcement
+  const maxExpensesPerMonth = Math.max(...months.map(m => m.budgetItems.length), 0);
+  
+  // Premium enforcement hook
+  const { shouldShowPremiumModal } = usePremiumEnforcement({
+    monthsCount: months.length,
+    maxExpensesPerMonth,
+    subscriptionsCount: 0, // This will be passed from abo screen
+    isPremium,
+  });
   
   // Sort items: pinned first, then by creation order
   const sortedBudgetItems = [...budgetItems].sort((a, b) => {
@@ -482,6 +496,13 @@ export default function BudgetScreen() {
           color={colors.green} 
         />
       </TouchableOpacity>
+
+      {/* Premium Enforcement Modal */}
+      <PremiumModal 
+        visible={shouldShowPremiumModal}
+        onClose={() => console.log('Premium modal closed')}
+        canClose={false}
+      />
 
       {/* Add Item Modal */}
       <Modal

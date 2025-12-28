@@ -74,6 +74,9 @@ const translations: Translations = {
   pay: { de: 'Bezahlen', en: 'Pay' },
   perMonth: { de: '/Monat', en: '/Month' },
   close: { de: 'Schließen', en: 'Close' },
+  or: { de: 'ODER', en: 'OR' },
+  premiumRequired: { de: 'Premium erforderlich', en: 'Premium Required' },
+  premiumRequiredMessage: { de: 'Sie haben das kostenlose Limit erreicht. Bitte upgraden Sie auf Premium, um fortzufahren.', en: 'You have reached the free limit. Please upgrade to Premium to continue.' },
 };
 
 interface LanguageContextType {

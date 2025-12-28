@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
@@ -288,12 +288,19 @@ export default function ProfileScreen() {
               >
                 <View style={styles.paymentButtonContent}>
                   <Text style={styles.paymentButtonTitle}>{t('oneTimePayment')}</Text>
-                  <Text style={styles.paymentButtonPrice}>CHF 5.00</Text>
+                  <Text style={styles.paymentButtonPrice}>CHF 10.00</Text>
                 </View>
                 <View style={styles.payButton}>
                   <Text style={styles.payButtonText}>{t('pay')}</Text>
                 </View>
               </Pressable>
+
+              {/* OR Separator */}
+              <View style={styles.orSeparatorContainer}>
+                <View style={styles.orLine} />
+                <Text style={styles.orText}>{t('or')}</Text>
+                <View style={styles.orLine} />
+              </View>
 
               {/* Monthly Subscription */}
               <Pressable 
@@ -305,7 +312,7 @@ export default function ProfileScreen() {
               >
                 <View style={styles.paymentButtonContent}>
                   <Text style={styles.paymentButtonTitle}>{t('monthlySubscription')}</Text>
-                  <Text style={styles.paymentButtonPrice}>CHF 5.00{t('perMonth')}</Text>
+                  <Text style={styles.paymentButtonPrice}>CHF 1.00{t('perMonth')}</Text>
                 </View>
                 <View style={styles.payButton}>
                   <Text style={styles.payButtonText}>{t('pay')}</Text>
@@ -489,5 +496,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.background,
+  },
+  orSeparatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.grey,
+  },
+  orText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginHorizontal: 12,
   },
 });
