@@ -1,9 +1,11 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, Alert, Dimensions } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const { height } = Dimensions.get('window');
 
 interface PremiumModalProps {
   visible: boolean;
@@ -43,8 +45,8 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
               <IconSymbol 
                 ios_icon_name="xmark.circle.fill" 
                 android_material_icon_name="close" 
-                size={28} 
-                color={colors.textSecondary} 
+                size={32} 
+                color={colors.text} 
               />
             </Pressable>
           )}
@@ -128,65 +130,68 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
   },
   modalContent: {
     backgroundColor: colors.cardBackground,
     borderRadius: 24,
-    padding: 24,
+    padding: 20,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 380,
+    maxHeight: height * 0.75,
     position: 'relative',
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 12,
+    right: 12,
     zIndex: 10,
+    padding: 4,
   },
   modalHeader: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    marginTop: 8,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.text,
-    marginTop: 12,
+    marginTop: 8,
     textAlign: 'center',
   },
   warningText: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.red,
-    marginBottom: 12,
+    marginBottom: 10,
     textAlign: 'center',
     fontWeight: '600',
   },
   modalDescription: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   featuresList: {
     backgroundColor: colors.background,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    padding: 14,
+    marginBottom: 16,
   },
   featureText: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.text,
-    marginBottom: 8,
-    lineHeight: 22,
+    marginBottom: 6,
+    lineHeight: 20,
   },
   paymentOptions: {
-    gap: 12,
+    gap: 10,
   },
   paymentButton: {
     backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 14,
     borderWidth: 2,
     borderColor: colors.green,
   },
@@ -195,35 +200,35 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   paymentButtonContent: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   paymentButtonTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
   },
   paymentButtonPrice: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.green,
   },
   payButton: {
     backgroundColor: colors.green,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
   payButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.background,
   },
   orSeparatorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 8,
+    marginVertical: 6,
   },
   orLine: {
     flex: 1,
@@ -231,9 +236,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey,
   },
   orText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.textSecondary,
-    marginHorizontal: 12,
+    marginHorizontal: 10,
   },
 });

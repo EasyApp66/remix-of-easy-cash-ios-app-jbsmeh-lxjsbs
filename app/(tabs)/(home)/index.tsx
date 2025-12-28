@@ -42,7 +42,7 @@ export default function HomeScreen() {
           <View style={styles.welcomeContainer}>
             <View style={[styles.headerSection, { marginBottom: 3 }]}>
               <Text style={styles.welcomeTitle}>
-                Hello! I&apos;m <Text style={styles.greenText}>EASY CASH</Text>
+                Hallo! Ich bin <Text style={styles.greenText}>EASY BUDGET</Text>
               </Text>
               <View style={styles.subtitleContainer}>
                 <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
