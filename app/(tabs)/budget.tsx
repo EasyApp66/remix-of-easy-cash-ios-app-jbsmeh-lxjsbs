@@ -86,7 +86,7 @@ export default function BudgetScreen() {
   // Calculate max expenses per month for premium enforcement
   const maxExpensesPerMonth = Math.max(...months.map(m => m.budgetItems.length), 0);
   
-  // Premium enforcement hook
+  // Premium enforcement hook (now disabled)
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: months.length,
     maxExpensesPerMonth,
@@ -95,6 +95,7 @@ export default function BudgetScreen() {
   });
 
   // Handle rollback when user closes premium modal after hitting limit
+  // NOTE: This is no longer needed since limits are removed, but keeping for compatibility
   useEffect(() => {
     if (shouldRollback && lastAction) {
       console.log('Rolling back last action:', lastAction);
@@ -144,34 +145,7 @@ export default function BudgetScreen() {
         isPinned: false,
       };
       
-      // Check if user can add more expenses
-      if (!canPerformAction('addExpense')) {
-        console.log('Cannot add more expenses - redirecting to premium');
-        
-        // First add the item
-        setMonths(months.map(m => 
-          m.id === selectedMonthId 
-            ? { ...m, budgetItems: [...m.budgetItems, newItem] }
-            : m
-        ));
-        
-        // Track this action for potential rollback
-        setLastAction({
-          type: 'addExpense',
-          data: { itemId: newItem.id, monthId: selectedMonthId },
-          timestamp: Date.now(),
-        });
-        
-        setShowAddModal(false);
-        setNewItemName('');
-        setNewItemAmount('');
-        
-        // Redirect to premium
-        redirectToPremium();
-        return;
-      }
-
-      // Normal add without limit
+      // No limit check - just add the item
       setMonths(months.map(m => 
         m.id === selectedMonthId 
           ? { ...m, budgetItems: [...m.budgetItems, newItem] }
@@ -181,6 +155,7 @@ export default function BudgetScreen() {
       setNewItemName('');
       setNewItemAmount('');
       setShowAddModal(false);
+      console.log('Added expense without limit check:', newItem);
     }
   };
 
@@ -218,29 +193,10 @@ export default function BudgetScreen() {
       budgetItems: [],
     };
     
-    // Check if user can add more months
-    if (!canPerformAction('addMonth')) {
-      console.log('Cannot add more months - redirecting to premium');
-      
-      // First add the month
-      setMonths([...months, newMonth]);
-      setSelectedMonthId(newMonth.id);
-      
-      // Track this action for potential rollback
-      setLastAction({
-        type: 'addMonth',
-        data: { monthId: newMonth.id },
-        timestamp: Date.now(),
-      });
-      
-      // Redirect to premium
-      redirectToPremium();
-      return;
-    }
-
-    // Normal add without limit
+    // No limit check - just add the month
     setMonths([...months, newMonth]);
     setSelectedMonthId(newMonth.id);
+    console.log('Added month without limit check:', newMonth);
   };
 
   const handleLongPressMonth = (monthId: string) => {
@@ -276,30 +232,9 @@ export default function BudgetScreen() {
           })),
         };
         
-        // Check if user can add more months
-        if (!canPerformAction('addMonth')) {
-          console.log('Cannot duplicate month - redirecting to premium');
-          
-          // First add the duplicated month
-          setMonths([...months, duplicatedMonth]);
-          
-          // Track this action for potential rollback
-          setLastAction({
-            type: 'addMonth',
-            data: { monthId: duplicatedMonth.id },
-            timestamp: Date.now(),
-          });
-          
-          setShowMonthMenu(false);
-          setSelectedMonthForMenu(null);
-          
-          // Redirect to premium
-          redirectToPremium();
-          return;
-        }
-        
-        // Normal duplicate without limit
+        // No limit check - just duplicate the month
         setMonths([...months, duplicatedMonth]);
+        console.log('Duplicated month without limit check:', duplicatedMonth);
       }
     }
     setShowMonthMenu(false);
@@ -362,38 +297,13 @@ export default function BudgetScreen() {
           isPinned: false,
         };
         
-        // Check if user can add more expenses
-        if (!canPerformAction('addExpense')) {
-          console.log('Cannot duplicate expense - redirecting to premium');
-          
-          // First add the duplicated item
-          setMonths(months.map(m => 
-            m.id === selectedMonthId 
-              ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
-              : m
-          ));
-          
-          // Track this action for potential rollback
-          setLastAction({
-            type: 'addExpense',
-            data: { itemId: duplicatedItem.id, monthId: selectedMonthId },
-            timestamp: Date.now(),
-          });
-          
-          setShowItemMenu(false);
-          setSelectedItemForMenu(null);
-          
-          // Redirect to premium
-          redirectToPremium();
-          return;
-        }
-        
-        // Normal duplicate without limit
+        // No limit check - just duplicate the item
         setMonths(months.map(m => 
           m.id === selectedMonthId 
             ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
             : m
         ));
+        console.log('Duplicated expense without limit check:', duplicatedItem);
       }
     }
     setShowItemMenu(false);
@@ -455,7 +365,7 @@ export default function BudgetScreen() {
     }
     setShowEditItemAmountModal(false);
     setSelectedItemForMenu(null);
-    setEditAmount('');
+    setEditItemAmount('');
   };
 
   const handleEditBalance = () => {
@@ -627,7 +537,7 @@ export default function BudgetScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('addNewBudget')}</Text>
+            <Text style={styles.modalTitle}>{t('newExpense')}</Text>
             
             <TextInput
               style={styles.input}

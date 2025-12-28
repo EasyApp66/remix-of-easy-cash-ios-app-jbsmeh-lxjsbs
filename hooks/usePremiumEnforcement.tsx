@@ -49,31 +49,18 @@ export function usePremiumEnforcement({
   };
 
   // Function to check if action should be allowed
+  // NOTE: This now always returns true - no limits enforced
   const canPerformAction = (actionType: 'addMonth' | 'addExpense' | 'addSubscription'): boolean => {
-    if (isPremium) {
-      return true;
-    }
-
-    // Check limits based on action type
-    switch (actionType) {
-      case 'addMonth':
-        return monthsCount < 1; // Can only have 1 month in free version
-      case 'addExpense':
-        return maxExpensesPerMonth < 8; // Can only have 8 expenses per month in free version
-      case 'addSubscription':
-        return subscriptionsCount < 6; // Can only have 6 subscriptions in free version
-      default:
-        return true;
-    }
+    // Always allow actions - no premium enforcement
+    console.log(`Action ${actionType} allowed - no limits enforced`);
+    return true;
   };
 
   // Function to redirect to premium purchase when limit is reached
+  // NOTE: This is now a no-op since we don't enforce limits
   const redirectToPremium = () => {
-    console.log('Redirecting to premium purchase due to limit reached');
-    router.push({
-      pathname: '/(tabs)/profile',
-      params: { showPremium: 'true' }
-    });
+    console.log('redirectToPremium called but no action taken - limits removed');
+    // Do nothing - limits are removed
   };
 
   return { 

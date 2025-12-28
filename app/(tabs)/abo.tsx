@@ -40,7 +40,7 @@ export default function AboScreen() {
   const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
 
-  // Premium enforcement hook
+  // Premium enforcement hook (now disabled)
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: 0, // This will be passed from budget screen
     maxExpensesPerMonth: 0, // This will be passed from budget screen
@@ -49,6 +49,7 @@ export default function AboScreen() {
   });
 
   // Handle rollback when user closes premium modal after hitting limit
+  // NOTE: This is no longer needed since limits are removed, but keeping for compatibility
   useEffect(() => {
     if (shouldRollback && lastAction) {
       console.log('Rolling back last action in abo screen:', lastAction);
@@ -80,35 +81,12 @@ export default function AboScreen() {
         isPinned: false,
       };
       
-      // Check if user can add more subscriptions
-      if (!canPerformAction('addSubscription')) {
-        console.log('Cannot add more subscriptions - redirecting to premium');
-        
-        // First add the subscription
-        setSubscriptions([...subscriptions, newSub]);
-        
-        // Track this action for potential rollback
-        setLastAction({
-          type: 'addSubscription',
-          data: { subId: newSub.id },
-          timestamp: Date.now(),
-        });
-        
-        setNewSubName('');
-        setNewSubAmount('');
-        setShowAddModal(false);
-        
-        // Redirect to premium
-        redirectToPremium();
-        return;
-      }
-
-      // Normal add without limit
+      // No limit check - just add the subscription
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
       setNewSubAmount('');
       setShowAddModal(false);
-      console.log('Added subscription:', newSub);
+      console.log('Added subscription without limit check:', newSub);
     }
   };
 
@@ -146,31 +124,9 @@ export default function AboScreen() {
           isPinned: false,
         };
         
-        // Check if user can add more subscriptions
-        if (!canPerformAction('addSubscription')) {
-          console.log('Cannot duplicate subscription - redirecting to premium');
-          
-          // First add the duplicated subscription
-          setSubscriptions([...subscriptions, duplicatedSub]);
-          
-          // Track this action for potential rollback
-          setLastAction({
-            type: 'addSubscription',
-            data: { subId: duplicatedSub.id },
-            timestamp: Date.now(),
-          });
-          
-          setShowSubMenu(false);
-          setSelectedSubForMenu(null);
-          
-          // Redirect to premium
-          redirectToPremium();
-          return;
-        }
-
-        // Normal duplicate without limit
+        // No limit check - just duplicate the subscription
         setSubscriptions([...subscriptions, duplicatedSub]);
-        console.log('Duplicated subscription:', duplicatedSub);
+        console.log('Duplicated subscription without limit check:', duplicatedSub);
       }
     }
     setShowSubMenu(false);
