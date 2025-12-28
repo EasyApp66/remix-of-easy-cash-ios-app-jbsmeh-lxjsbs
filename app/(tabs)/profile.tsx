@@ -1,20 +1,29 @@
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { PremiumModal } from "@/components/PremiumModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import * as MailComposer from 'expo-mail-composer';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { user, signOut } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  // Check if we should show premium modal on mount (when redirected from limit)
+  useEffect(() => {
+    if (params.showPremium === 'true') {
+      setShowPremiumModal(true);
+    }
+  }, [params]);
 
   const handleLogout = async () => {
     console.log('Handle logout/login');
@@ -62,17 +71,6 @@ export default function ProfileScreen() {
         [{ text: t('ok') }]
       );
     }
-  };
-
-  const handleBuyPremium = (type: 'onetime' | 'monthly') => {
-    console.log('Buy Premium:', type);
-    setShowPremiumModal(false);
-    // TODO: Implement payment processing
-    Alert.alert(
-      t('payment'),
-      `${type === 'onetime' ? t('oneTimePaymentText') : t('monthlySubscriptionText')} ${t('paymentProcessing')}`,
-      [{ text: t('ok') }]
-    );
   };
 
   const menuItems = [
@@ -240,94 +238,11 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* Premium Purchase Modal */}
-      <Modal
+      <PremiumModal 
         visible={showPremiumModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowPremiumModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {/* Close Button */}
-            <Pressable 
-              style={styles.closeButton}
-              onPress={() => setShowPremiumModal(false)}
-            >
-              <IconSymbol 
-                ios_icon_name="xmark.circle.fill" 
-                android_material_icon_name="close" 
-                size={32} 
-                color={colors.text} 
-              />
-            </Pressable>
-
-            {/* Title */}
-            <View style={styles.modalHeader}>
-              <IconSymbol 
-                ios_icon_name="star.fill" 
-                android_material_icon_name="star" 
-                size={48} 
-                color={colors.green} 
-              />
-              <Text style={styles.modalTitle}>{t('premiumTitle')}</Text>
-            </View>
-
-            {/* Description */}
-            <Text style={styles.modalDescription}>{t('premiumDescription')}</Text>
-
-            {/* Features List */}
-            <View style={styles.featuresList}>
-              <Text style={styles.featureText}>{t('premiumFeature1')}</Text>
-              <Text style={styles.featureText}>{t('premiumFeature2')}</Text>
-              <Text style={styles.featureText}>{t('premiumFeature3')}</Text>
-            </View>
-
-            {/* Payment Options */}
-            <View style={styles.paymentOptions}>
-              {/* One-Time Payment */}
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.paymentButton,
-                  pressed && styles.paymentButtonPressed
-                ]}
-                onPress={() => handleBuyPremium('onetime')}
-              >
-                <View style={styles.paymentButtonContent}>
-                  <Text style={styles.paymentButtonTitle}>{t('oneTimePayment')}</Text>
-                  <Text style={styles.paymentButtonPrice}>CHF 10.00</Text>
-                </View>
-                <View style={styles.payButton}>
-                  <Text style={styles.payButtonText}>{t('pay')}</Text>
-                </View>
-              </Pressable>
-
-              {/* OR Separator */}
-              <View style={styles.orSeparatorContainer}>
-                <View style={styles.orLine} />
-                <Text style={styles.orText}>{t('or')}</Text>
-                <View style={styles.orLine} />
-              </View>
-
-              {/* Monthly Subscription */}
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.paymentButton,
-                  pressed && styles.paymentButtonPressed
-                ]}
-                onPress={() => handleBuyPremium('monthly')}
-              >
-                <View style={styles.paymentButtonContent}>
-                  <Text style={styles.paymentButtonTitle}>{t('monthlySubscription')}</Text>
-                  <Text style={styles.paymentButtonPrice}>CHF 1.00{t('perMonth')}</Text>
-                </View>
-                <View style={styles.payButton}>
-                  <Text style={styles.payButtonText}>{t('pay')}</Text>
-                </View>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowPremiumModal(false)}
+        showLimitMessage={params.showPremium === 'true'}
+      />
     </View>
   );
 }
@@ -412,114 +327,5 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 14,
     color: colors.textSecondary,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 24,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    position: 'relative',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 10,
-    padding: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 20,
-  },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  featuresList: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-  featureText: {
-    fontSize: 15,
-    color: colors.text,
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  paymentOptions: {
-    gap: 12,
-  },
-  paymentButton: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: colors.green,
-  },
-  paymentButtonPressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.98 }],
-  },
-  paymentButtonContent: {
-    marginBottom: 12,
-  },
-  paymentButtonTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  paymentButtonPrice: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.green,
-  },
-  payButton: {
-    backgroundColor: colors.green,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  payButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.background,
-  },
-  orSeparatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  orLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.grey,
-  },
-  orText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginHorizontal: 12,
   },
 });

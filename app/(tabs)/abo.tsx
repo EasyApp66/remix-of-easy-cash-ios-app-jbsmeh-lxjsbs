@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
-import { PremiumModal } from "@/components/PremiumModal";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -16,6 +16,7 @@ interface Subscription {
 }
 
 export default function AboScreen() {
+  const router = useRouter();
   const { t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -38,7 +39,7 @@ export default function AboScreen() {
   const totalSubscriptions = subscriptions.length;
 
   // Premium enforcement hook
-  const { shouldShowPremiumModal } = usePremiumEnforcement({
+  const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: 0, // This will be passed from budget screen
     maxExpensesPerMonth: 0, // This will be passed from budget screen
     subscriptionsCount: totalSubscriptions,
@@ -54,6 +55,14 @@ export default function AboScreen() {
 
   const handleAddSubscription = () => {
     if (newSubName && newSubAmount) {
+      // Check if user can add more subscriptions
+      if (!canPerformAction('addSubscription')) {
+        console.log('Cannot add more subscriptions - redirecting to premium');
+        setShowAddModal(false);
+        redirectToPremium();
+        return;
+      }
+
       const newSub: Subscription = {
         id: Date.now().toString(),
         name: newSubName,
@@ -94,6 +103,15 @@ export default function AboScreen() {
 
   const handleDuplicateSub = () => {
     if (selectedSubForMenu) {
+      // Check if user can add more subscriptions
+      if (!canPerformAction('addSubscription')) {
+        console.log('Cannot duplicate subscription - redirecting to premium');
+        setShowSubMenu(false);
+        setSelectedSubForMenu(null);
+        redirectToPremium();
+        return;
+      }
+
       const subToDuplicate = subscriptions.find(sub => sub.id === selectedSubForMenu);
       if (subToDuplicate) {
         const duplicatedSub: Subscription = {
@@ -233,13 +251,6 @@ export default function AboScreen() {
           color={colors.green} 
         />
       </TouchableOpacity>
-
-      {/* Premium Enforcement Modal */}
-      <PremiumModal 
-        visible={shouldShowPremiumModal}
-        onClose={() => console.log('Premium modal closed')}
-        canClose={false}
-      />
 
       {/* Add Subscription Modal */}
       <Modal
@@ -609,7 +620,7 @@ const styles = StyleSheet.create({
   addModalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000', // Changed to black for better contrast
+    color: '#000000',
   },
   menuContent: {
     backgroundColor: colors.cardBackground,

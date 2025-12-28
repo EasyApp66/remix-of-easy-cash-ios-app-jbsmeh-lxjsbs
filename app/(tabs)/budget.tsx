@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
-import { PremiumModal } from "@/components/PremiumModal";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -29,6 +29,7 @@ const MONTHS = [
 ];
 
 export default function BudgetScreen() {
+  const router = useRouter();
   const { t } = useLanguage();
   const [isPremium, setIsPremium] = useState(false);
   const [months, setMonths] = useState<MonthData[]>([
@@ -44,16 +45,6 @@ export default function BudgetScreen() {
         { id: '4', name: 'MIETE', amount: 2500, isPinned: false },
         { id: '5', name: 'SPAREN', amount: 1146, isPinned: false },
         { id: '6', name: 'SPAREN', amount: 1146, isPinned: false },
-      ],
-    },
-    {
-      id: '2',
-      name: 'JANUAR',
-      isPinned: false,
-      accountBalance: 15000,
-      budgetItems: [
-        { id: '7', name: 'MIETE', amount: 2500, isPinned: false },
-        { id: '8', name: 'ESSEN', amount: 800, isPinned: false },
       ],
     },
   ]);
@@ -93,7 +84,7 @@ export default function BudgetScreen() {
   const maxExpensesPerMonth = Math.max(...months.map(m => m.budgetItems.length), 0);
   
   // Premium enforcement hook
-  const { shouldShowPremiumModal } = usePremiumEnforcement({
+  const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: months.length,
     maxExpensesPerMonth,
     subscriptionsCount: 0, // This will be passed from abo screen
@@ -119,6 +110,14 @@ export default function BudgetScreen() {
 
   const handleAddItem = () => {
     if (newItemName && newItemAmount && selectedMonth) {
+      // Check if user can add more expenses
+      if (!canPerformAction('addExpense')) {
+        console.log('Cannot add more expenses - redirecting to premium');
+        setShowAddModal(false);
+        redirectToPremium();
+        return;
+      }
+
       const newItem: BudgetItem = {
         id: Date.now().toString(),
         name: newItemName.toUpperCase(),
@@ -164,6 +163,13 @@ export default function BudgetScreen() {
   };
 
   const handleAddMonth = () => {
+    // Check if user can add more months
+    if (!canPerformAction('addMonth')) {
+      console.log('Cannot add more months - redirecting to premium');
+      redirectToPremium();
+      return;
+    }
+
     const newMonth: MonthData = {
       id: Date.now().toString(),
       name: 'NEUER MONAT',
@@ -194,6 +200,15 @@ export default function BudgetScreen() {
 
   const handleDuplicateMonth = () => {
     if (selectedMonthForMenu) {
+      // Check if user can add more months
+      if (!canPerformAction('addMonth')) {
+        console.log('Cannot duplicate month - redirecting to premium');
+        setShowMonthMenu(false);
+        setSelectedMonthForMenu(null);
+        redirectToPremium();
+        return;
+      }
+
       const monthToDuplicate = months.find(m => m.id === selectedMonthForMenu);
       if (monthToDuplicate) {
         const duplicatedMonth: MonthData = {
@@ -262,6 +277,15 @@ export default function BudgetScreen() {
 
   const handleDuplicateItem = () => {
     if (selectedItemForMenu) {
+      // Check if user can add more expenses
+      if (!canPerformAction('addExpense')) {
+        console.log('Cannot duplicate expense - redirecting to premium');
+        setShowItemMenu(false);
+        setSelectedItemForMenu(null);
+        redirectToPremium();
+        return;
+      }
+
       const itemToDuplicate = budgetItems.find(item => item.id === selectedItemForMenu);
       if (itemToDuplicate) {
         const duplicatedItem: BudgetItem = {
@@ -498,13 +522,6 @@ export default function BudgetScreen() {
           color={colors.green} 
         />
       </TouchableOpacity>
-
-      {/* Premium Enforcement Modal */}
-      <PremiumModal 
-        visible={shouldShowPremiumModal}
-        onClose={() => console.log('Premium modal closed')}
-        canClose={false}
-      />
 
       {/* Add Item Modal */}
       <Modal
@@ -1057,7 +1074,7 @@ const styles = StyleSheet.create({
   addModalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000', // Changed to black for better contrast
+    color: '#000000',
   },
   menuContent: {
     backgroundColor: colors.cardBackground,

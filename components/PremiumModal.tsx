@@ -11,10 +11,10 @@ const { height, width } = Dimensions.get('window');
 interface PremiumModalProps {
   visible: boolean;
   onClose: () => void;
-  canClose?: boolean;
+  showLimitMessage?: boolean;
 }
 
-export function PremiumModal({ visible, onClose, canClose = true }: PremiumModalProps) {
+export function PremiumModal({ visible, onClose, showLimitMessage = false }: PremiumModalProps) {
   const { t } = useLanguage();
 
   const handleBuyPremium = (type: 'onetime' | 'monthly') => {
@@ -30,7 +30,6 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
 
   const handleClosePress = () => {
     console.log('Close button pressed in PremiumModal');
-    // Always allow closing - this fixes the issue
     onClose();
   };
 
@@ -75,10 +74,12 @@ export function PremiumModal({ visible, onClose, canClose = true }: PremiumModal
               <Text style={styles.modalTitle}>{t('premiumTitle')}</Text>
             </View>
 
-            {/* Description */}
-            {!canClose && (
-              <Text style={styles.warningText}>{t('premiumRequiredMessage')}</Text>
+            {/* Limit Message - Only show when redirected due to limit */}
+            {showLimitMessage && (
+              <Text style={styles.limitMessage}>{t('limitReachedMessage')}</Text>
             )}
+
+            {/* Description */}
             <Text style={styles.modalDescription}>{t('premiumDescription')}</Text>
 
             {/* Features List */}
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '100%',
     maxWidth: 380,
-    maxHeight: height * 0.75,
+    maxHeight: height * 0.8,
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: {
@@ -208,12 +209,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  warningText: {
+  limitMessage: {
     fontSize: 14,
-    color: colors.red,
-    marginBottom: 10,
+    color: colors.green,
+    marginBottom: 12,
     textAlign: 'center',
     fontWeight: '600',
+    lineHeight: 20,
   },
   modalDescription: {
     fontSize: 15,
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
   payButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#000000', // Changed from colors.background to black for better contrast
+    color: '#000000',
   },
   orSeparatorContainer: {
     flexDirection: 'row',

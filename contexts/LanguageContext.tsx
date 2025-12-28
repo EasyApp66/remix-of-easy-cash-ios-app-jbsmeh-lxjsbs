@@ -118,6 +118,7 @@ const translations: Translations = {
   or: { de: 'ODER', en: 'OR' },
   premiumRequired: { de: 'Premium erforderlich', en: 'Premium Required' },
   premiumRequiredMessage: { de: 'Du hast das kostenlose Limit erreicht. Bitte upgrade auf Premium, um fortzufahren.', en: 'You have reached the free limit. Please upgrade to Premium to continue.' },
+  limitReachedMessage: { de: 'Du hast das Limit der kostenlosen Version erreicht 😊 Kaufe Premium, um uneingeschränkt weiterzumachen!', en: 'You have reached the free version limit 😊 Buy Premium to continue without restrictions!' },
   
   // Legal Pages - Headers
   legalAgbTitle: { de: 'Allgemeine Geschäftsbedingungen', en: 'Terms and Conditions' },
