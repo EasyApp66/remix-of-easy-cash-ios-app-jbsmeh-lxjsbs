@@ -7,6 +7,7 @@ import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 
 interface Subscription {
   id: string;
@@ -18,6 +19,7 @@ interface Subscription {
 export default function AboScreen() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -46,6 +48,22 @@ export default function AboScreen() {
     isPremium,
   });
 
+  // Handle rollback when user closes premium modal after hitting limit
+  useEffect(() => {
+    if (shouldRollback && lastAction) {
+      console.log('Rolling back last action in abo screen:', lastAction);
+      
+      if (lastAction.type === 'addSubscription' && lastAction.data?.subId) {
+        // Remove the last added subscription
+        setSubscriptions(prevSubs => prevSubs.filter(sub => sub.id !== lastAction.data.subId));
+        console.log('Rolled back subscription addition:', lastAction.data.subId);
+      }
+      
+      // Clear the rollback flag and last action
+      clearLastAction();
+    }
+  }, [shouldRollback, lastAction]);
+
   // Sort subscriptions: pinned first
   const sortedSubscriptions = [...subscriptions].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
@@ -55,20 +73,37 @@ export default function AboScreen() {
 
   const handleAddSubscription = () => {
     if (newSubName && newSubAmount) {
-      // Check if user can add more subscriptions
-      if (!canPerformAction('addSubscription')) {
-        console.log('Cannot add more subscriptions - redirecting to premium');
-        setShowAddModal(false);
-        redirectToPremium();
-        return;
-      }
-
       const newSub: Subscription = {
         id: Date.now().toString(),
         name: newSubName,
         amount: parseFloat(newSubAmount),
         isPinned: false,
       };
+      
+      // Check if user can add more subscriptions
+      if (!canPerformAction('addSubscription')) {
+        console.log('Cannot add more subscriptions - redirecting to premium');
+        
+        // First add the subscription
+        setSubscriptions([...subscriptions, newSub]);
+        
+        // Track this action for potential rollback
+        setLastAction({
+          type: 'addSubscription',
+          data: { subId: newSub.id },
+          timestamp: Date.now(),
+        });
+        
+        setNewSubName('');
+        setNewSubAmount('');
+        setShowAddModal(false);
+        
+        // Redirect to premium
+        redirectToPremium();
+        return;
+      }
+
+      // Normal add without limit
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
       setNewSubAmount('');
@@ -103,15 +138,6 @@ export default function AboScreen() {
 
   const handleDuplicateSub = () => {
     if (selectedSubForMenu) {
-      // Check if user can add more subscriptions
-      if (!canPerformAction('addSubscription')) {
-        console.log('Cannot duplicate subscription - redirecting to premium');
-        setShowSubMenu(false);
-        setSelectedSubForMenu(null);
-        redirectToPremium();
-        return;
-      }
-
       const subToDuplicate = subscriptions.find(sub => sub.id === selectedSubForMenu);
       if (subToDuplicate) {
         const duplicatedSub: Subscription = {
@@ -119,6 +145,30 @@ export default function AboScreen() {
           id: Date.now().toString(),
           isPinned: false,
         };
+        
+        // Check if user can add more subscriptions
+        if (!canPerformAction('addSubscription')) {
+          console.log('Cannot duplicate subscription - redirecting to premium');
+          
+          // First add the duplicated subscription
+          setSubscriptions([...subscriptions, duplicatedSub]);
+          
+          // Track this action for potential rollback
+          setLastAction({
+            type: 'addSubscription',
+            data: { subId: duplicatedSub.id },
+            timestamp: Date.now(),
+          });
+          
+          setShowSubMenu(false);
+          setSelectedSubForMenu(null);
+          
+          // Redirect to premium
+          redirectToPremium();
+          return;
+        }
+
+        // Normal duplicate without limit
         setSubscriptions([...subscriptions, duplicatedSub]);
         console.log('Duplicated subscription:', duplicatedSub);
       }

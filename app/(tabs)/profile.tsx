@@ -8,6 +8,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { PremiumModal } from "@/components/PremiumModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import * as MailComposer from 'expo-mail-composer';
 
 export default function ProfileScreen() {
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const params = useLocalSearchParams();
   const { user, signOut } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
+  const { setShouldRollback } = useLimitTracking();
   const [isPremium, setIsPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
@@ -24,6 +26,21 @@ export default function ProfileScreen() {
       setShowPremiumModal(true);
     }
   }, [params]);
+
+  const handleClosePremiumModal = () => {
+    console.log('Closing premium modal');
+    
+    // If this was triggered by a limit, trigger rollback
+    if (params.showPremium === 'true') {
+      console.log('Triggering rollback of last action');
+      setShouldRollback(true);
+    }
+    
+    setShowPremiumModal(false);
+    
+    // Navigate back to previous screen
+    router.back();
+  };
 
   const handleLogout = async () => {
     console.log('Handle logout/login');
@@ -240,7 +257,7 @@ export default function ProfileScreen() {
       {/* Premium Purchase Modal */}
       <PremiumModal 
         visible={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
+        onClose={handleClosePremiumModal}
         showLimitMessage={params.showPremium === 'true'}
       />
     </View>
