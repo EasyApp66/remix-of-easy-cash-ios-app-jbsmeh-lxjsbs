@@ -156,13 +156,19 @@ export default function AboScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card - number moved to bottom right */}
+        {/* Header Card - matching Budget page first bubble */}
         <View style={styles.headerCard}>
-          <Text style={styles.headerLabel}>ABOS COUNTER</Text>
-          <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
+          <View style={styles.headerLayout}>
+            <View style={styles.headerLabelContainer}>
+              <Text style={styles.headerLabel}>ABOS COUNTER</Text>
+            </View>
+            <View style={styles.headerAmountContainer}>
+              <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Total Subscriptions - TOTAL text center-left, number bottom right */}
+        {/* Total Subscriptions - TOTAL text center-left */}
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>TOTAL</Text>
           <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
@@ -409,24 +415,32 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
+    minHeight: 140,
+  },
+  headerLayout: {
+    flex: 1,
     position: 'relative',
-    minHeight: 120,
+  },
+  headerLabelContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   headerLabel: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '700',
     color: colors.text,
+  },
+  headerAmountContainer: {
     position: 'absolute',
-    top: 24,
-    left: 24,
+    bottom: -8,
+    right: 0,
   },
   headerAmount: {
-    fontSize: 36,
+    fontSize: 37,
     fontWeight: '900',
     color: colors.text,
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
+    marginBottom: 1,
   },
   totalCard: {
     backgroundColor: colors.cardBackground,
@@ -437,23 +451,17 @@ const styles = StyleSheet.create({
     minHeight: 80,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    position: 'absolute',
-    top: '50%',
-    left: 20,
-    transform: [{ translateY: -8 }],
   },
   totalAmount: {
     fontSize: 24,
     fontWeight: '700',
     color: colors.text,
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
   },
   subscriptionsList: {
     gap: 12,
