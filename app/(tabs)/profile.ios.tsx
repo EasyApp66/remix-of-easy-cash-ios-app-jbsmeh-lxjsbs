@@ -26,8 +26,14 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleRestorePremium = () => {
-    console.log('Restore Premium');
+  const handleRestorePremium = async () => {
+    console.log('Restore Premium - Navigating to Welcome Screen');
+    // Sign out the user first
+    if (user) {
+      await signOut();
+    }
+    // Navigate to welcome screen for re-login
+    router.replace('/(tabs)/(home)');
   };
 
   const handleSendEmail = async (subject: string) => {
@@ -250,8 +256,8 @@ export default function ProfileScreen() {
               <IconSymbol 
                 ios_icon_name="xmark.circle.fill" 
                 android_material_icon_name="close" 
-                size={28} 
-                color={colors.textSecondary} 
+                size={32} 
+                color={colors.text} 
               />
             </Pressable>
 
@@ -409,7 +415,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -427,6 +433,9 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     zIndex: 10,
+    padding: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 20,
   },
   modalHeader: {
     alignItems: 'center',
