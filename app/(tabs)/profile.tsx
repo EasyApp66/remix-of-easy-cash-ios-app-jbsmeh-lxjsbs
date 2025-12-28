@@ -11,15 +11,10 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
   const [language, setLanguage] = useState<'de' | 'en'>('de');
-  const [budgetView, setBudgetView] = useState<'cards' | 'list'>('cards');
   const [isPremium, setIsPremium] = useState(false);
 
   const toggleLanguage = () => {
     setLanguage(language === 'de' ? 'en' : 'de');
-  };
-
-  const toggleBudgetView = () => {
-    setBudgetView(budgetView === 'cards' ? 'list' : 'cards');
   };
 
   const handleLogout = async () => {
@@ -49,12 +44,6 @@ export default function ProfileScreen() {
       onPress: toggleLanguage,
     },
     {
-      title: `Budget Ansicht: ${budgetView === 'cards' ? '2-Spalten-Karten' : 'Breite Rechtecke'}`,
-      icon: 'view-module',
-      iosIcon: 'square.grid.2x2',
-      onPress: toggleBudgetView,
-    },
-    {
       title: 'Premium Wiederherstellen',
       icon: 'restore',
       iosIcon: 'arrow.clockwise',
@@ -70,25 +59,25 @@ export default function ProfileScreen() {
       title: 'AGB',
       icon: 'description',
       iosIcon: 'doc.text',
-      onPress: () => console.log('AGB'),
+      onPress: () => router.push('/(tabs)/legal/agb'),
     },
     {
       title: 'Nutzungsbedingungen',
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
-      onPress: () => console.log('Terms'),
+      onPress: () => router.push('/(tabs)/legal/nutzungsbedingungen'),
     },
     {
       title: 'Datenschutzerklärung',
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
-      onPress: () => console.log('Privacy'),
+      onPress: () => router.push('/(tabs)/legal/datenschutz'),
     },
     {
       title: 'Impressum',
       icon: 'info',
       iosIcon: 'info.circle',
-      onPress: () => console.log('Impressum'),
+      onPress: () => router.push('/(tabs)/legal/impressum'),
     },
     {
       title: 'Support',

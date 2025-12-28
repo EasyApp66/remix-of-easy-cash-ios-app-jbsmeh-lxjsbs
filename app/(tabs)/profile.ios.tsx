@@ -5,39 +5,34 @@ import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, signOut } = useAuth();
   const [language, setLanguage] = useState<'de' | 'en'>('de');
-  const [budgetView, setBudgetView] = useState<'cards' | 'list'>('cards');
   const [isPremium, setIsPremium] = useState(false);
 
   const toggleLanguage = () => {
     setLanguage(language === 'de' ? 'en' : 'de');
   };
 
-  const toggleBudgetView = () => {
-    setBudgetView(budgetView === 'cards' ? 'list' : 'cards');
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(!isLoggedIn);
-    if (isLoggedIn) {
-      // Navigate to welcome screen when logging out
+  const handleLogout = async () => {
+    if (user) {
+      await signOut();
       router.replace('/(tabs)/(home)');
+    } else {
+      router.push('/(tabs)/(home)/login');
     }
   };
 
   const handleRestorePremium = () => {
     console.log('Restore Premium');
-    // Navigate to welcome screen
-    router.replace('/(tabs)/(home)');
   };
 
   const menuItems = [
     {
-      title: isLoggedIn ? 'Ausloggen' : 'Einloggen',
+      title: user ? 'Ausloggen' : 'Einloggen',
       icon: 'person',
       iosIcon: 'person.fill',
       onPress: handleLogout,
@@ -47,12 +42,6 @@ export default function ProfileScreen() {
       icon: 'language',
       iosIcon: 'globe',
       onPress: toggleLanguage,
-    },
-    {
-      title: `Budget Ansicht: ${budgetView === 'cards' ? '2-Spalten-Karten' : 'Breite Rechtecke'}`,
-      icon: 'view-module',
-      iosIcon: 'square.grid.2x2',
-      onPress: toggleBudgetView,
     },
     {
       title: 'Premium Wiederherstellen',
@@ -70,25 +59,25 @@ export default function ProfileScreen() {
       title: 'AGB',
       icon: 'description',
       iosIcon: 'doc.text',
-      onPress: () => console.log('AGB'),
+      onPress: () => router.push('/(tabs)/legal/agb'),
     },
     {
       title: 'Nutzungsbedingungen',
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
-      onPress: () => console.log('Terms'),
+      onPress: () => router.push('/(tabs)/legal/nutzungsbedingungen'),
     },
     {
       title: 'Datenschutzerklärung',
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
-      onPress: () => console.log('Privacy'),
+      onPress: () => router.push('/(tabs)/legal/datenschutz'),
     },
     {
       title: 'Impressum',
       icon: 'info',
       iosIcon: 'info.circle',
-      onPress: () => console.log('Impressum'),
+      onPress: () => router.push('/(tabs)/legal/impressum'),
     },
     {
       title: 'Support',
@@ -124,8 +113,19 @@ export default function ProfileScreen() {
               color={colors.green} 
             />
           </View>
-          <Text style={styles.userName}>Max Mustermann</Text>
-          <Text style={styles.userEmail}>max.mustermann@email.com</Text>
+          {user ? (
+            <>
+              <Text style={styles.userName}>
+                {user.email?.split('@')[0] || 'User'}
+              </Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.userName}>Gast</Text>
+              <Text style={styles.userEmail}>Nicht angemeldet</Text>
+            </>
+          )}
           <View style={styles.premiumBadge}>
             <Text style={styles.premiumText}>Premium: {isPremium ? 'Ja' : 'Nein'}</Text>
           </View>
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 80,
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   userSection: {
     alignItems: 'center',
