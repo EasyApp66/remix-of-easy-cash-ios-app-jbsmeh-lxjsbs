@@ -62,6 +62,18 @@ const translations: Translations = {
   haveAccount: { de: 'Bereits ein Konto?', en: 'Already have an account?' },
   resetPassword: { de: 'Passwort zurücksetzen', en: 'Reset Password' },
   sendResetLink: { de: 'Link senden', en: 'Send Reset Link' },
+  
+  // Premium Popup
+  premiumTitle: { de: 'Premium Kaufen', en: 'Buy Premium' },
+  premiumDescription: { de: 'Erhalten Sie unbegrenzte App-Funktionen:', en: 'Get unlimited app features:' },
+  premiumFeature1: { de: '• Unbegrenzte Abo Counter', en: '• Unlimited Subscription Counter' },
+  premiumFeature2: { de: '• Unbegrenzte Ausgabenliste', en: '• Unlimited Expense List' },
+  premiumFeature3: { de: '• Unbegrenzte Monate', en: '• Unlimited Months' },
+  oneTimePayment: { de: 'Einmalige Zahlung', en: 'One-Time Payment' },
+  monthlySubscription: { de: 'Monatliches Abo', en: 'Monthly Subscription' },
+  pay: { de: 'Bezahlen', en: 'Pay' },
+  perMonth: { de: '/Monat', en: '/Month' },
+  close: { de: 'Schließen', en: 'Close' },
 };
 
 interface LanguageContextType {

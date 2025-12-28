@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Easy Cash",
-    "slug": "Easy Cash",
+    "name": "Easy Budget",
+    "slug": "Easy Budget",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -44,5 +44,5 @@
       "router": {}
     }
   },
-  "scheme": "Easy Cash"
+  "scheme": "Easy Budget"
 }
