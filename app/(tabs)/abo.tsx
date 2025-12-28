@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -13,11 +13,7 @@ interface Subscription {
 }
 
 export default function AboScreen() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([
-    { id: '1', name: 'Netflix', amount: 15, isPinned: false },
-    { id: '2', name: 'Disney +', amount: 13, isPinned: false },
-    { id: '3', name: 'Apple Care', amount: 15, isPinned: false },
-  ]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubAmount, setNewSubAmount] = useState('');
@@ -32,7 +28,8 @@ export default function AboScreen() {
   const [editName, setEditName] = useState('');
   const [editAmount, setEditAmount] = useState('');
 
-  const totalAmount = 13556;
+  // Calculate total amount from subscriptions
+  const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
 
   // Sort subscriptions: pinned first
@@ -54,14 +51,17 @@ export default function AboScreen() {
       setNewSubName('');
       setNewSubAmount('');
       setShowAddModal(false);
+      console.log('Added subscription:', newSub);
     }
   };
 
   const handleDeleteSubscription = (id: string) => {
     setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+    console.log('Deleted subscription:', id);
   };
 
   const handleLongPressSub = (subId: string) => {
+    console.log('Long press on subscription:', subId);
     setSelectedSubForMenu(subId);
     setShowSubMenu(true);
   };
@@ -73,6 +73,7 @@ export default function AboScreen() {
           ? { ...sub, isPinned: !sub.isPinned }
           : sub
       ));
+      console.log('Toggled pin for subscription:', selectedSubForMenu);
     }
     setShowSubMenu(false);
     setSelectedSubForMenu(null);
@@ -88,6 +89,7 @@ export default function AboScreen() {
           isPinned: false,
         };
         setSubscriptions([...subscriptions, duplicatedSub]);
+        console.log('Duplicated subscription:', duplicatedSub);
       }
     }
     setShowSubMenu(false);
@@ -127,6 +129,7 @@ export default function AboScreen() {
           ? { ...sub, name: editName }
           : sub
       ));
+      console.log('Updated subscription name:', editName);
     }
     setShowEditNameModal(false);
     setSelectedSubForMenu(null);
@@ -140,6 +143,7 @@ export default function AboScreen() {
           ? { ...sub, amount: parseFloat(editAmount) }
           : sub
       ));
+      console.log('Updated subscription amount:', editAmount);
     }
     setShowEditAmountModal(false);
     setSelectedSubForMenu(null);
@@ -203,7 +207,11 @@ export default function AboScreen() {
       {/* Floating Add Button - Fixed to bottom right */}
       <TouchableOpacity 
         style={styles.floatingAddButton}
-        onPress={() => setShowAddModal(true)}
+        onPress={() => {
+          console.log('Add subscription button pressed');
+          setShowAddModal(true);
+        }}
+        activeOpacity={0.8}
       >
         <IconSymbol 
           ios_icon_name="plus.circle.fill" 
@@ -245,6 +253,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowAddModal(false)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Abbrechen</Text>
               </TouchableOpacity>
@@ -252,6 +261,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleAddSubscription}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Hinzufügen</Text>
               </TouchableOpacity>
@@ -279,25 +289,45 @@ export default function AboScreen() {
           }}
         >
           <View style={styles.menuContent}>
-            <TouchableOpacity style={styles.menuItem} onPress={handleRenameSub}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleRenameSub}
+              activeOpacity={0.7}
+            >
               <Text style={styles.menuItemText}>Namen anpassen</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem} onPress={handleEditSubAmount}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleEditSubAmount}
+              activeOpacity={0.7}
+            >
               <Text style={styles.menuItemText}>Zahl anpassen</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem} onPress={handlePinSub}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handlePinSub}
+              activeOpacity={0.7}
+            >
               <Text style={styles.menuItemText}>
                 {subscriptions.find(s => s.id === selectedSubForMenu)?.isPinned ? 'Fixierung aufheben' : 'Fixieren'}
               </Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicateSub}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleDuplicateSub}
+              activeOpacity={0.7}
+            >
               <Text style={styles.menuItemText}>Duplizieren</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem} onPress={handleDeleteFromMenu}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleDeleteFromMenu}
+              activeOpacity={0.7}
+            >
               <Text style={[styles.menuItemText, { color: colors.red }]}>Löschen</Text>
             </TouchableOpacity>
             
@@ -307,6 +337,7 @@ export default function AboScreen() {
                 setShowSubMenu(false);
                 setSelectedSubForMenu(null);
               }}
+              activeOpacity={0.7}
             >
               <Text style={styles.menuItemText}>Abbrechen</Text>
             </TouchableOpacity>
@@ -338,6 +369,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditNameModal(false)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Abbrechen</Text>
               </TouchableOpacity>
@@ -345,6 +377,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveName}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Speichern</Text>
               </TouchableOpacity>
@@ -378,6 +411,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setShowEditAmountModal(false)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Abbrechen</Text>
               </TouchableOpacity>
@@ -385,6 +419,7 @@ export default function AboScreen() {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.addModalButton]}
                 onPress={handleSaveAmount}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalButtonText}>Speichern</Text>
               </TouchableOpacity>

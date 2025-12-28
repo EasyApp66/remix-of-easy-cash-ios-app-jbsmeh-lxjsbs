@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -14,10 +14,12 @@ export default function ProfileScreen() {
   const [isPremium, setIsPremium] = useState(false);
 
   const toggleLanguage = () => {
+    console.log('Toggle language');
     setLanguage(language === 'de' ? 'en' : 'de');
   };
 
   const handleLogout = async () => {
+    console.log('Handle logout/login');
     if (user) {
       await signOut();
       router.replace('/(tabs)/(home)');
@@ -59,25 +61,37 @@ export default function ProfileScreen() {
       title: 'AGB',
       icon: 'description',
       iosIcon: 'doc.text',
-      onPress: () => router.push('/(tabs)/legal/agb'),
+      onPress: () => {
+        console.log('Navigate to AGB');
+        router.push('/(tabs)/legal/agb');
+      },
     },
     {
       title: 'Nutzungsbedingungen',
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
-      onPress: () => router.push('/(tabs)/legal/nutzungsbedingungen'),
+      onPress: () => {
+        console.log('Navigate to Nutzungsbedingungen');
+        router.push('/(tabs)/legal/nutzungsbedingungen');
+      },
     },
     {
       title: 'Datenschutzerklärung',
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
-      onPress: () => router.push('/(tabs)/legal/datenschutz'),
+      onPress: () => {
+        console.log('Navigate to Datenschutz');
+        router.push('/(tabs)/legal/datenschutz');
+      },
     },
     {
       title: 'Impressum',
       icon: 'info',
       iosIcon: 'info.circle',
-      onPress: () => router.push('/(tabs)/legal/impressum'),
+      onPress: () => {
+        console.log('Navigate to Impressum');
+        router.push('/(tabs)/legal/impressum');
+      },
     },
     {
       title: 'Support',
@@ -134,10 +148,16 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity 
+            <Pressable 
               key={index} 
-              style={styles.menuItem}
-              onPress={item.onPress}
+              style={({ pressed }) => [
+                styles.menuItem,
+                pressed && styles.menuItemPressed
+              ]}
+              onPress={() => {
+                console.log(`Menu item pressed: ${item.title}`);
+                item.onPress();
+              }}
             >
               <View style={styles.menuItemLeft}>
                 <IconSymbol 
@@ -154,7 +174,7 @@ export default function ProfileScreen() {
                 size={20} 
                 color={colors.textSecondary} 
               />
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -223,6 +243,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: colors.grey,
+    backgroundColor: colors.background,
+  },
+  menuItemPressed: {
+    backgroundColor: colors.cardBackground,
+    opacity: 0.8,
   },
   menuItemLeft: {
     flexDirection: 'row',
