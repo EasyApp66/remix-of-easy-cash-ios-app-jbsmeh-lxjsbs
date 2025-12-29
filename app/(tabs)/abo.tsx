@@ -9,15 +9,16 @@ import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import { useSubscription, Subscription } from "@/contexts/SubscriptionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 
 export default function AboScreen() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { isPremium } = useAuth();
   const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
   const { subscriptions, setSubscriptions, loading: subscriptionLoading } = useSubscription();
-  const [isPremium, setIsPremium] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubAmount, setNewSubAmount] = useState('');

@@ -7,13 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Admin credentials
 const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
 const ADMIN_PASSWORD = 'Gmh786cGFxqcmscQfofm#okp?QfEF5K4HM!pR3fo';
-const ADMIN_STORAGE_KEY = '@admin_logged_in';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
+  isPremium: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -27,37 +27,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+
+  // Check if user is admin and has premium
+  const checkAdminAndPremiumStatus = async (userId: string) => {
+    try {
+      console.log('Checking admin and premium status for user:', userId);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin, is_premium')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error checking admin/premium status:', error);
+        return { isAdmin: false, isPremium: false };
+      }
+
+      console.log('Admin/Premium status:', data);
+      return {
+        isAdmin: data?.is_admin || false,
+        isPremium: data?.is_premium || false,
+      };
+    } catch (error) {
+      console.error('Exception checking admin/premium status:', error);
+      return { isAdmin: false, isPremium: false };
+    }
+  };
 
   useEffect(() => {
     console.log('AuthProvider: Initializing...');
     
-    // Check if admin is logged in from storage
-    const checkAdminStatus = async () => {
-      try {
-        const adminLoggedIn = await AsyncStorage.getItem(ADMIN_STORAGE_KEY);
-        if (adminLoggedIn === 'true') {
-          console.log('AuthProvider: Admin session found in storage');
-          setIsAdmin(true);
-          const mockAdminUser = {
-            id: 'admin-user',
-            email: ADMIN_EMAIL,
-            app_metadata: {},
-            user_metadata: {},
-            aud: 'authenticated',
-            created_at: new Date().toISOString(),
-          } as User;
-          setUser(mockAdminUser);
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-      }
-    };
-
     const initAuth = async () => {
-      await checkAdminStatus();
-      
-      // Get initial session
       try {
+        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('AuthProvider: Error getting initial session:', error);
@@ -66,6 +70,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           if (session?.user) {
             setUser(session.user);
+            
+            // Check admin and premium status
+            const status = await checkAdminAndPremiumStatus(session.user.id);
+            setIsAdmin(status.isAdmin);
+            setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
+            
+            console.log('User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
           }
         }
       } catch (error) {
@@ -78,13 +89,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log('AuthProvider: Auth state changed:', _event, session ? 'Session exists' : 'No session');
       setSession(session);
+      
       if (session?.user) {
         setUser(session.user);
-        setIsAdmin(false); // Regular user login
+        
+        // Check admin and premium status
+        const status = await checkAdminAndPremiumStatus(session.user.id);
+        setIsAdmin(status.isAdmin);
+        setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
+        
+        console.log('User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+        setIsPremium(false);
       }
+      
       setLoading(false);
     });
 
@@ -99,29 +122,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Check for admin login
     if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
-      console.log('AuthProvider: Admin login detected');
+      console.log('AuthProvider: Admin login detected, attempting Supabase auth');
+      
       try {
-        await AsyncStorage.setItem(ADMIN_STORAGE_KEY, 'true');
-        setIsAdmin(true);
-        // Create a mock user for admin
-        const mockAdminUser = {
-          id: 'admin-user',
-          email: ADMIN_EMAIL,
-          app_metadata: {},
-          user_metadata: {},
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-        } as User;
-        setUser(mockAdminUser);
-        setLoading(false);
-        console.log('AuthProvider: Admin login successful, user set');
+        // Try to sign in with Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          console.log('AuthProvider: Admin user not found in Supabase, creating account');
+          
+          // Admin user doesn't exist, create it
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: 'https://natively.dev/email-confirmed',
+              data: {
+                is_admin: true,
+              },
+            },
+          });
+
+          if (signUpError) {
+            console.error('AuthProvider: Error creating admin account:', signUpError);
+            return { error: signUpError };
+          }
+
+          console.log('AuthProvider: Admin account created:', signUpData);
+
+          // Create profile with admin flag
+          if (signUpData.user) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: signUpData.user.id,
+                email: signUpData.user.email,
+                is_admin: true,
+                is_premium: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
+
+            if (profileError) {
+              console.error('AuthProvider: Error creating admin profile:', profileError);
+            } else {
+              console.log('AuthProvider: Admin profile created successfully');
+            }
+
+            // Confirm email automatically for admin (if needed)
+            // Note: This requires admin privileges on the backend
+            console.log('AuthProvider: Admin account created, please verify email if required');
+          }
+
+          return { error: null };
+        }
+
+        console.log('AuthProvider: Admin sign in successful');
+        
+        // Ensure admin profile exists with correct flags
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              email: data.user.email,
+              is_admin: true,
+              is_premium: true,
+              updated_at: new Date().toISOString(),
+            });
+
+          if (profileError) {
+            console.error('AuthProvider: Error updating admin profile:', profileError);
+          } else {
+            console.log('AuthProvider: Admin profile updated successfully');
+          }
+        }
+
         return { error: null };
       } catch (error) {
-        console.error('AuthProvider: Error saving admin status:', error);
+        console.error('AuthProvider: Admin sign in exception:', error);
         return { error };
       }
     }
 
+    // Regular user login
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -131,7 +218,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('AuthProvider: Sign in error:', error);
       } else {
         console.log('AuthProvider: Sign in successful');
-        setIsAdmin(false);
       }
       return { error };
     } catch (error) {
@@ -143,17 +229,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string) => {
     console.log('AuthProvider: Signing up with email:', email);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: 'https://natively.dev/email-confirmed',
         },
       });
+      
       if (error) {
         console.error('AuthProvider: Sign up error:', error);
       } else {
         console.log('AuthProvider: Sign up successful');
+        
+        // Create profile for new user
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              is_admin: false,
+              is_premium: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+
+          if (profileError) {
+            console.error('AuthProvider: Error creating profile:', profileError);
+          }
+        }
       }
       return { error };
     } catch (error) {
@@ -165,18 +270,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     console.log('AuthProvider: Signing out');
     try {
-      if (isAdmin) {
-        // Admin logout
-        await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
-        setIsAdmin(false);
-        setUser(null);
-        setSession(null);
-        console.log('AuthProvider: Admin sign out successful');
-      } else {
-        // Normal user logout
-        await supabase.auth.signOut();
-        console.log('AuthProvider: Sign out successful');
-      }
+      await supabase.auth.signOut();
+      setIsAdmin(false);
+      setIsPremium(false);
+      console.log('AuthProvider: Sign out successful');
     } catch (error) {
       console.error('AuthProvider: Sign out exception:', error);
     }
@@ -207,6 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         isAdmin,
+        isPremium,
         signIn,
         signUp,
         signOut,

@@ -9,15 +9,16 @@ import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import { useBudget, BudgetItem, MonthData } from "@/contexts/BudgetContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
 
 export default function BudgetScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { t } = useLanguage();
+  const { isPremium } = useAuth();
   const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
   const { months, setMonths, loading: budgetLoading } = useBudget();
-  const [isPremium, setIsPremium] = useState(false);
   
   const [selectedMonthId, setSelectedMonthId] = useState(months[0]?.id || '1');
   const [showAddModal, setShowAddModal] = useState(false);

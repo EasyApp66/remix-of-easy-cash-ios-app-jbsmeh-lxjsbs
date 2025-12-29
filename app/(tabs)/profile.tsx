@@ -15,10 +15,9 @@ import { BlurView } from 'expo-blur';
 export default function ProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin, isPremium } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const { setShouldRollback, previousRoute, setPreviousRoute } = useLimitTracking();
-  const [isPremium, setIsPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   // Check if we should show premium modal on mount (when redirected from limit)
@@ -128,6 +127,7 @@ export default function ProfileScreen() {
       icon: 'star',
       iosIcon: 'star.fill',
       onPress: () => setShowPremiumModal(true),
+      hidden: isAdmin, // Hide for admins
     },
     {
       id: 'agb',
@@ -183,7 +183,7 @@ export default function ProfileScreen() {
       iosIcon: 'ant.fill',
       onPress: () => handleSendEmail('Bug Report - Easy Cash App'),
     },
-  ];
+  ].filter(item => !item.hidden);
 
   return (
     <View style={styles.container}>
@@ -221,6 +221,23 @@ export default function ProfileScreen() {
                 <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
               </React.Fragment>
             )}
+            
+            {/* Admin Badge */}
+            {isAdmin && (
+              <View style={styles.adminBadgeWrapper}>
+                <BlurView intensity={40} tint="light" style={styles.adminBadge}>
+                  <IconSymbol 
+                    ios_icon_name="crown.fill" 
+                    android_material_icon_name="workspace-premium" 
+                    size={20} 
+                    color="#FFD700" 
+                  />
+                  <Text style={styles.adminText}>ADMIN</Text>
+                </BlurView>
+              </View>
+            )}
+            
+            {/* Premium Badge */}
             <View style={styles.premiumBadgeWrapper}>
               <BlurView 
                 intensity={isPremium ? 40 : 20} 
@@ -278,12 +295,14 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Premium Purchase Modal */}
-      <PremiumModal 
-        visible={showPremiumModal}
-        onClose={handleClosePremiumModal}
-        showLimitMessage={params.showPremium === 'true'}
-      />
+      {/* Premium Purchase Modal - Only show for non-admins */}
+      {!isAdmin && (
+        <PremiumModal 
+          visible={showPremiumModal}
+          onClose={handleClosePremiumModal}
+          showLimitMessage={params.showPremium === 'true'}
+        />
+      )}
     </View>
   );
 }
@@ -336,6 +355,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 20,
+  },
+  adminBadgeWrapper: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    boxShadow: '0px 4px 12px rgba(255, 215, 0, 0.4)',
+    elevation: 6,
+    marginBottom: 12,
+  },
+  adminBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+  },
+  adminText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFD700',
+    letterSpacing: 1,
   },
   premiumBadgeWrapper: {
     borderRadius: 24,
