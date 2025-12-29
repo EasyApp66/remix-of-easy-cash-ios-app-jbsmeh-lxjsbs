@@ -8,21 +8,25 @@ export default function TabLayout() {
   const { loading } = useAuth();
   const pathname = usePathname();
 
+  console.log('iOS Tab Layout - Current pathname:', pathname);
+
   // Determine if we should show the tab bar
-  // Hide ONLY on welcome and login pages
-  // Show on all other screens (Budget, Abos, Profil, etc.)
-  const isWelcomeOrLogin = pathname === '/(tabs)' || 
-                           pathname === '/(tabs)/(home)' || 
-                           pathname === '/(tabs)/(home)/login' ||
-                           pathname.includes('/(home)/login');
+  // Hide on welcome, login, and registration pages
+  const isAuthScreen = 
+    pathname === '/(tabs)' || 
+    pathname === '/(tabs)/(home)' || 
+    pathname === '/(tabs)/(home)/login' ||
+    pathname.includes('/(home)/login') ||
+    pathname.includes('/login') ||
+    pathname === '/';
   
-  const shouldShowTabBar = !loading && !isWelcomeOrLogin;
+  const shouldShowTabBar = !loading && !isAuthScreen;
 
   console.log('iOS Tab bar visibility:', { 
     shouldShowTabBar, 
     loading, 
     pathname,
-    isWelcomeOrLogin
+    isAuthScreen
   });
 
   return (
