@@ -24,6 +24,7 @@ const translations: Translations = {
   imprint: { de: 'Impressum', en: 'Imprint' },
   support: { de: 'Support', en: 'Support' },
   reportBug: { de: 'Bug Melden', en: 'Report Bug' },
+  openInGitHub: { de: 'In GitHub öffnen', en: 'Open in GitHub' },
   appVersion: { de: 'App Version', en: 'App Version' },
   guest: { de: 'Gast', en: 'Guest' },
   notLoggedIn: { de: 'Nicht angemeldet', en: 'Not logged in' },

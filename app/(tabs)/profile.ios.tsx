@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import * as MailComposer from 'expo-mail-composer';
+import * as WebBrowser from 'expo-web-browser';
 import { BlurView } from 'expo-blur';
 
 export default function ProfileScreen() {
@@ -72,6 +73,22 @@ export default function ProfileScreen() {
     router.replace('/(tabs)/(home)');
   };
 
+  const handleOpenGitHub = async () => {
+    try {
+      console.log('Opening GitHub repository');
+      // Replace with your actual GitHub repository URL
+      const githubUrl = 'https://github.com/yourusername/easy-cash-app';
+      await WebBrowser.openBrowserAsync(githubUrl);
+    } catch (error) {
+      console.error('Error opening GitHub:', error);
+      Alert.alert(
+        t('error'),
+        'GitHub konnte nicht geöffnet werden.',
+        [{ text: t('ok') }]
+      );
+    }
+  };
+
   const handleSendEmail = async (subject: string) => {
     try {
       const isAvailable = await MailComposer.isAvailableAsync();
@@ -128,6 +145,13 @@ export default function ProfileScreen() {
       icon: 'star',
       iosIcon: 'star.fill',
       onPress: () => setShowPremiumModal(true),
+    },
+    {
+      id: 'github',
+      title: t('openInGitHub'),
+      icon: 'code',
+      iosIcon: 'chevron.left.forwardslash.chevron.right',
+      onPress: handleOpenGitHub,
     },
     {
       id: 'agb',
