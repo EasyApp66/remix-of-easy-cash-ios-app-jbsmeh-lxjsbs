@@ -9,6 +9,8 @@ import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import { BlurView } from 'expo-blur';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 interface Subscription {
   id: string;
@@ -118,6 +120,15 @@ export default function AboScreen() {
     console.log('Deleted subscription:', id);
   };
 
+  const handleTogglePin = (id: string) => {
+    setSubscriptions(subscriptions.map(sub =>
+      sub.id === id
+        ? { ...sub, isPinned: !sub.isPinned }
+        : sub
+    ));
+    console.log('Toggled pin for subscription:', id);
+  };
+
   const handleLongPressSub = (subId: string) => {
     console.log('Long press on subscription:', subId);
     setSelectedSubForMenu(subId);
@@ -126,12 +137,7 @@ export default function AboScreen() {
 
   const handlePinSub = () => {
     if (selectedSubForMenu) {
-      setSubscriptions(subscriptions.map(sub =>
-        sub.id === selectedSubForMenu
-          ? { ...sub, isPinned: !sub.isPinned }
-          : sub
-      ));
-      console.log('Toggled pin for subscription:', selectedSubForMenu);
+      handleTogglePin(selectedSubForMenu);
     }
     setShowSubMenu(false);
     setSelectedSubForMenu(null);
@@ -231,8 +237,44 @@ export default function AboScreen() {
     setEditAmount('');
   };
 
+  // Render left action (Pin) - swipe from left
+  const renderLeftActions = (subscription: Subscription) => {
+    return (
+      <View style={styles.leftActionContainer}>
+        <View style={styles.leftAction}>
+          <IconSymbol
+            ios_icon_name={subscription.isPinned ? "pin.slash.fill" : "pin.fill"}
+            android_material_icon_name={subscription.isPinned ? "push-pin" : "push-pin"}
+            size={24}
+            color="#FFFFFF"
+          />
+          <Text style={styles.actionText}>
+            {subscription.isPinned ? t('unpin') : t('pin')}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  // Render right action (Delete) - swipe from right
+  const renderRightActions = () => {
+    return (
+      <View style={styles.rightActionContainer}>
+        <View style={styles.rightAction}>
+          <IconSymbol
+            ios_icon_name="trash.fill"
+            android_material_icon_name="delete"
+            size={24}
+            color="#FFFFFF"
+          />
+          <Text style={styles.actionText}>{t('delete')}</Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       {/* Snow animation background */}
       <SnowAnimation />
 
@@ -263,30 +305,50 @@ export default function AboScreen() {
           </BlurView>
         </View>
 
-        {/* Subscriptions List - Glass Effect */}
+        {/* Subscriptions List - Glass Effect with Swipe Actions */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
-              <TouchableOpacity
-                style={styles.subscriptionItemWrapper}
-                onLongPress={() => handleLongPressSub(subscription.id)}
-                delayLongPress={500}
-                activeOpacity={0.7}
+              <Swipeable
+                renderLeftActions={() => renderLeftActions(subscription)}
+                renderRightActions={renderRightActions}
+                onSwipeableOpen={(direction) => {
+                  console.log('Swipe opened:', direction, subscription.id);
+                  if (direction === 'left') {
+                    // Swipe from left = Pin/Unpin
+                    handleTogglePin(subscription.id);
+                  } else if (direction === 'right') {
+                    // Swipe from right = Delete
+                    handleDeleteSubscription(subscription.id);
+                  }
+                }}
+                overshootLeft={false}
+                overshootRight={false}
+                friction={2}
+                leftThreshold={80}
+                rightThreshold={80}
               >
-                <BlurView 
-                  intensity={20} 
-                  tint="dark" 
-                  style={[
-                    styles.subscriptionItem,
-                    subscription.isPinned && styles.pinnedSubscriptionItem,
-                  ]}
+                <TouchableOpacity
+                  style={styles.subscriptionItemWrapper}
+                  onLongPress={() => handleLongPressSub(subscription.id)}
+                  delayLongPress={500}
+                  activeOpacity={0.7}
                 >
-                  <View style={styles.subscriptionContent}>
-                    <Text style={styles.subscriptionName}>{subscription.name}</Text>
-                    <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
-                  </View>
-                </BlurView>
-              </TouchableOpacity>
+                  <BlurView 
+                    intensity={20} 
+                    tint="dark" 
+                    style={[
+                      styles.subscriptionItem,
+                      subscription.isPinned && styles.pinnedSubscriptionItem,
+                    ]}
+                  >
+                    <View style={styles.subscriptionContent}>
+                      <Text style={styles.subscriptionName}>{subscription.name}</Text>
+                      <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
+                    </View>
+                  </BlurView>
+                </TouchableOpacity>
+              </Swipeable>
             </React.Fragment>
           ))}
         </View>
@@ -518,7 +580,7 @@ export default function AboScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -638,6 +700,40 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginLeft: 16,
+  },
+  leftActionContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    marginRight: 12,
+  },
+  leftAction: {
+    backgroundColor: colors.green,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+  },
+  rightActionContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginLeft: 12,
+  },
+  rightAction: {
+    backgroundColor: colors.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+  },
+  actionText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
   },
   floatingAddButton: {
     position: 'absolute',

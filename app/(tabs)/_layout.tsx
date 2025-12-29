@@ -1,9 +1,31 @@
 
-import React from 'react';
-import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Stack, useRouter, usePathname } from 'expo-router';
 import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
+import { BackHandler } from 'react-native';
 
 export default function TabLayout() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Handle Android back button
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // If we're on a root tab screen, prevent back navigation
+      const rootPaths = ['/(tabs)/budget', '/(tabs)/abo', '/(tabs)/profile', '/(tabs)/(home)'];
+      const isRootPath = rootPaths.some(path => pathname === path || pathname.startsWith(path));
+      
+      if (isRootPath) {
+        console.log('Back button pressed on root tab, preventing navigation');
+        return true; // Prevent default back behavior
+      }
+      
+      return false; // Allow default back behavior for other screens
+    });
+
+    return () => backHandler.remove();
+  }, [pathname]);
+
   // Define the tabs configuration - only 3 tabs now
   const tabs: TabBarItem[] = [
     {
