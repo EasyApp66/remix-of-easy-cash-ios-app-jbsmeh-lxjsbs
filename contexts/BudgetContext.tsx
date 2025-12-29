@@ -51,8 +51,10 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   // Load data from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      console.log('User logged in, loading budget data from Supabase');
-      loadFromSupabase();
+      console.log('BudgetContext: User logged in, loading budget data from Supabase');
+      loadFromSupabase().catch(error => {
+        console.error('BudgetContext: Error loading data:', error);
+      });
     }
   }, [user]);
 
@@ -60,8 +62,10 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && months.length > 0) {
       const timeoutId = setTimeout(() => {
-        console.log('Auto-syncing budget data to Supabase');
-        syncToSupabase();
+        console.log('BudgetContext: Auto-syncing budget data to Supabase');
+        syncToSupabase().catch(error => {
+          console.error('BudgetContext: Error syncing data:', error);
+        });
       }, 1000); // Debounce for 1 second
 
       return () => clearTimeout(timeoutId);
@@ -70,13 +74,13 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
   const loadFromSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping Supabase load');
+      console.log('BudgetContext: No user, skipping Supabase load');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Loading budget data from Supabase for user:', user.id);
+      console.log('BudgetContext: Loading budget data from Supabase for user:', user.id);
 
       // Load months
       const { data: budgetsData, error: budgetsError } = await supabase
@@ -86,12 +90,12 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         .order('created_at', { ascending: true });
 
       if (budgetsError) {
-        console.error('Error loading budgets:', budgetsError);
+        console.error('BudgetContext: Error loading budgets:', budgetsError);
         return;
       }
 
       if (!budgetsData || budgetsData.length === 0) {
-        console.log('No budget data found in Supabase, keeping default data');
+        console.log('BudgetContext: No budget data found in Supabase, keeping default data');
         return;
       }
 
@@ -103,7 +107,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         .order('created_at', { ascending: true });
 
       if (expensesError) {
-        console.error('Error loading expenses:', expensesError);
+        console.error('BudgetContext: Error loading expenses:', expensesError);
         return;
       }
 
@@ -123,10 +127,10 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
           })),
       }));
 
-      console.log('Loaded budget data from Supabase:', loadedMonths);
+      console.log('BudgetContext: Loaded budget data from Supabase:', loadedMonths.length, 'months');
       setMonthsState(loadedMonths);
     } catch (error) {
-      console.error('Error loading budget data:', error);
+      console.error('BudgetContext: Exception loading budget data:', error);
     } finally {
       setLoading(false);
     }
@@ -134,12 +138,12 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
   const syncToSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping Supabase sync');
+      console.log('BudgetContext: No user, skipping Supabase sync');
       return;
     }
 
     try {
-      console.log('Syncing budget data to Supabase for user:', user.id);
+      console.log('BudgetContext: Syncing budget data to Supabase for user:', user.id);
 
       // Sync months
       for (const month of months) {
@@ -155,7 +159,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
           });
 
         if (budgetError) {
-          console.error('Error syncing budget:', budgetError);
+          console.error('BudgetContext: Error syncing budget:', budgetError);
           continue;
         }
 
@@ -174,43 +178,47 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
             });
 
           if (expenseError) {
-            console.error('Error syncing expense:', expenseError);
+            console.error('BudgetContext: Error syncing expense:', expenseError);
           }
         }
 
         // Delete expenses that are no longer in the month
-        const expenseIds = month.budgetItems.map(item => item.id);
-        const { error: deleteError } = await supabase
-          .from('user_expenses')
-          .delete()
-          .eq('budget_id', month.id)
-          .not('id', 'in', `(${expenseIds.join(',')})`);
+        if (month.budgetItems.length > 0) {
+          const expenseIds = month.budgetItems.map(item => item.id);
+          const { error: deleteError } = await supabase
+            .from('user_expenses')
+            .delete()
+            .eq('budget_id', month.id)
+            .not('id', 'in', `(${expenseIds.join(',')})`);
 
-        if (deleteError) {
-          console.error('Error deleting old expenses:', deleteError);
+          if (deleteError) {
+            console.error('BudgetContext: Error deleting old expenses:', deleteError);
+          }
         }
       }
 
       // Delete months that are no longer in the list
-      const monthIds = months.map(m => m.id);
-      const { error: deleteMonthsError } = await supabase
-        .from('user_budgets')
-        .delete()
-        .eq('user_id', user.id)
-        .not('id', 'in', `(${monthIds.join(',')})`);
+      if (months.length > 0) {
+        const monthIds = months.map(m => m.id);
+        const { error: deleteMonthsError } = await supabase
+          .from('user_budgets')
+          .delete()
+          .eq('user_id', user.id)
+          .not('id', 'in', `(${monthIds.join(',')})`);
 
-      if (deleteMonthsError) {
-        console.error('Error deleting old months:', deleteMonthsError);
+        if (deleteMonthsError) {
+          console.error('BudgetContext: Error deleting old months:', deleteMonthsError);
+        }
       }
 
-      console.log('Successfully synced budget data to Supabase');
+      console.log('BudgetContext: Successfully synced budget data to Supabase');
     } catch (error) {
-      console.error('Error syncing budget data:', error);
+      console.error('BudgetContext: Exception syncing budget data:', error);
     }
   };
 
   const setMonths = (newMonths: MonthData[]) => {
-    console.log('Setting months:', newMonths.length);
+    console.log('BudgetContext: Setting months:', newMonths.length);
     setMonthsState(newMonths);
   };
 

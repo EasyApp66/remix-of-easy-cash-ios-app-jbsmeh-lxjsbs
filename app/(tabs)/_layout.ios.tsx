@@ -24,6 +24,22 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger 
+        key="index" 
+        name="index"
+        hidden={true}
+      >
+        <Icon sf="house.fill" />
+        <Label>Home</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger 
+        key="home" 
+        name="(home)"
+        hidden={shouldShowTabBar}
+      >
+        <Icon sf="house.fill" />
+        <Label>Home</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger 
         key="budget" 
         name="budget"
         hidden={!shouldShowTabBar}
