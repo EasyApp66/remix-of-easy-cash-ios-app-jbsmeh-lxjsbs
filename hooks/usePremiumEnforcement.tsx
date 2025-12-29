@@ -25,9 +25,9 @@ export function usePremiumEnforcement({
     }
 
     // Check if any limit is exceeded
-    // Free limits: 1 month, 8 expenses per month, 6 subscriptions
-    const hasExceededMonthsLimit = monthsCount > 1;
-    const hasExceededExpensesLimit = maxExpensesPerMonth > 8;
+    // Free limits: 2 months, 6 expenses per month, 6 subscriptions
+    const hasExceededMonthsLimit = monthsCount > 2;
+    const hasExceededExpensesLimit = maxExpensesPerMonth > 6;
     const hasExceededSubscriptionsLimit = subscriptionsCount > 6;
 
     const shouldEnforce = 
@@ -49,18 +49,42 @@ export function usePremiumEnforcement({
   };
 
   // Function to check if action should be allowed
-  // NOTE: This now always returns true - no limits enforced
   const canPerformAction = (actionType: 'addMonth' | 'addExpense' | 'addSubscription'): boolean => {
-    // Always allow actions - no premium enforcement
-    console.log(`Action ${actionType} allowed - no limits enforced`);
-    return true;
+    if (isPremium) {
+      console.log(`Action ${actionType} allowed - user has premium`);
+      return true;
+    }
+
+    // Check current limits based on action type
+    let wouldExceedLimit = false;
+    
+    switch (actionType) {
+      case 'addMonth':
+        wouldExceedLimit = monthsCount >= 2;
+        break;
+      case 'addExpense':
+        wouldExceedLimit = maxExpensesPerMonth >= 6;
+        break;
+      case 'addSubscription':
+        wouldExceedLimit = subscriptionsCount >= 6;
+        break;
+    }
+
+    console.log(`Action ${actionType} check:`, {
+      wouldExceedLimit,
+      currentCount: actionType === 'addMonth' ? monthsCount : actionType === 'addExpense' ? maxExpensesPerMonth : subscriptionsCount,
+    });
+
+    return !wouldExceedLimit;
   };
 
   // Function to redirect to premium purchase when limit is reached
-  // NOTE: This is now a no-op since we don't enforce limits
   const redirectToPremium = () => {
-    console.log('redirectToPremium called but no action taken - limits removed');
-    // Do nothing - limits are removed
+    console.log('Redirecting to premium purchase page');
+    router.push({
+      pathname: '/(tabs)/profile',
+      params: { showPremium: 'true' },
+    });
   };
 
   return { 

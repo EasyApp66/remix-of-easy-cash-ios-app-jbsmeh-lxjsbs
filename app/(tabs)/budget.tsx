@@ -86,7 +86,7 @@ export default function BudgetScreen() {
   // Calculate max expenses per month for premium enforcement
   const maxExpensesPerMonth = Math.max(...months.map(m => m.budgetItems.length), 0);
   
-  // Premium enforcement hook (now disabled)
+  // Premium enforcement hook
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: months.length,
     maxExpensesPerMonth,
@@ -95,7 +95,6 @@ export default function BudgetScreen() {
   });
 
   // Handle rollback when user closes premium modal after hitting limit
-  // NOTE: This is no longer needed since limits are removed, but keeping for compatibility
   useEffect(() => {
     if (shouldRollback && lastAction) {
       console.log('Rolling back last action:', lastAction);
@@ -145,7 +144,34 @@ export default function BudgetScreen() {
         isPinned: false,
       };
       
-      // No limit check - just add the item
+      // Check if adding this item would exceed the limit
+      if (!canPerformAction('addExpense')) {
+        console.log('Expense limit reached, redirecting to premium');
+        
+        // Track this action for potential rollback
+        setLastAction({
+          type: 'addExpense',
+          data: { itemId: newItem.id, monthId: selectedMonthId },
+          timestamp: Date.now(),
+        });
+        
+        // Add the item first
+        setMonths(months.map(m => 
+          m.id === selectedMonthId 
+            ? { ...m, budgetItems: [...m.budgetItems, newItem] }
+            : m
+        ));
+        
+        setNewItemName('');
+        setNewItemAmount('');
+        setShowAddModal(false);
+        
+        // Then redirect to premium
+        redirectToPremium();
+        return;
+      }
+      
+      // If within limits, just add the item
       setMonths(months.map(m => 
         m.id === selectedMonthId 
           ? { ...m, budgetItems: [...m.budgetItems, newItem] }
@@ -155,7 +181,7 @@ export default function BudgetScreen() {
       setNewItemName('');
       setNewItemAmount('');
       setShowAddModal(false);
-      console.log('Added expense without limit check:', newItem);
+      console.log('Added expense within limits:', newItem);
     }
   };
 
@@ -193,10 +219,30 @@ export default function BudgetScreen() {
       budgetItems: [],
     };
     
-    // No limit check - just add the month
+    // Check if adding this month would exceed the limit
+    if (!canPerformAction('addMonth')) {
+      console.log('Month limit reached, redirecting to premium');
+      
+      // Track this action for potential rollback
+      setLastAction({
+        type: 'addMonth',
+        data: { monthId: newMonth.id },
+        timestamp: Date.now(),
+      });
+      
+      // Add the month first
+      setMonths([...months, newMonth]);
+      setSelectedMonthId(newMonth.id);
+      
+      // Then redirect to premium
+      redirectToPremium();
+      return;
+    }
+    
+    // If within limits, just add the month
     setMonths([...months, newMonth]);
     setSelectedMonthId(newMonth.id);
-    console.log('Added month without limit check:', newMonth);
+    console.log('Added month within limits:', newMonth);
   };
 
   const handleLongPressMonth = (monthId: string) => {
@@ -232,9 +278,30 @@ export default function BudgetScreen() {
           })),
         };
         
-        // No limit check - just duplicate the month
+        // Check if duplicating this month would exceed the limit
+        if (!canPerformAction('addMonth')) {
+          console.log('Month limit reached when duplicating, redirecting to premium');
+          
+          // Track this action for potential rollback
+          setLastAction({
+            type: 'addMonth',
+            data: { monthId: duplicatedMonth.id },
+            timestamp: Date.now(),
+          });
+          
+          // Add the duplicated month first
+          setMonths([...months, duplicatedMonth]);
+          
+          // Then redirect to premium
+          redirectToPremium();
+          setShowMonthMenu(false);
+          setSelectedMonthForMenu(null);
+          return;
+        }
+        
+        // If within limits, just duplicate the month
         setMonths([...months, duplicatedMonth]);
-        console.log('Duplicated month without limit check:', duplicatedMonth);
+        console.log('Duplicated month within limits:', duplicatedMonth);
       }
     }
     setShowMonthMenu(false);
@@ -297,13 +364,38 @@ export default function BudgetScreen() {
           isPinned: false,
         };
         
-        // No limit check - just duplicate the item
+        // Check if duplicating this item would exceed the limit
+        if (!canPerformAction('addExpense')) {
+          console.log('Expense limit reached when duplicating, redirecting to premium');
+          
+          // Track this action for potential rollback
+          setLastAction({
+            type: 'addExpense',
+            data: { itemId: duplicatedItem.id, monthId: selectedMonthId },
+            timestamp: Date.now(),
+          });
+          
+          // Add the duplicated item first
+          setMonths(months.map(m => 
+            m.id === selectedMonthId 
+              ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
+              : m
+          ));
+          
+          // Then redirect to premium
+          redirectToPremium();
+          setShowItemMenu(false);
+          setSelectedItemForMenu(null);
+          return;
+        }
+        
+        // If within limits, just duplicate the item
         setMonths(months.map(m => 
           m.id === selectedMonthId 
             ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
             : m
         ));
-        console.log('Duplicated expense without limit check:', duplicatedItem);
+        console.log('Duplicated expense within limits:', duplicatedItem);
       }
     }
     setShowItemMenu(false);

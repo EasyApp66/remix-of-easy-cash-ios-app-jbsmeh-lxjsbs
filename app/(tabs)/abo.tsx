@@ -40,7 +40,7 @@ export default function AboScreen() {
   const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
 
-  // Premium enforcement hook (now disabled)
+  // Premium enforcement hook
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: 0, // This will be passed from budget screen
     maxExpensesPerMonth: 0, // This will be passed from budget screen
@@ -49,7 +49,6 @@ export default function AboScreen() {
   });
 
   // Handle rollback when user closes premium modal after hitting limit
-  // NOTE: This is no longer needed since limits are removed, but keeping for compatibility
   useEffect(() => {
     if (shouldRollback && lastAction) {
       console.log('Rolling back last action in abo screen:', lastAction);
@@ -81,12 +80,35 @@ export default function AboScreen() {
         isPinned: false,
       };
       
-      // No limit check - just add the subscription
+      // Check if adding this subscription would exceed the limit
+      if (!canPerformAction('addSubscription')) {
+        console.log('Subscription limit reached, redirecting to premium');
+        
+        // Track this action for potential rollback
+        setLastAction({
+          type: 'addSubscription',
+          data: { subId: newSub.id },
+          timestamp: Date.now(),
+        });
+        
+        // Add the subscription first
+        setSubscriptions([...subscriptions, newSub]);
+        
+        setNewSubName('');
+        setNewSubAmount('');
+        setShowAddModal(false);
+        
+        // Then redirect to premium
+        redirectToPremium();
+        return;
+      }
+      
+      // If within limits, just add the subscription
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
       setNewSubAmount('');
       setShowAddModal(false);
-      console.log('Added subscription without limit check:', newSub);
+      console.log('Added subscription within limits:', newSub);
     }
   };
 
@@ -124,9 +146,30 @@ export default function AboScreen() {
           isPinned: false,
         };
         
-        // No limit check - just duplicate the subscription
+        // Check if duplicating this subscription would exceed the limit
+        if (!canPerformAction('addSubscription')) {
+          console.log('Subscription limit reached when duplicating, redirecting to premium');
+          
+          // Track this action for potential rollback
+          setLastAction({
+            type: 'addSubscription',
+            data: { subId: duplicatedSub.id },
+            timestamp: Date.now(),
+          });
+          
+          // Add the duplicated subscription first
+          setSubscriptions([...subscriptions, duplicatedSub]);
+          
+          // Then redirect to premium
+          redirectToPremium();
+          setShowSubMenu(false);
+          setSelectedSubForMenu(null);
+          return;
+        }
+        
+        // If within limits, just duplicate the subscription
         setSubscriptions([...subscriptions, duplicatedSub]);
-        console.log('Duplicated subscription without limit check:', duplicatedSub);
+        console.log('Duplicated subscription within limits:', duplicatedSub);
       }
     }
     setShowSubMenu(false);
