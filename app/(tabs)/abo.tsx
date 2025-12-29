@@ -341,7 +341,13 @@ export default function AboScreen() {
                     ]}
                   >
                     <View style={styles.subscriptionContent}>
-                      <Text style={styles.subscriptionName}>{subscription.name}</Text>
+                      <Text 
+                        style={styles.subscriptionName}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {subscription.name}
+                      </Text>
                       <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
                     </View>
                   </BlurView>
@@ -389,6 +395,7 @@ export default function AboScreen() {
               placeholderTextColor={colors.textSecondary}
               value={newSubName}
               onChangeText={setNewSubName}
+              maxLength={50}
             />
             
             <TextInput
@@ -514,6 +521,7 @@ export default function AboScreen() {
               value={editName}
               onChangeText={setEditName}
               autoFocus
+              maxLength={50}
             />
             
             <View style={styles.modalButtons}>
@@ -689,18 +697,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
   },
   subscriptionName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
     flex: 1,
+    flexShrink: 1,
+    marginRight: 8,
   },
   subscriptionAmount: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
-    marginLeft: 16,
+    flexShrink: 0,
+    minWidth: 50,
+    textAlign: 'right',
   },
   leftActionContainer: {
     justifyContent: 'center',
