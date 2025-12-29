@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { Platform } from 'react-native';
 
 // Admin credentials
 const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
@@ -15,6 +17,7 @@ interface AuthContextType {
   isPremium: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithApple: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
 }
@@ -115,6 +118,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  const signInWithApple = async () => {
+    console.log('AuthContext: Starting Apple Sign In');
+    
+    // Check if Apple Authentication is available
+    if (Platform.OS !== 'ios') {
+      console.log('AuthContext: Apple Sign In is only available on iOS');
+      return { error: { message: 'Apple Sign In ist nur auf iOS verfügbar' } };
+    }
+
+    try {
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      if (!isAvailable) {
+        console.log('AuthContext: Apple Authentication is not available on this device');
+        return { error: { message: 'Apple Sign In ist auf diesem Gerät nicht verfügbar' } };
+      }
+
+      console.log('AuthContext: Requesting Apple credentials');
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      console.log('AuthContext: Apple credentials received');
+
+      if (!credential.identityToken) {
+        console.error('AuthContext: No identity token received from Apple');
+        return { error: { message: 'Keine Anmeldeinformationen von Apple erhalten' } };
+      }
+
+      // Sign in with Supabase using the Apple ID token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+
+      if (error) {
+        console.error('AuthContext: Error signing in with Apple:', error);
+        return { error };
+      }
+
+      console.log('AuthContext: Successfully signed in with Apple');
+
+      // Create or update user profile
+      if (data.user) {
+        const fullName = credential.fullName;
+        const displayName = fullName 
+          ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim()
+          : null;
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: credential.email || data.user.email,
+            full_name: displayName,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'id'
+          });
+
+        if (profileError) {
+          console.error('AuthContext: Error creating/updating profile:', profileError);
+        } else {
+          console.log('AuthContext: Profile created/updated successfully');
+        }
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('AuthContext: Apple Sign In exception:', error);
+      
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        return { error: { message: 'Anmeldung abgebrochen' } };
+      }
+      
+      return { error };
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Signing in with email:', email);
@@ -288,6 +372,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isPremium,
         signIn,
         signUp,
+        signInWithApple,
         signOut,
         resetPassword,
       }}

@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.easybudget.app",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -38,7 +39,8 @@
       "expo-font",
       "expo-router",
       "expo-web-browser",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-apple-authentication"
     ],
     "scheme": "easybudget",
     "experiments": {

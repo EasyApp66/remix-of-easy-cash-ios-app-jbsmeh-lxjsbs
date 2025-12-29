@@ -1,19 +1,22 @@
 
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { signInWithApple } = useAuth();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
 
   const handleScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -23,6 +26,34 @@ export default function HomeScreen() {
 
   const handleEmailLogin = () => {
     router.push('/(tabs)/(home)/login');
+  };
+
+  const handleAppleSignIn = async () => {
+    console.log('HomeScreen: Apple Sign In button pressed');
+    setIsAppleSignInLoading(true);
+    
+    try {
+      const { error } = await signInWithApple();
+      
+      if (error) {
+        console.error('HomeScreen: Apple Sign In error:', error);
+        Alert.alert(
+          'Fehler',
+          error.message || 'Bei der Anmeldung mit Apple ist ein Fehler aufgetreten.'
+        );
+      } else {
+        console.log('HomeScreen: Apple Sign In successful');
+        // Navigation will happen automatically via AuthContext state change
+      }
+    } catch (error) {
+      console.error('HomeScreen: Apple Sign In exception:', error);
+      Alert.alert(
+        'Fehler',
+        'Bei der Anmeldung mit Apple ist ein unerwarteter Fehler aufgetreten.'
+      );
+    } finally {
+      setIsAppleSignInLoading(false);
+    }
   };
 
   const handleTermsPress = () => {
@@ -81,14 +112,20 @@ export default function HomeScreen() {
                 <Text style={[styles.loginButtonText, { color: colors.background }]}>{t('continueWithEmail')}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.loginButton, styles.appleButton]}>
+              <TouchableOpacity 
+                style={[styles.loginButton, styles.appleButton]}
+                onPress={handleAppleSignIn}
+                disabled={isAppleSignInLoading}
+              >
                 <IconSymbol 
                   ios_icon_name="apple.logo" 
                   android_material_icon_name="apple" 
                   size={20} 
                   color="#000000" 
                 />
-                <Text style={[styles.loginButtonText, styles.appleButtonText]}>{t('continueWithApple')}</Text>
+                <Text style={[styles.loginButtonText, styles.appleButtonText]}>
+                  {isAppleSignInLoading ? 'Wird geladen...' : t('continueWithApple')}
+                </Text>
               </TouchableOpacity>
 
               <Text style={styles.termsText}>
