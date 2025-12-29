@@ -9,7 +9,7 @@ export default function TabLayout() {
     {
       name: 'budget',
       route: '/(tabs)/budget',
-      icon: 'account-balance-wallet',
+      icon: 'attach-money', // Changed from 'account-balance-wallet' to dollar sign
       label: 'Budget',
     },
     {
