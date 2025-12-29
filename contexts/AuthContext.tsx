@@ -2,10 +2,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Admin credentials
 const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
 const ADMIN_PASSWORD = 'Gmh786cGFxqcmscQfofm#okp?QfEF5K4HM!pR3fo';
+const ADMIN_STORAGE_KEY = '@admin_logged_in';
 
 interface AuthContextType {
   session: Session | null;
@@ -32,39 +34,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check if admin is logged in from storage
     const checkAdminStatus = async () => {
       try {
-        // You could use AsyncStorage here to persist admin login
-        // For now, we'll just check session
-        const adminStatus = false; // Default to false
-        setIsAdmin(adminStatus);
+        const adminLoggedIn = await AsyncStorage.getItem(ADMIN_STORAGE_KEY);
+        if (adminLoggedIn === 'true') {
+          console.log('AuthProvider: Admin session found in storage');
+          setIsAdmin(true);
+          const mockAdminUser = {
+            id: 'admin-user',
+            email: ADMIN_EMAIL,
+            app_metadata: {},
+            user_metadata: {},
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+          } as User;
+          setUser(mockAdminUser);
+        }
       } catch (error) {
         console.error('Error checking admin status:', error);
       }
     };
 
-    checkAdminStatus();
-    
-    // Get initial session
-    supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
+    const initAuth = async () => {
+      await checkAdminStatus();
+      
+      // Get initial session
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('AuthProvider: Error getting initial session:', error);
         } else {
           console.log('AuthProvider: Initial session:', session ? 'Found' : 'None');
           setSession(session);
-          setUser(session?.user ?? null);
+          if (session?.user) {
+            setUser(session.user);
+          }
         }
-        setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('AuthProvider: Exception getting initial session:', error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    initAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('AuthProvider: Auth state changed:', _event, session ? 'Session exists' : 'No session');
       setSession(session);
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+        setIsAdmin(false); // Regular user login
+      }
       setLoading(false);
     });
 
@@ -80,19 +100,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for admin login
     if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
       console.log('AuthProvider: Admin login detected');
-      setIsAdmin(true);
-      // Create a mock user for admin
-      const mockAdminUser = {
-        id: 'admin-user',
-        email: ADMIN_EMAIL,
-        app_metadata: {},
-        user_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as User;
-      setUser(mockAdminUser);
-      setLoading(false);
-      return { error: null };
+      try {
+        await AsyncStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+        setIsAdmin(true);
+        // Create a mock user for admin
+        const mockAdminUser = {
+          id: 'admin-user',
+          email: ADMIN_EMAIL,
+          app_metadata: {},
+          user_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+        } as User;
+        setUser(mockAdminUser);
+        setLoading(false);
+        console.log('AuthProvider: Admin login successful, user set');
+        return { error: null };
+      } catch (error) {
+        console.error('AuthProvider: Error saving admin status:', error);
+        return { error };
+      }
     }
 
     try {
@@ -140,6 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isAdmin) {
         // Admin logout
+        await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
         setIsAdmin(false);
         setUser(null);
         setSession(null);

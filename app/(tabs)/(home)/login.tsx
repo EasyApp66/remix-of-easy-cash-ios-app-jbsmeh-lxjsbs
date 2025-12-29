@@ -19,10 +19,6 @@ import SnowAnimation from '@/components/SnowAnimation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Admin credentials (hardcoded)
-const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
-const ADMIN_PASSWORD = 'Gmh786cGFxqcmscQfofm#okp?QfEF5K4HM!pR3fo';
-
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signUp, resetPassword } = useAuth();
@@ -41,26 +37,6 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      // Check if admin login
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
-        console.log('Admin login detected - bypassing normal authentication');
-        Alert.alert(
-          t('success'),
-          'Admin-Zugang erfolgreich!',
-          [
-            {
-              text: t('ok'),
-              onPress: () => {
-                router.replace('/(tabs)/budget');
-              },
-            },
-          ]
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Normal user authentication
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) {
@@ -81,14 +57,20 @@ export default function LoginScreen() {
           );
         }
       } else {
+        // Sign in (handles both admin and regular users)
         const { error } = await signIn(email, password);
         if (error) {
           Alert.alert(t('error'), error.message || t('loginFailed'));
         } else {
-          router.replace('/(tabs)/budget');
+          // Wait a bit for the auth state to update
+          setTimeout(() => {
+            console.log('Login successful, navigating to budget screen');
+            router.replace('/(tabs)/budget');
+          }, 100);
         }
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       Alert.alert(t('error'), error.message || t('genericError'));
     } finally {
       setLoading(false);
