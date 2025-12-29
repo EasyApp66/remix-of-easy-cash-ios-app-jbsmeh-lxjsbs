@@ -5,21 +5,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePathname } from 'expo-router';
 
 export default function TabLayout() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const pathname = usePathname();
 
   // Determine if we should show the tab bar
-  // Hide on welcome and login pages, show only when user is authenticated
+  // Hide ONLY on welcome and login pages
+  // Show on all other screens (Budget, Abos, Profil, etc.)
   const isWelcomeOrLogin = pathname === '/(tabs)' || 
                            pathname === '/(tabs)/(home)' || 
                            pathname === '/(tabs)/(home)/login' ||
-                           pathname.includes('/login');
+                           pathname.includes('/(home)/login');
   
-  const shouldShowTabBar = user && !loading && !isWelcomeOrLogin;
+  const shouldShowTabBar = !loading && !isWelcomeOrLogin;
 
   console.log('iOS Tab bar visibility:', { 
     shouldShowTabBar, 
-    user: !!user, 
     loading, 
     pathname,
     isWelcomeOrLogin
@@ -38,7 +38,7 @@ export default function TabLayout() {
       <NativeTabs.Trigger 
         key="home" 
         name="(home)"
-        hidden={shouldShowTabBar}
+        hidden={true}
       >
         <Icon sf="house.fill" />
         <Label>Home</Label>

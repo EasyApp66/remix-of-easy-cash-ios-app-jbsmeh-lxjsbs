@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function TabLayout() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   // Handle Android back button
   useEffect(() => {
@@ -51,17 +51,17 @@ export default function TabLayout() {
   ];
 
   // Determine if we should show the tab bar
-  // Hide on welcome and login pages, show only when user is authenticated
+  // Hide ONLY on welcome and login pages
+  // Show on all other screens (Budget, Abos, Profil, etc.)
   const isWelcomeOrLogin = pathname === '/(tabs)' || 
                            pathname === '/(tabs)/(home)' || 
                            pathname === '/(tabs)/(home)/login' ||
-                           pathname.includes('/login');
+                           pathname.includes('/(home)/login');
   
-  const shouldShowTabBar = user && !loading && !isWelcomeOrLogin;
+  const shouldShowTabBar = !loading && !isWelcomeOrLogin;
 
   console.log('Tab bar visibility:', { 
     shouldShowTabBar, 
-    user: !!user, 
     loading, 
     pathname,
     isWelcomeOrLogin
