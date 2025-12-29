@@ -540,8 +540,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   headerCard: {
     borderRadius: 20,
@@ -581,8 +579,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   totalCard: {
     borderRadius: 20,
@@ -612,8 +608,6 @@ const styles = StyleSheet.create({
   subscriptionItemWrapper: {
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   subscriptionItem: {
     borderRadius: 20,

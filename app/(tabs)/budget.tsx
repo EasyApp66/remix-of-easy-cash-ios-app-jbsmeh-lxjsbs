@@ -992,8 +992,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   balanceCard: {
     borderRadius: 20,
@@ -1032,8 +1030,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   summaryCard: {
     borderRadius: 20,
@@ -1112,8 +1108,6 @@ const styles = StyleSheet.create({
     width: '48%',
     borderRadius: 20,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
-    elevation: 8,
   },
   budgetItem: {
     borderRadius: 20,
