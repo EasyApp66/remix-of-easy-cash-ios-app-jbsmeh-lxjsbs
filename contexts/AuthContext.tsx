@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Admin credentials
 const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
@@ -32,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if user is admin and has premium
   const checkAdminAndPremiumStatus = async (userId: string) => {
     try {
-      console.log('Checking admin and premium status for user:', userId);
+      console.log('AuthContext: Checking admin and premium status for user:', userId);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -41,32 +40,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error checking admin/premium status:', error);
+        console.error('AuthContext: Error checking admin/premium status:', error);
         return { isAdmin: false, isPremium: false };
       }
 
-      console.log('Admin/Premium status:', data);
+      console.log('AuthContext: Admin/Premium status:', data);
       return {
         isAdmin: data?.is_admin || false,
         isPremium: data?.is_premium || false,
       };
     } catch (error) {
-      console.error('Exception checking admin/premium status:', error);
+      console.error('AuthContext: Exception checking admin/premium status:', error);
       return { isAdmin: false, isPremium: false };
     }
   };
 
   useEffect(() => {
-    console.log('AuthProvider: Initializing...');
+    console.log('AuthContext: Initializing...');
     
     const initAuth = async () => {
       try {
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('AuthProvider: Error getting initial session:', error);
+          console.error('AuthContext: Error getting initial session:', error);
         } else {
-          console.log('AuthProvider: Initial session:', session ? 'Found' : 'None');
+          console.log('AuthContext: Initial session:', session ? 'Found' : 'None');
           setSession(session);
           if (session?.user) {
             setUser(session.user);
@@ -76,11 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsAdmin(status.isAdmin);
             setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
             
-            console.log('User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
+            console.log('AuthContext: User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
           }
         }
       } catch (error) {
-        console.error('AuthProvider: Exception getting initial session:', error);
+        console.error('AuthContext: Exception getting initial session:', error);
       } finally {
         setLoading(false);
       }
@@ -90,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('AuthProvider: Auth state changed:', _event, session ? 'Session exists' : 'No session');
+      console.log('AuthContext: Auth state changed:', _event, session ? 'Session exists' : 'No session');
       setSession(session);
       
       if (session?.user) {
@@ -101,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAdmin(status.isAdmin);
         setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
         
-        console.log('User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
+        console.log('AuthContext: User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
       } else {
         setUser(null);
         setIsAdmin(false);
@@ -112,17 +111,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
-      console.log('AuthProvider: Cleaning up subscription');
+      console.log('AuthContext: Cleaning up subscription');
       subscription.unsubscribe();
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthProvider: Signing in with email:', email);
+    console.log('AuthContext: Signing in with email:', email);
     
     // Check for admin login
     if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
-      console.log('AuthProvider: Admin login detected, attempting Supabase auth');
+      console.log('AuthContext: Admin login detected, attempting Supabase auth');
       
       try {
         // Try to sign in with Supabase
@@ -132,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.log('AuthProvider: Admin user not found in Supabase, creating account');
+          console.log('AuthContext: Admin user not found in Supabase, creating account');
           
           // Admin user doesn't exist, create it
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -147,11 +146,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
           if (signUpError) {
-            console.error('AuthProvider: Error creating admin account:', signUpError);
+            console.error('AuthContext: Error creating admin account:', signUpError);
             return { error: signUpError };
           }
 
-          console.log('AuthProvider: Admin account created:', signUpData);
+          console.log('AuthContext: Admin account created:', signUpData);
 
           // Create profile with admin flag
           if (signUpData.user) {
@@ -167,20 +166,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               });
 
             if (profileError) {
-              console.error('AuthProvider: Error creating admin profile:', profileError);
+              console.error('AuthContext: Error creating admin profile:', profileError);
             } else {
-              console.log('AuthProvider: Admin profile created successfully');
+              console.log('AuthContext: Admin profile created successfully');
             }
 
-            // Confirm email automatically for admin (if needed)
-            // Note: This requires admin privileges on the backend
-            console.log('AuthProvider: Admin account created, please verify email if required');
+            console.log('AuthContext: Admin account created, please verify email if required');
           }
 
           return { error: null };
         }
 
-        console.log('AuthProvider: Admin sign in successful');
+        console.log('AuthContext: Admin sign in successful');
         
         // Ensure admin profile exists with correct flags
         if (data.user) {
@@ -195,15 +192,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
           if (profileError) {
-            console.error('AuthProvider: Error updating admin profile:', profileError);
+            console.error('AuthContext: Error updating admin profile:', profileError);
           } else {
-            console.log('AuthProvider: Admin profile updated successfully');
+            console.log('AuthContext: Admin profile updated successfully');
           }
         }
 
         return { error: null };
       } catch (error) {
-        console.error('AuthProvider: Admin sign in exception:', error);
+        console.error('AuthContext: Admin sign in exception:', error);
         return { error };
       }
     }
@@ -215,19 +212,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       if (error) {
-        console.error('AuthProvider: Sign in error:', error);
+        console.error('AuthContext: Sign in error:', error);
       } else {
-        console.log('AuthProvider: Sign in successful');
+        console.log('AuthContext: Sign in successful');
       }
       return { error };
     } catch (error) {
-      console.error('AuthProvider: Sign in exception:', error);
+      console.error('AuthContext: Sign in exception:', error);
       return { error };
     }
   };
 
   const signUp = async (email: string, password: string) => {
-    console.log('AuthProvider: Signing up with email:', email);
+    console.log('AuthContext: Signing up with email:', email);
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -238,9 +235,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        console.error('AuthProvider: Sign up error:', error);
+        console.error('AuthContext: Sign up error:', error);
       } else {
-        console.log('AuthProvider: Sign up successful');
+        console.log('AuthContext: Sign up successful');
         
         // Create profile for new user
         if (data.user) {
@@ -256,43 +253,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
           if (profileError) {
-            console.error('AuthProvider: Error creating profile:', profileError);
+            console.error('AuthContext: Error creating profile:', profileError);
+          } else {
+            console.log('AuthContext: User profile created successfully');
           }
         }
       }
       return { error };
     } catch (error) {
-      console.error('AuthProvider: Sign up exception:', error);
+      console.error('AuthContext: Sign up exception:', error);
       return { error };
     }
   };
 
   const signOut = async () => {
-    console.log('AuthProvider: Signing out');
+    console.log('AuthContext: Signing out');
     try {
       await supabase.auth.signOut();
       setIsAdmin(false);
       setIsPremium(false);
-      console.log('AuthProvider: Sign out successful');
+      console.log('AuthContext: Sign out successful');
     } catch (error) {
-      console.error('AuthProvider: Sign out exception:', error);
+      console.error('AuthContext: Sign out exception:', error);
     }
   };
 
   const resetPassword = async (email: string) => {
-    console.log('AuthProvider: Resetting password for email:', email);
+    console.log('AuthContext: Resetting password for email:', email);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://natively.dev/reset-password',
       });
       if (error) {
-        console.error('AuthProvider: Reset password error:', error);
+        console.error('AuthContext: Reset password error:', error);
       } else {
-        console.log('AuthProvider: Reset password email sent');
+        console.log('AuthContext: Reset password email sent');
       }
       return { error };
     } catch (error) {
-      console.error('AuthProvider: Reset password exception:', error);
+      console.error('AuthContext: Reset password exception:', error);
       return { error };
     }
   };

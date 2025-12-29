@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Easy Budget App",
-    "slug": "Easy Budget App",
+    "name": "Remix of Easy Budget App",
+    "slug": "Remix of Easy Budget App",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -44,5 +44,5 @@
       "router": {}
     }
   },
-  "scheme": "Easy Budget App"
+  "scheme": "Remix of Easy Budget App"
 }

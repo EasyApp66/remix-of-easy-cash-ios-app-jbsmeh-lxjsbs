@@ -1,4 +1,4 @@
-# Easy Budget App
+# Remix of Easy Budget App
 
 This app was built using [Natively.dev](https://natively.dev) - a platform for creating mobile apps.
 

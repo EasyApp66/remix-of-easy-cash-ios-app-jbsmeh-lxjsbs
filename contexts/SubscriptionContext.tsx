@@ -29,8 +29,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Load data from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      console.log('User logged in, loading subscription data from Supabase');
-      loadFromSupabase();
+      console.log('SubscriptionContext: User logged in, loading subscription data from Supabase');
+      loadFromSupabase().catch(error => {
+        console.error('SubscriptionContext: Error loading data:', error);
+      });
     }
   }, [user]);
 
@@ -38,8 +40,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && subscriptions.length >= 0) {
       const timeoutId = setTimeout(() => {
-        console.log('Auto-syncing subscription data to Supabase');
-        syncToSupabase();
+        console.log('SubscriptionContext: Auto-syncing subscription data to Supabase');
+        syncToSupabase().catch(error => {
+          console.error('SubscriptionContext: Error syncing data:', error);
+        });
       }, 1000); // Debounce for 1 second
 
       return () => clearTimeout(timeoutId);
@@ -48,13 +52,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const loadFromSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping Supabase load');
+      console.log('SubscriptionContext: No user, skipping Supabase load');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Loading subscription data from Supabase for user:', user.id);
+      console.log('SubscriptionContext: Loading subscription data from Supabase for user:', user.id);
 
       const { data, error } = await supabase
         .from('user_subscriptions')
@@ -63,12 +67,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error loading subscriptions:', error);
-        return;
+        console.error('SubscriptionContext: Error loading subscriptions:', error);
+        throw error;
       }
 
       if (!data || data.length === 0) {
-        console.log('No subscription data found in Supabase');
+        console.log('SubscriptionContext: No subscription data found in Supabase');
         setSubscriptionsState([]);
         return;
       }
@@ -76,15 +80,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const loadedSubscriptions: Subscription[] = data.map(sub => ({
         id: sub.id,
         name: sub.name,
-        amount: parseFloat(sub.amount),
+        amount: parseFloat(sub.amount.toString()),
         isPinned: sub.is_pinned || false,
         billingCycle: sub.billing_cycle || 'monthly',
       }));
 
-      console.log('Loaded subscription data from Supabase:', loadedSubscriptions);
+      console.log('SubscriptionContext: Successfully loaded', loadedSubscriptions.length, 'subscriptions from Supabase');
       setSubscriptionsState(loadedSubscriptions);
     } catch (error) {
-      console.error('Error loading subscription data:', error);
+      console.error('SubscriptionContext: Exception loading subscription data:', error);
     } finally {
       setLoading(false);
     }
@@ -92,12 +96,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const syncToSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping Supabase sync');
+      console.log('SubscriptionContext: No user, skipping Supabase sync');
       return;
     }
 
     try {
-      console.log('Syncing subscription data to Supabase for user:', user.id);
+      console.log('SubscriptionContext: Syncing', subscriptions.length, 'subscriptions to Supabase for user:', user.id);
 
       // Sync subscriptions
       for (const subscription of subscriptions) {
@@ -114,7 +118,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           });
 
         if (error) {
-          console.error('Error syncing subscription:', error);
+          console.error('SubscriptionContext: Error syncing subscription:', subscription.id, error);
         }
       }
 
@@ -128,7 +132,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           .not('id', 'in', `(${subscriptionIds.join(',')})`);
 
         if (deleteError) {
-          console.error('Error deleting old subscriptions:', deleteError);
+          console.error('SubscriptionContext: Error deleting old subscriptions:', deleteError);
         }
       } else {
         // If no subscriptions, delete all for this user
@@ -138,18 +142,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           .eq('user_id', user.id);
 
         if (deleteAllError) {
-          console.error('Error deleting all subscriptions:', deleteAllError);
+          console.error('SubscriptionContext: Error deleting all subscriptions:', deleteAllError);
         }
       }
 
-      console.log('Successfully synced subscription data to Supabase');
+      console.log('SubscriptionContext: Successfully synced all subscription data to Supabase');
     } catch (error) {
-      console.error('Error syncing subscription data:', error);
+      console.error('SubscriptionContext: Exception syncing subscription data:', error);
     }
   };
 
   const setSubscriptions = (newSubscriptions: Subscription[]) => {
-    console.log('Setting subscriptions:', newSubscriptions.length);
+    console.log('SubscriptionContext: Setting subscriptions:', newSubscriptions.length);
     setSubscriptionsState(newSubscriptions);
   };
 

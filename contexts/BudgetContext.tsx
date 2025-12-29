@@ -91,7 +91,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
       if (budgetsError) {
         console.error('BudgetContext: Error loading budgets:', budgetsError);
-        return;
+        throw budgetsError;
       }
 
       if (!budgetsData || budgetsData.length === 0) {
@@ -108,7 +108,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
       if (expensesError) {
         console.error('BudgetContext: Error loading expenses:', expensesError);
-        return;
+        throw expensesError;
       }
 
       // Combine data
@@ -116,18 +116,18 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         id: budget.id,
         name: budget.month,
         isPinned: budget.is_pinned || false,
-        accountBalance: parseFloat(budget.total_amount || '0'),
+        accountBalance: parseFloat(budget.total_amount?.toString() || '0'),
         budgetItems: (expensesData || [])
           .filter(expense => expense.budget_id === budget.id)
           .map(expense => ({
             id: expense.id,
             name: expense.name,
-            amount: parseFloat(expense.amount),
+            amount: parseFloat(expense.amount.toString()),
             isPinned: expense.is_pinned || false,
           })),
       }));
 
-      console.log('BudgetContext: Loaded budget data from Supabase:', loadedMonths.length, 'months');
+      console.log('BudgetContext: Successfully loaded', loadedMonths.length, 'months from Supabase');
       setMonthsState(loadedMonths);
     } catch (error) {
       console.error('BudgetContext: Exception loading budget data:', error);
@@ -143,7 +143,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      console.log('BudgetContext: Syncing budget data to Supabase for user:', user.id);
+      console.log('BudgetContext: Syncing', months.length, 'months to Supabase for user:', user.id);
 
       // Sync months
       for (const month of months) {
@@ -159,7 +159,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
           });
 
         if (budgetError) {
-          console.error('BudgetContext: Error syncing budget:', budgetError);
+          console.error('BudgetContext: Error syncing budget:', month.id, budgetError);
           continue;
         }
 
@@ -178,7 +178,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
             });
 
           if (expenseError) {
-            console.error('BudgetContext: Error syncing expense:', expenseError);
+            console.error('BudgetContext: Error syncing expense:', item.id, expenseError);
           }
         }
 
@@ -193,6 +193,16 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
           if (deleteError) {
             console.error('BudgetContext: Error deleting old expenses:', deleteError);
+          }
+        } else {
+          // If no expenses, delete all for this month
+          const { error: deleteAllError } = await supabase
+            .from('user_expenses')
+            .delete()
+            .eq('budget_id', month.id);
+
+          if (deleteAllError) {
+            console.error('BudgetContext: Error deleting all expenses for month:', deleteAllError);
           }
         }
       }
@@ -211,7 +221,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      console.log('BudgetContext: Successfully synced budget data to Supabase');
+      console.log('BudgetContext: Successfully synced all budget data to Supabase');
     } catch (error) {
       console.error('BudgetContext: Exception syncing budget data:', error);
     }
