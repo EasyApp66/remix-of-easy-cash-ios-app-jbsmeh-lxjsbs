@@ -19,6 +19,10 @@ import SnowAnimation from '@/components/SnowAnimation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+// Admin credentials (hardcoded)
+const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
+const ADMIN_PASSWORD = 'Gmh786cGFxqcmscQfofm#okp?QfEF5K4HM!pR3fo';
+
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signUp, resetPassword } = useAuth();
@@ -27,9 +31,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // For web/test version - bypass login
-  const isWebOrTest = Platform.OS === 'web' || __DEV__;
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -40,6 +41,26 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
+      // Check if admin login
+      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+        console.log('Admin login detected - bypassing normal authentication');
+        Alert.alert(
+          t('success'),
+          'Admin-Zugang erfolgreich!',
+          [
+            {
+              text: t('ok'),
+              onPress: () => {
+                router.replace('/(tabs)/budget');
+              },
+            },
+          ]
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Normal user authentication
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) {
@@ -100,11 +121,6 @@ export default function LoginScreen() {
         },
       ]
     );
-  };
-
-  const handleSkipLogin = () => {
-    // For web/test version - skip to budget screen
-    router.replace('/(tabs)/budget');
   };
 
   return (
@@ -216,19 +232,6 @@ export default function LoginScreen() {
                 </Text>
               </Text>
             </TouchableOpacity>
-
-            {/* Web/Test Version Skip Button */}
-            {isWebOrTest && (
-              <TouchableOpacity
-                style={styles.skipButton}
-                onPress={handleSkipLogin}
-                disabled={loading}
-              >
-                <Text style={styles.skipButtonText}>
-                  {t('skipTestVersion')}
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -328,17 +331,5 @@ const styles = StyleSheet.create({
   switchModeLink: {
     color: colors.green,
     fontWeight: '600',
-  },
-  skipButton: {
-    marginTop: 20,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.grey,
-    borderRadius: 12,
-  },
-  skipButtonText: {
-    fontSize: 14,
-    color: colors.textSecondary,
   },
 });

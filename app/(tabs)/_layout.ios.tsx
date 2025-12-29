@@ -63,6 +63,14 @@ export default function TabLayout() {
         <Icon sf="person.fill" />
         <Label>Profil</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger 
+        key="legal" 
+        name="legal"
+        hidden={true}
+      >
+        <Icon sf="doc.text.fill" />
+        <Label>Legal</Label>
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
