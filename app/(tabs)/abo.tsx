@@ -8,7 +8,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 interface Subscription {
   id: string;
@@ -241,15 +241,9 @@ export default function AboScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card - Glossy Design */}
+        {/* Header Card - Glass Effect */}
         <View style={styles.headerCardWrapper}>
-          <LinearGradient
-            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.headerCard}
-          >
-            <View style={styles.glossyOverlay} />
+          <BlurView intensity={20} tint="dark" style={styles.headerCard}>
             <View style={styles.headerLayout}>
               <View style={styles.headerLabelContainer}>
                 <Text style={styles.headerLabel}>{t('abosCounter')}</Text>
@@ -258,24 +252,18 @@ export default function AboScreen() {
                 <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
               </View>
             </View>
-          </LinearGradient>
+          </BlurView>
         </View>
 
-        {/* Total Subscriptions - Glossy Design */}
+        {/* Total Subscriptions - Glass Effect */}
         <View style={styles.totalCardWrapper}>
-          <LinearGradient
-            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.totalCard}
-          >
-            <View style={styles.glossyOverlay} />
+          <BlurView intensity={20} tint="dark" style={styles.totalCard}>
             <Text style={styles.totalLabel}>{t('total')}</Text>
             <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
-          </LinearGradient>
+          </BlurView>
         </View>
 
-        {/* Subscriptions List - Glossy Design */}
+        {/* Subscriptions List - Glass Effect */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
@@ -285,21 +273,19 @@ export default function AboScreen() {
                 delayLongPress={500}
                 activeOpacity={0.7}
               >
-                <LinearGradient
-                  colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                <BlurView 
+                  intensity={20} 
+                  tint="dark" 
                   style={[
                     styles.subscriptionItem,
                     subscription.isPinned && styles.pinnedSubscriptionItem,
                   ]}
                 >
-                  <View style={styles.glossyOverlay} />
                   <View style={styles.subscriptionContent}>
                     <Text style={styles.subscriptionName}>{subscription.name}</Text>
                     <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
                   </View>
-                </LinearGradient>
+                </BlurView>
               </TouchableOpacity>
             </React.Fragment>
           ))}
@@ -553,6 +539,7 @@ const styles = StyleSheet.create({
   headerCardWrapper: {
     marginBottom: 16,
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -562,17 +549,8 @@ const styles = StyleSheet.create({
     minHeight: 140,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  glossyOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   headerLayout: {
     flex: 1,
@@ -602,6 +580,7 @@ const styles = StyleSheet.create({
   totalCardWrapper: {
     marginBottom: 16,
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -614,7 +593,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   totalLabel: {
     fontSize: 16,
@@ -631,6 +611,7 @@ const styles = StyleSheet.create({
   },
   subscriptionItemWrapper: {
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -641,6 +622,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   pinnedSubscriptionItem: {
     borderColor: colors.green,

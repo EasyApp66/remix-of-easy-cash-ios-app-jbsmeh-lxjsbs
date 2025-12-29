@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import * as MailComposer from 'expo-mail-composer';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -186,15 +186,9 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Info Section - Modern Glossy Card */}
+        {/* User Info Section - Glass Effect */}
         <View style={styles.userSectionWrapper}>
-          <LinearGradient
-            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.userSection}
-          >
-            <View style={styles.glossyOverlay} />
+          <BlurView intensity={30} tint="dark" style={styles.userSection}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatarGlow}>
                 <IconSymbol 
@@ -219,21 +213,20 @@ export default function ProfileScreen() {
               </React.Fragment>
             )}
             <View style={styles.premiumBadgeWrapper}>
-              <LinearGradient
-                colors={isPremium ? ['#A0FF6B', '#7FCC56'] : ['#3A3A3A', '#2A2A2A']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+              <BlurView 
+                intensity={isPremium ? 40 : 20} 
+                tint={isPremium ? "light" : "dark"} 
                 style={styles.premiumBadge}
               >
                 <Text style={[styles.premiumText, isPremium && styles.premiumTextActive]}>
                   {t('premium')}: {isPremium ? t('yes') : t('no')}
                 </Text>
-              </LinearGradient>
+              </BlurView>
             </View>
-          </LinearGradient>
+          </BlurView>
         </View>
 
-        {/* Menu Items - Modern Cards */}
+        {/* Menu Items - Glass Effect */}
         <View style={styles.menuSection}>
           {menuItems.map((item) => (
             <Pressable 
@@ -247,13 +240,7 @@ export default function ProfileScreen() {
                 item.onPress();
               }}
             >
-              <LinearGradient
-                colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.menuItem}
-              >
-                <View style={styles.menuItemGlossyOverlay} />
+              <BlurView intensity={20} tint="dark" style={styles.menuItem}>
                 <View style={styles.menuItemLeft}>
                   <View style={styles.iconContainer}>
                     <IconSymbol 
@@ -271,7 +258,7 @@ export default function ProfileScreen() {
                   size={20} 
                   color={colors.textSecondary} 
                 />
-              </LinearGradient>
+              </BlurView>
             </Pressable>
           ))}
         </View>
@@ -309,6 +296,7 @@ const styles = StyleSheet.create({
   userSectionWrapper: {
     marginBottom: 24,
     borderRadius: 24,
+    overflow: 'hidden',
     boxShadow: '0px 8px 32px rgba(160, 255, 107, 0.2)',
     elevation: 12,
   },
@@ -319,17 +307,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  glossyOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   avatarContainer: {
     marginBottom: 20,
@@ -351,6 +330,7 @@ const styles = StyleSheet.create({
   },
   premiumBadgeWrapper: {
     borderRadius: 24,
+    overflow: 'hidden',
     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
     elevation: 4,
   },
@@ -358,6 +338,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   premiumText: {
     fontSize: 15,
@@ -365,7 +348,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   premiumTextActive: {
-    color: '#000000',
+    color: colors.green,
   },
   menuSection: {
     gap: 12,
@@ -373,6 +356,7 @@ const styles = StyleSheet.create({
   },
   menuItemWrapper: {
     borderRadius: 16,
+    overflow: 'hidden',
     boxShadow: '0px 4px 16px rgba(160, 255, 107, 0.1)',
     elevation: 4,
   },
@@ -385,17 +369,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  menuItemGlossyOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   menuItemPressed: {
     opacity: 0.7,

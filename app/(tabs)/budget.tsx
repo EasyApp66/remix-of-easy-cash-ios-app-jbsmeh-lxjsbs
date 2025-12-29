@@ -8,7 +8,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 interface BudgetItem {
   id: string;
@@ -496,15 +496,9 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card - Glossy Design */}
+        {/* Account Balance Card - Glass Effect */}
         <View style={styles.balanceCardWrapper}>
-          <LinearGradient
-            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.balanceCard}
-          >
-            <View style={styles.glossyOverlay} />
+          <BlurView intensity={20} tint="dark" style={styles.balanceCard}>
             <View style={styles.balanceNewLayout}>
               <TouchableOpacity 
                 onPress={handleEditBalanceLabel}
@@ -519,18 +513,12 @@ export default function BudgetScreen() {
                 <Text style={[styles.balanceAmount, { marginBottom: 1, fontSize: 37 }]}>{accountBalance.toLocaleString('de-DE')}</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </BlurView>
         </View>
 
-        {/* Total and Remaining - Glossy Design */}
+        {/* Total and Remaining - Glass Effect */}
         <View style={styles.summaryCardWrapper}>
-          <LinearGradient
-            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.summaryCard}
-          >
-            <View style={styles.glossyOverlay} />
+          <BlurView intensity={20} tint="dark" style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>{t('total')}</Text>
               <Text style={styles.summaryAmount}>{totalExpenses.toLocaleString('de-DE')}</Text>
@@ -541,7 +529,7 @@ export default function BudgetScreen() {
                 {remaining.toLocaleString('de-DE')}
               </Text>
             </View>
-          </LinearGradient>
+          </BlurView>
         </View>
 
         {/* Month Selector - Horizontal Scroll */}
@@ -588,7 +576,7 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid - Glossy Design */}
+        {/* Budget Items Grid - Glass Effect */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -598,16 +586,14 @@ export default function BudgetScreen() {
                 delayLongPress={500}
                 activeOpacity={0.7}
               >
-                <LinearGradient
-                  colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                <BlurView 
+                  intensity={20} 
+                  tint="dark" 
                   style={[
                     styles.budgetItem,
                     item.isPinned && styles.pinnedBudgetItem,
                   ]}
                 >
-                  <View style={styles.glossyOverlay} />
                   <View style={styles.budgetItemHeader}>
                     <Text style={styles.budgetItemName}>{item.name}</Text>
                     <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
@@ -622,7 +608,7 @@ export default function BudgetScreen() {
                   <View style={styles.budgetItemAmountContainer}>
                     <Text style={styles.budgetItemAmount}>{item.amount.toLocaleString('de-DE')}</Text>
                   </View>
-                </LinearGradient>
+                </BlurView>
               </TouchableOpacity>
             </React.Fragment>
           ))}
@@ -1005,6 +991,7 @@ const styles = StyleSheet.create({
   balanceCardWrapper: {
     marginBottom: 16,
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -1014,17 +1001,8 @@ const styles = StyleSheet.create({
     minHeight: 140,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  glossyOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   balanceNewLayout: {
     flex: 1,
@@ -1053,6 +1031,7 @@ const styles = StyleSheet.create({
   summaryCardWrapper: {
     marginBottom: 16,
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -1061,7 +1040,8 @@ const styles = StyleSheet.create({
     padding: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -1131,6 +1111,7 @@ const styles = StyleSheet.create({
   budgetItemWrapper: {
     width: '48%',
     borderRadius: 20,
+    overflow: 'hidden',
     boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
     elevation: 8,
   },
@@ -1142,6 +1123,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     overflow: 'hidden',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
   },
   pinnedBudgetItem: {
     borderColor: colors.green,
