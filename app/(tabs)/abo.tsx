@@ -237,7 +237,7 @@ export default function AboScreen() {
     setEditAmount('');
   };
 
-  // Render left action (Pin) - swipe from left
+  // Render left action (Pin) - swipe from left - ONLY ICON, NO TEXT
   const renderLeftActions = (subscription: Subscription) => {
     return (
       <View style={styles.leftActionContainer}>
@@ -245,18 +245,15 @@ export default function AboScreen() {
           <IconSymbol
             ios_icon_name={subscription.isPinned ? "pin.slash.fill" : "pin.fill"}
             android_material_icon_name={subscription.isPinned ? "push-pin" : "push-pin"}
-            size={24}
-            color="#FFFFFF"
+            size={28}
+            color="#000000"
           />
-          <Text style={styles.actionText}>
-            {subscription.isPinned ? t('unpin') : t('pin')}
-          </Text>
         </View>
       </View>
     );
   };
 
-  // Render right action (Delete) - swipe from right
+  // Render right action (Delete) - swipe from right - ONLY ICON, NO TEXT
   const renderRightActions = () => {
     return (
       <View style={styles.rightActionContainer}>
@@ -264,10 +261,9 @@ export default function AboScreen() {
           <IconSymbol
             ios_icon_name="trash.fill"
             android_material_icon_name="delete"
-            size={24}
-            color="#FFFFFF"
+            size={28}
+            color="#000000"
           />
-          <Text style={styles.actionText}>{t('delete')}</Text>
         </View>
       </View>
     );
@@ -324,9 +320,11 @@ export default function AboScreen() {
                 }}
                 overshootLeft={false}
                 overshootRight={false}
-                friction={2}
+                friction={1}
                 leftThreshold={80}
                 rightThreshold={80}
+                enableTrackpadTwoFingerGesture
+                containerStyle={styles.swipeableContainer}
               >
                 <TouchableOpacity
                   style={styles.subscriptionItemWrapper}
@@ -667,6 +665,9 @@ const styles = StyleSheet.create({
   subscriptionsList: {
     gap: 12,
   },
+  swipeableContainer: {
+    marginBottom: 0,
+  },
   subscriptionItemWrapper: {
     borderRadius: 20,
     overflow: 'hidden',
@@ -728,12 +729,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 20,
     paddingHorizontal: 10,
-  },
-  actionText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
   },
   floatingAddButton: {
     position: 'absolute',
