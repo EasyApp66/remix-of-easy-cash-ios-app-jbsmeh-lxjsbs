@@ -1,345 +1,227 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
-export interface BudgetExpense {
+export interface BudgetItem {
   id: string;
-  user_id: string;
-  budget_id: string;
   name: string;
   amount: number;
-  is_pinned: boolean;
-  created_at: string;
-  updated_at: string;
+  isPinned: boolean;
 }
 
-export interface Budget {
+export interface MonthData {
   id: string;
-  user_id: string;
-  month: string;
-  total_amount: number;
-  is_pinned: boolean;
-  created_at: string;
-  updated_at: string;
-  expenses?: BudgetExpense[];
+  name: string;
+  isPinned: boolean;
+  budgetItems: BudgetItem[];
+  accountBalance: number;
 }
 
 interface BudgetContextType {
-  budgets: Budget[];
+  months: MonthData[];
+  setMonths: (months: MonthData[]) => void;
   loading: boolean;
-  addBudget: (month: string, totalAmount: number) => Promise<void>;
-  updateBudget: (id: string, updates: Partial<Budget>) => Promise<void>;
-  deleteBudget: (id: string) => Promise<void>;
-  addExpense: (budgetId: string, name: string, amount: number) => Promise<void>;
-  updateExpense: (id: string, updates: Partial<BudgetExpense>) => Promise<void>;
-  deleteExpense: (id: string) => Promise<void>;
-  toggleBudgetPin: (id: string) => Promise<void>;
-  toggleExpensePin: (id: string) => Promise<void>;
-  refreshBudgets: () => Promise<void>;
+  syncToSupabase: () => Promise<void>;
+  loadFromSupabase: () => Promise<void>;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
-export function BudgetProvider({ children }: { children: React.ReactNode }) {
+export function BudgetProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [months, setMonthsState] = useState<MonthData[]>([
+    {
+      id: '1',
+      name: 'DEZEMBER',
+      isPinned: false,
+      accountBalance: 13556,
+      budgetItems: [
+        { id: '1', name: 'SPAREN', amount: 1500, isPinned: false },
+        { id: '2', name: 'KRANKEN KASSE', amount: 450, isPinned: false },
+        { id: '3', name: 'ESSEN', amount: 650, isPinned: false },
+        { id: '4', name: 'MIETE', amount: 2500, isPinned: false },
+        { id: '5', name: 'SPAREN', amount: 1146, isPinned: false },
+        { id: '6', name: 'SPAREN', amount: 1146, isPinned: false },
+      ],
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
 
+  // Load data from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      refreshBudgets();
-    } else {
-      setBudgets([]);
-      setLoading(false);
+      console.log('User logged in, loading budget data from Supabase');
+      loadFromSupabase();
     }
   }, [user]);
 
-  const refreshBudgets = async () => {
+  // Auto-sync to Supabase whenever months change (debounced)
+  useEffect(() => {
+    if (user && months.length > 0) {
+      const timeoutId = setTimeout(() => {
+        console.log('Auto-syncing budget data to Supabase');
+        syncToSupabase();
+      }, 1000); // Debounce for 1 second
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [months, user]);
+
+  const loadFromSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping budget refresh');
+      console.log('No user, skipping Supabase load');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Fetching budgets for user:', user.id);
-      
-      // Fetch budgets
+      console.log('Loading budget data from Supabase for user:', user.id);
+
+      // Load months
       const { data: budgetsData, error: budgetsError } = await supabase
         .from('user_budgets')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (budgetsError) {
-        console.error('Error fetching budgets:', budgetsError);
-        throw budgetsError;
+        console.error('Error loading budgets:', budgetsError);
+        return;
       }
 
-      // Fetch expenses for each budget
+      if (!budgetsData || budgetsData.length === 0) {
+        console.log('No budget data found in Supabase, keeping default data');
+        return;
+      }
+
+      // Load expenses for all months
       const { data: expensesData, error: expensesError } = await supabase
         .from('user_expenses')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (expensesError) {
-        console.error('Error fetching expenses:', expensesError);
-        throw expensesError;
+        console.error('Error loading expenses:', expensesError);
+        return;
       }
 
-      // Combine budgets with their expenses
-      const budgetsWithExpenses = (budgetsData || []).map(budget => ({
-        ...budget,
-        expenses: (expensesData || []).filter(expense => expense.budget_id === budget.id),
+      // Combine data
+      const loadedMonths: MonthData[] = budgetsData.map(budget => ({
+        id: budget.id,
+        name: budget.month,
+        isPinned: budget.is_pinned || false,
+        accountBalance: parseFloat(budget.total_amount || '0'),
+        budgetItems: (expensesData || [])
+          .filter(expense => expense.budget_id === budget.id)
+          .map(expense => ({
+            id: expense.id,
+            name: expense.name,
+            amount: parseFloat(expense.amount),
+            isPinned: expense.is_pinned || false,
+          })),
       }));
 
-      console.log('Fetched budgets with expenses:', budgetsWithExpenses);
-      setBudgets(budgetsWithExpenses);
+      console.log('Loaded budget data from Supabase:', loadedMonths);
+      setMonthsState(loadedMonths);
     } catch (error) {
-      console.error('Error in refreshBudgets:', error);
+      console.error('Error loading budget data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const addBudget = async (month: string, totalAmount: number) => {
+  const syncToSupabase = async () => {
     if (!user) {
-      console.error('No user logged in');
+      console.log('No user, skipping Supabase sync');
       return;
     }
 
     try {
-      console.log('Adding budget:', { month, totalAmount });
-      
-      const { data, error } = await supabase
-        .from('user_budgets')
-        .insert([
-          {
+      console.log('Syncing budget data to Supabase for user:', user.id);
+
+      // Sync months
+      for (const month of months) {
+        const { error: budgetError } = await supabase
+          .from('user_budgets')
+          .upsert({
+            id: month.id,
             user_id: user.id,
-            month,
-            total_amount: totalAmount,
-            is_pinned: false,
-          },
-        ])
-        .select()
-        .single();
+            month: month.name,
+            total_amount: month.accountBalance,
+            is_pinned: month.isPinned,
+            updated_at: new Date().toISOString(),
+          });
 
-      if (error) {
-        console.error('Error adding budget:', error);
-        throw error;
+        if (budgetError) {
+          console.error('Error syncing budget:', budgetError);
+          continue;
+        }
+
+        // Sync expenses for this month
+        for (const item of month.budgetItems) {
+          const { error: expenseError } = await supabase
+            .from('user_expenses')
+            .upsert({
+              id: item.id,
+              user_id: user.id,
+              budget_id: month.id,
+              name: item.name,
+              amount: item.amount,
+              is_pinned: item.isPinned,
+              updated_at: new Date().toISOString(),
+            });
+
+          if (expenseError) {
+            console.error('Error syncing expense:', expenseError);
+          }
+        }
+
+        // Delete expenses that are no longer in the month
+        const expenseIds = month.budgetItems.map(item => item.id);
+        const { error: deleteError } = await supabase
+          .from('user_expenses')
+          .delete()
+          .eq('budget_id', month.id)
+          .not('id', 'in', `(${expenseIds.join(',')})`);
+
+        if (deleteError) {
+          console.error('Error deleting old expenses:', deleteError);
+        }
       }
 
-      console.log('Added budget:', data);
-      await refreshBudgets();
-    } catch (error) {
-      console.error('Error in addBudget:', error);
-    }
-  };
-
-  const updateBudget = async (id: string, updates: Partial<Budget>) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Updating budget:', id, updates);
-      
-      const { error } = await supabase
-        .from('user_budgets')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error updating budget:', error);
-        throw error;
-      }
-
-      console.log('Updated budget successfully');
-      await refreshBudgets();
-    } catch (error) {
-      console.error('Error in updateBudget:', error);
-    }
-  };
-
-  const deleteBudget = async (id: string) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Deleting budget:', id);
-      
-      // First delete all expenses for this budget
-      const { error: expensesError } = await supabase
-        .from('user_expenses')
-        .delete()
-        .eq('budget_id', id)
-        .eq('user_id', user.id);
-
-      if (expensesError) {
-        console.error('Error deleting expenses:', expensesError);
-        throw expensesError;
-      }
-
-      // Then delete the budget
-      const { error } = await supabase
+      // Delete months that are no longer in the list
+      const monthIds = months.map(m => m.id);
+      const { error: deleteMonthsError } = await supabase
         .from('user_budgets')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .not('id', 'in', `(${monthIds.join(',')})`);
 
-      if (error) {
-        console.error('Error deleting budget:', error);
-        throw error;
+      if (deleteMonthsError) {
+        console.error('Error deleting old months:', deleteMonthsError);
       }
 
-      console.log('Deleted budget successfully');
-      await refreshBudgets();
+      console.log('Successfully synced budget data to Supabase');
     } catch (error) {
-      console.error('Error in deleteBudget:', error);
+      console.error('Error syncing budget data:', error);
     }
   };
 
-  const addExpense = async (budgetId: string, name: string, amount: number) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Adding expense:', { budgetId, name, amount });
-      
-      const { data, error } = await supabase
-        .from('user_expenses')
-        .insert([
-          {
-            user_id: user.id,
-            budget_id: budgetId,
-            name,
-            amount,
-            is_pinned: false,
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding expense:', error);
-        throw error;
-      }
-
-      console.log('Added expense:', data);
-      await refreshBudgets();
-    } catch (error) {
-      console.error('Error in addExpense:', error);
-    }
-  };
-
-  const updateExpense = async (id: string, updates: Partial<BudgetExpense>) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Updating expense:', id, updates);
-      
-      const { error } = await supabase
-        .from('user_expenses')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error updating expense:', error);
-        throw error;
-      }
-
-      console.log('Updated expense successfully');
-      await refreshBudgets();
-    } catch (error) {
-      console.error('Error in updateExpense:', error);
-    }
-  };
-
-  const deleteExpense = async (id: string) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Deleting expense:', id);
-      
-      const { error } = await supabase
-        .from('user_expenses')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error deleting expense:', error);
-        throw error;
-      }
-
-      console.log('Deleted expense successfully');
-      await refreshBudgets();
-    } catch (error) {
-      console.error('Error in deleteExpense:', error);
-    }
-  };
-
-  const toggleBudgetPin = async (id: string) => {
-    const budget = budgets.find(b => b.id === id);
-    if (!budget) {
-      console.error('Budget not found:', id);
-      return;
-    }
-
-    await updateBudget(id, { is_pinned: !budget.is_pinned });
-  };
-
-  const toggleExpensePin = async (id: string) => {
-    // Find the expense across all budgets
-    let expense: BudgetExpense | undefined;
-    for (const budget of budgets) {
-      expense = budget.expenses?.find(e => e.id === id);
-      if (expense) break;
-    }
-
-    if (!expense) {
-      console.error('Expense not found:', id);
-      return;
-    }
-
-    await updateExpense(id, { is_pinned: !expense.is_pinned });
+  const setMonths = (newMonths: MonthData[]) => {
+    console.log('Setting months:', newMonths.length);
+    setMonthsState(newMonths);
   };
 
   return (
     <BudgetContext.Provider
       value={{
-        budgets,
+        months,
+        setMonths,
         loading,
-        addBudget,
-        updateBudget,
-        deleteBudget,
-        addExpense,
-        updateExpense,
-        deleteExpense,
-        toggleBudgetPin,
-        toggleExpensePin,
-        refreshBudgets,
+        syncToSupabase,
+        loadFromSupabase,
       }}
     >
       {children}
@@ -347,10 +229,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useBudgets() {
+export function useBudget() {
   const context = useContext(BudgetContext);
   if (context === undefined) {
-    throw new Error('useBudgets must be used within a BudgetProvider');
+    throw new Error('useBudget must be used within a BudgetProvider');
   }
   return context;
 }

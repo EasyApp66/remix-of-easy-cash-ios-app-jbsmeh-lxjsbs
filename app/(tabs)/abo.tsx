@@ -8,23 +8,16 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
+import { useSubscription, Subscription } from "@/contexts/SubscriptionContext";
 import { BlurView } from 'expo-blur';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
-
-interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  isPinned: boolean;
-}
 
 export default function AboScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
+  const { subscriptions, setSubscriptions, loading: subscriptionLoading } = useSubscription();
   const [isPremium, setIsPremium] = useState(false);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubAmount, setNewSubAmount] = useState('');
@@ -45,8 +38,8 @@ export default function AboScreen() {
 
   // Premium enforcement hook
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
-    monthsCount: 0, // This will be passed from budget screen
-    maxExpensesPerMonth: 0, // This will be passed from budget screen
+    monthsCount: 0,
+    maxExpensesPerMonth: 0,
     subscriptionsCount: totalSubscriptions,
     isPremium,
   });
@@ -57,12 +50,10 @@ export default function AboScreen() {
       console.log('Rolling back last action in abo screen:', lastAction);
       
       if (lastAction.type === 'addSubscription' && lastAction.data?.subId) {
-        // Remove the last added subscription
-        setSubscriptions(prevSubs => prevSubs.filter(sub => sub.id !== lastAction.data.subId));
+        setSubscriptions(subscriptions.filter(sub => sub.id !== lastAction.data.subId));
         console.log('Rolled back subscription addition:', lastAction.data.subId);
       }
       
-      // Clear the rollback flag and last action
       clearLastAction();
     }
   }, [shouldRollback, lastAction]);
@@ -83,30 +74,25 @@ export default function AboScreen() {
         isPinned: false,
       };
       
-      // Check if adding this subscription would exceed the limit
       if (!canPerformAction('addSubscription')) {
         console.log('Subscription limit reached, redirecting to premium');
         
-        // Track this action for potential rollback
         setLastAction({
           type: 'addSubscription',
           data: { subId: newSub.id },
           timestamp: Date.now(),
         });
         
-        // Add the subscription first
         setSubscriptions([...subscriptions, newSub]);
         
         setNewSubName('');
         setNewSubAmount('');
         setShowAddModal(false);
         
-        // Then redirect to premium
         redirectToPremium();
         return;
       }
       
-      // If within limits, just add the subscription
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
       setNewSubAmount('');
@@ -153,28 +139,23 @@ export default function AboScreen() {
           isPinned: false,
         };
         
-        // Check if duplicating this subscription would exceed the limit
         if (!canPerformAction('addSubscription')) {
           console.log('Subscription limit reached when duplicating, redirecting to premium');
           
-          // Track this action for potential rollback
           setLastAction({
             type: 'addSubscription',
             data: { subId: duplicatedSub.id },
             timestamp: Date.now(),
           });
           
-          // Add the duplicated subscription first
           setSubscriptions([...subscriptions, duplicatedSub]);
           
-          // Then redirect to premium
           redirectToPremium();
           setShowSubMenu(false);
           setSelectedSubForMenu(null);
           return;
         }
         
-        // If within limits, just duplicate the subscription
         setSubscriptions([...subscriptions, duplicatedSub]);
         console.log('Duplicated subscription within limits:', duplicatedSub);
       }
@@ -271,7 +252,6 @@ export default function AboScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      {/* Snow animation background */}
       <SnowAnimation />
 
       <ScrollView 
@@ -311,10 +291,8 @@ export default function AboScreen() {
                 onSwipeableOpen={(direction) => {
                   console.log('Swipe opened:', direction, subscription.id);
                   if (direction === 'left') {
-                    // Swipe from left = Pin/Unpin
                     handleTogglePin(subscription.id);
                   } else if (direction === 'right') {
-                    // Swipe from right = Delete
                     handleDeleteSubscription(subscription.id);
                   }
                 }}
@@ -357,11 +335,10 @@ export default function AboScreen() {
           ))}
         </View>
 
-        {/* Spacer for floating button */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Add Button - Fixed to bottom right */}
+      {/* Floating Add Button */}
       <TouchableOpacity 
         style={styles.floatingAddButton}
         onPress={() => {

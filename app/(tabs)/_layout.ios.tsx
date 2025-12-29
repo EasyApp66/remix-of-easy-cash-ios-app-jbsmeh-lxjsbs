@@ -1,19 +1,49 @@
 
 import React from 'react';
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePathname } from 'expo-router';
 
 export default function TabLayout() {
+  const { user, loading } = useAuth();
+  const pathname = usePathname();
+
+  // Determine if we should show the tab bar
+  // Hide on welcome and login pages, show only when user is authenticated
+  const shouldShowTabBar = user && !loading && 
+    !pathname.includes('/(home)') && 
+    !pathname.includes('/login');
+
+  console.log('iOS Tab bar visibility:', { 
+    shouldShowTabBar, 
+    user: !!user, 
+    loading, 
+    pathname 
+  });
+
   return (
     <NativeTabs>
-      <NativeTabs.Trigger key="budget" name="budget">
+      <NativeTabs.Trigger 
+        key="budget" 
+        name="budget"
+        hidden={!shouldShowTabBar}
+      >
         <Icon sf="dollarsign.circle.fill" />
         <Label>Budget</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger key="abo" name="abo">
+      <NativeTabs.Trigger 
+        key="abo" 
+        name="abo"
+        hidden={!shouldShowTabBar}
+      >
         <Icon sf="repeat.circle.fill" />
         <Label>Abos</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger key="profile" name="profile">
+      <NativeTabs.Trigger 
+        key="profile" 
+        name="profile"
+        hidden={!shouldShowTabBar}
+      >
         <Icon sf="person.fill" />
         <Label>Profil</Label>
       </NativeTabs.Trigger>

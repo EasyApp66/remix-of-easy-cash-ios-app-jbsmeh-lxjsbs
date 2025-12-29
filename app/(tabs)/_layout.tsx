@@ -3,10 +3,12 @@ import React, { useEffect } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
 import { BackHandler } from 'react-native';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function TabLayout() {
   const router = useRouter();
   const pathname = usePathname();
+  const { user, loading } = useAuth();
 
   // Handle Android back button
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function TabLayout() {
     {
       name: 'budget',
       route: '/(tabs)/budget',
-      icon: 'attach-money', // Changed from 'account-balance-wallet' to dollar sign
+      icon: 'attach-money',
       label: 'Budget',
     },
     {
@@ -48,7 +50,20 @@ export default function TabLayout() {
     },
   ];
 
-  // For Android and Web, use Stack navigation with custom floating tab bar
+  // Determine if we should show the tab bar
+  // Hide on welcome and login pages, show only when user is authenticated
+  const shouldShowTabBar = user && !loading && 
+    !pathname.includes('/(home)') && 
+    !pathname.includes('/login');
+
+  console.log('Tab bar visibility:', { 
+    shouldShowTabBar, 
+    user: !!user, 
+    loading, 
+    pathname 
+  });
+
+  // For Android and Web, use Stack navigation with conditional floating tab bar
   return (
     <>
       <Stack
@@ -69,7 +84,7 @@ export default function TabLayout() {
         <Stack.Screen key="abo" name="abo" />
         <Stack.Screen key="profile" name="profile" />
       </Stack>
-      <FloatingTabBar tabs={tabs} />
+      {shouldShowTabBar && <FloatingTabBar tabs={tabs} />}
     </>
   );
 }

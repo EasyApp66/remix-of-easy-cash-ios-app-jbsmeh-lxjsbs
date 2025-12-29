@@ -1,187 +1,166 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
 export interface Subscription {
   id: string;
-  user_id: string;
   name: string;
   amount: number;
-  billing_cycle: string;
-  is_pinned: boolean;
-  created_at: string;
-  updated_at: string;
+  isPinned: boolean;
+  billingCycle?: string;
 }
 
 interface SubscriptionContextType {
   subscriptions: Subscription[];
+  setSubscriptions: (subscriptions: Subscription[]) => void;
   loading: boolean;
-  addSubscription: (name: string, amount: number, billingCycle: string) => Promise<void>;
-  updateSubscription: (id: string, updates: Partial<Subscription>) => Promise<void>;
-  deleteSubscription: (id: string) => Promise<void>;
-  togglePin: (id: string) => Promise<void>;
-  refreshSubscriptions: () => Promise<void>;
+  syncToSupabase: () => Promise<void>;
+  loadFromSupabase: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [subscriptions, setSubscriptionsState] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(false);
 
+  // Load data from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      refreshSubscriptions();
-    } else {
-      setSubscriptions([]);
-      setLoading(false);
+      console.log('User logged in, loading subscription data from Supabase');
+      loadFromSupabase();
     }
   }, [user]);
 
-  const refreshSubscriptions = async () => {
+  // Auto-sync to Supabase whenever subscriptions change (debounced)
+  useEffect(() => {
+    if (user && subscriptions.length >= 0) {
+      const timeoutId = setTimeout(() => {
+        console.log('Auto-syncing subscription data to Supabase');
+        syncToSupabase();
+      }, 1000); // Debounce for 1 second
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [subscriptions, user]);
+
+  const loadFromSupabase = async () => {
     if (!user) {
-      console.log('No user, skipping subscription refresh');
+      console.log('No user, skipping Supabase load');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Fetching subscriptions for user:', user.id);
-      
+      console.log('Loading subscription data from Supabase for user:', user.id);
+
       const { data, error } = await supabase
         .from('user_subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error fetching subscriptions:', error);
-        throw error;
+        console.error('Error loading subscriptions:', error);
+        return;
       }
 
-      console.log('Fetched subscriptions:', data);
-      setSubscriptions(data || []);
+      if (!data || data.length === 0) {
+        console.log('No subscription data found in Supabase');
+        setSubscriptionsState([]);
+        return;
+      }
+
+      const loadedSubscriptions: Subscription[] = data.map(sub => ({
+        id: sub.id,
+        name: sub.name,
+        amount: parseFloat(sub.amount),
+        isPinned: sub.is_pinned || false,
+        billingCycle: sub.billing_cycle || 'monthly',
+      }));
+
+      console.log('Loaded subscription data from Supabase:', loadedSubscriptions);
+      setSubscriptionsState(loadedSubscriptions);
     } catch (error) {
-      console.error('Error in refreshSubscriptions:', error);
+      console.error('Error loading subscription data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const addSubscription = async (name: string, amount: number, billingCycle: string = 'monthly') => {
+  const syncToSupabase = async () => {
     if (!user) {
-      console.error('No user logged in');
+      console.log('No user, skipping Supabase sync');
       return;
     }
 
     try {
-      console.log('Adding subscription:', { name, amount, billingCycle });
-      
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .insert([
-          {
+      console.log('Syncing subscription data to Supabase for user:', user.id);
+
+      // Sync subscriptions
+      for (const subscription of subscriptions) {
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .upsert({
+            id: subscription.id,
             user_id: user.id,
-            name,
-            amount,
-            billing_cycle: billingCycle,
-            is_pinned: false,
-          },
-        ])
-        .select()
-        .single();
+            name: subscription.name,
+            amount: subscription.amount,
+            billing_cycle: subscription.billingCycle || 'monthly',
+            is_pinned: subscription.isPinned,
+            updated_at: new Date().toISOString(),
+          });
 
-      if (error) {
-        console.error('Error adding subscription:', error);
-        throw error;
+        if (error) {
+          console.error('Error syncing subscription:', error);
+        }
       }
 
-      console.log('Added subscription:', data);
-      await refreshSubscriptions();
+      // Delete subscriptions that are no longer in the list
+      if (subscriptions.length > 0) {
+        const subscriptionIds = subscriptions.map(s => s.id);
+        const { error: deleteError } = await supabase
+          .from('user_subscriptions')
+          .delete()
+          .eq('user_id', user.id)
+          .not('id', 'in', `(${subscriptionIds.join(',')})`);
+
+        if (deleteError) {
+          console.error('Error deleting old subscriptions:', deleteError);
+        }
+      } else {
+        // If no subscriptions, delete all for this user
+        const { error: deleteAllError } = await supabase
+          .from('user_subscriptions')
+          .delete()
+          .eq('user_id', user.id);
+
+        if (deleteAllError) {
+          console.error('Error deleting all subscriptions:', deleteAllError);
+        }
+      }
+
+      console.log('Successfully synced subscription data to Supabase');
     } catch (error) {
-      console.error('Error in addSubscription:', error);
+      console.error('Error syncing subscription data:', error);
     }
   };
 
-  const updateSubscription = async (id: string, updates: Partial<Subscription>) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Updating subscription:', id, updates);
-      
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error updating subscription:', error);
-        throw error;
-      }
-
-      console.log('Updated subscription successfully');
-      await refreshSubscriptions();
-    } catch (error) {
-      console.error('Error in updateSubscription:', error);
-    }
-  };
-
-  const deleteSubscription = async (id: string) => {
-    if (!user) {
-      console.error('No user logged in');
-      return;
-    }
-
-    try {
-      console.log('Deleting subscription:', id);
-      
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error deleting subscription:', error);
-        throw error;
-      }
-
-      console.log('Deleted subscription successfully');
-      await refreshSubscriptions();
-    } catch (error) {
-      console.error('Error in deleteSubscription:', error);
-    }
-  };
-
-  const togglePin = async (id: string) => {
-    const subscription = subscriptions.find(s => s.id === id);
-    if (!subscription) {
-      console.error('Subscription not found:', id);
-      return;
-    }
-
-    await updateSubscription(id, { is_pinned: !subscription.is_pinned });
+  const setSubscriptions = (newSubscriptions: Subscription[]) => {
+    console.log('Setting subscriptions:', newSubscriptions.length);
+    setSubscriptionsState(newSubscriptions);
   };
 
   return (
     <SubscriptionContext.Provider
       value={{
         subscriptions,
+        setSubscriptions,
         loading,
-        addSubscription,
-        updateSubscription,
-        deleteSubscription,
-        togglePin,
-        refreshSubscriptions,
+        syncToSupabase,
+        loadFromSupabase,
       }}
     >
       {children}
@@ -189,10 +168,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   );
 }
 
-export function useSubscriptions() {
+export function useSubscription() {
   const context = useContext(SubscriptionContext);
   if (context === undefined) {
-    throw new Error('useSubscriptions must be used within a SubscriptionProvider');
+    throw new Error('useSubscription must be used within a SubscriptionProvider');
   }
   return context;
 }
