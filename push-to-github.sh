@@ -1,30 +1,59 @@
 
 #!/bin/bash
 
+# Easy Cash App - GitHub Migration Script
 # This script must be run on your LOCAL COMPUTER, not in natively.dev
-# Usage: ./push-to-github.sh YOUR_GITHUB_USERNAME YOUR_REPO_NAME
+# 
+# INSTRUCTIONS:
+# 1. Download your entire project from natively.dev
+# 2. Open Terminal (Mac/Linux) or Git Bash (Windows)
+# 3. Navigate to your project folder: cd path/to/your/project
+# 4. Make this script executable: chmod +x push-to-github.sh
+# 5. Run this script: ./push-to-github.sh
+#
+# Make sure you have Git installed and are logged into GitHub
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: ./push-to-github.sh YOUR_GITHUB_USERNAME YOUR_REPO_NAME"
+echo "🚀 Starting GitHub migration for Easy Cash App..."
+echo ""
+
+# Check if git is installed
+if ! command -v git &> /dev/null; then
+    echo "❌ Error: Git is not installed. Please install Git first."
+    echo "   Visit: https://git-scm.com/downloads"
     exit 1
 fi
 
-USERNAME=$1
-REPO=$2
-
-echo "Initializing Git repository..."
+# Initialize Git repository
+echo "📦 Initializing Git repository..."
 git init
 
-echo "Adding all files..."
+# Add all files
+echo "📝 Adding all files to Git..."
 git add .
 
-echo "Creating initial commit..."
-git commit -m "Initial commit from natively.dev - Easy Cash App"
+# Create initial commit
+echo "💾 Creating initial commit..."
+git commit -m "Initial commit - Easy Cash App"
 
-echo "Adding remote repository..."
-git remote add origin "https://github.com/$USERNAME/$REPO.git"
+# Rename branch to main
+echo "🔄 Renaming branch to main..."
+git branch -M main
 
-echo "Pushing to GitHub..."
+# Add remote repository
+echo "🔗 Adding GitHub remote repository..."
+git remote add origin https://github.com/EasyApp66/DEIN-REPO-NAME.git
+
+echo ""
+echo "⚠️  IMPORTANT: Replace 'DEIN-REPO-NAME' with your actual repository name!"
+echo "   You can do this by running:"
+echo "   git remote set-url origin https://github.com/EasyApp66/YOUR-ACTUAL-REPO-NAME.git"
+echo ""
+
+# Push to GitHub
+echo "🚀 Pushing to GitHub..."
 git push -u origin main
 
-echo "Done! Your code is now on GitHub at https://github.com/$USERNAME/$REPO"
+echo ""
+echo "✅ Done! Your code should now be on GitHub!"
+echo "   Visit: https://github.com/EasyApp66/DEIN-REPO-NAME"
+echo ""
