@@ -40,6 +40,7 @@ export default function LoginScreen() {
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) {
+          console.error('Sign up error:', error);
           Alert.alert(t('error'), error.message || t('registrationError'));
         } else {
           Alert.alert(
@@ -60,7 +61,10 @@ export default function LoginScreen() {
         // Sign in (handles both admin and regular users)
         const { error } = await signIn(email, password);
         if (error) {
-          Alert.alert(t('error'), error.message || t('loginFailed'));
+          console.error('Sign in error:', error);
+          // Show user-friendly error message
+          const errorMessage = error.message || t('loginFailed');
+          Alert.alert(t('error'), errorMessage);
         } else {
           // Wait a bit for the auth state to update
           setTimeout(() => {

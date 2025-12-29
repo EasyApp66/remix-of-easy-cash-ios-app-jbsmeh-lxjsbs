@@ -10,15 +10,19 @@ export default function TabLayout() {
 
   // Determine if we should show the tab bar
   // Hide on welcome and login pages, show only when user is authenticated
-  const shouldShowTabBar = user && !loading && 
-    !pathname.includes('/(home)') && 
-    !pathname.includes('/login');
+  const isWelcomeOrLogin = pathname === '/(tabs)' || 
+                           pathname === '/(tabs)/(home)' || 
+                           pathname === '/(tabs)/(home)/login' ||
+                           pathname.includes('/login');
+  
+  const shouldShowTabBar = user && !loading && !isWelcomeOrLogin;
 
   console.log('iOS Tab bar visibility:', { 
     shouldShowTabBar, 
     user: !!user, 
     loading, 
-    pathname 
+    pathname,
+    isWelcomeOrLogin
   });
 
   return (

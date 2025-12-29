@@ -1,8 +1,9 @@
+
 {
   "expo": {
     "name": "Easy Budget",
     "slug": "Easy Budget",
-    "version": "1.0.0",
+    "version": "1.00.1",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
     "userInterfaceStyle": "automatic",
@@ -17,7 +18,8 @@
       "bundleIdentifier": "com.easybudget.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +27,8 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.easybudget.app"
+      "package": "com.easybudget.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/images/final_quest_240x240.png",

@@ -121,60 +121,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Check for admin login
     if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
-      console.log('AuthContext: Admin login detected, attempting Supabase auth');
+      console.log('AuthContext: Admin login detected');
       
       try {
-        // Try to sign in with Supabase
+        // First, check if admin user exists in auth.users
+        const { data: existingUsers } = await supabase.auth.admin.listUsers();
+        const adminExists = existingUsers?.users?.some(
+          u => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+        );
+
+        if (!adminExists) {
+          console.log('AuthContext: Admin user does not exist, needs to be created manually');
+          return { 
+            error: { 
+              message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.' 
+            } 
+          };
+        }
+
+        // Try to sign in
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
-          console.log('AuthContext: Admin user not found in Supabase, creating account');
-          
-          // Admin user doesn't exist, create it
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: 'https://natively.dev/email-confirmed',
-              data: {
-                is_admin: true,
-              },
-            },
-          });
-
-          if (signUpError) {
-            console.error('AuthContext: Error creating admin account:', signUpError);
-            return { error: signUpError };
-          }
-
-          console.log('AuthContext: Admin account created:', signUpData);
-
-          // Create profile with admin flag
-          if (signUpData.user) {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .upsert({
-                id: signUpData.user.id,
-                email: signUpData.user.email,
-                is_admin: true,
-                is_premium: true,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              });
-
-            if (profileError) {
-              console.error('AuthContext: Error creating admin profile:', profileError);
-            } else {
-              console.log('AuthContext: Admin profile created successfully');
-            }
-
-            console.log('AuthContext: Admin account created, please verify email if required');
-          }
-
-          return { error: null };
+          console.error('AuthContext: Admin sign in error:', error);
+          return { error };
         }
 
         console.log('AuthContext: Admin sign in successful');
@@ -189,6 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               is_admin: true,
               is_premium: true,
               updated_at: new Date().toISOString(),
+            }, {
+              onConflict: 'id'
             });
 
           if (profileError) {
@@ -225,12 +200,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     console.log('AuthContext: Signing up with email:', email);
+    
+    // Check if this is the admin email
+    const isAdminEmail = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: 'https://natively.dev/email-confirmed',
+          data: isAdminEmail ? {
+            is_admin: true,
+          } : undefined,
         },
       });
       
@@ -246,8 +228,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .insert({
               id: data.user.id,
               email: data.user.email,
-              is_admin: false,
-              is_premium: false,
+              is_admin: isAdminEmail,
+              is_premium: isAdminEmail,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             });
