@@ -8,6 +8,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface BudgetItem {
   id: string;
@@ -495,36 +496,52 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card - Title top-left, Number bottom-right, moved lower */}
-        <View style={styles.balanceCard}>
-          <View style={styles.balanceNewLayout}>
-            <TouchableOpacity 
-              onPress={handleEditBalanceLabel}
-              style={styles.balanceLabelContainer}
-            >
-              <Text style={[styles.balanceLabel, { fontSize: 19 }]}>{editBalanceLabel}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={handleEditBalance}
-              style={styles.balanceAmountContainer}
-            >
-              <Text style={[styles.balanceAmount, { marginBottom: 1, fontSize: 37 }]}>{accountBalance.toLocaleString('de-DE')}</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Account Balance Card - Glossy Design */}
+        <View style={styles.balanceCardWrapper}>
+          <LinearGradient
+            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.balanceCard}
+          >
+            <View style={styles.glossyOverlay} />
+            <View style={styles.balanceNewLayout}>
+              <TouchableOpacity 
+                onPress={handleEditBalanceLabel}
+                style={styles.balanceLabelContainer}
+              >
+                <Text style={[styles.balanceLabel, { fontSize: 19 }]}>{editBalanceLabel}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={handleEditBalance}
+                style={styles.balanceAmountContainer}
+              >
+                <Text style={[styles.balanceAmount, { marginBottom: 1, fontSize: 37 }]}>{accountBalance.toLocaleString('de-DE')}</Text>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
         </View>
 
-        {/* Total and Remaining */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{t('total')}</Text>
-            <Text style={styles.summaryAmount}>{totalExpenses.toLocaleString('de-DE')}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{t('remaining')}</Text>
-            <Text style={[styles.summaryAmount, remaining < 0 ? styles.negativeAmount : styles.remainingAmount]}>
-              {remaining.toLocaleString('de-DE')}
-            </Text>
-          </View>
+        {/* Total and Remaining - Glossy Design */}
+        <View style={styles.summaryCardWrapper}>
+          <LinearGradient
+            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
+            <View style={styles.glossyOverlay} />
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>{t('total')}</Text>
+              <Text style={styles.summaryAmount}>{totalExpenses.toLocaleString('de-DE')}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>{t('remaining')}</Text>
+              <Text style={[styles.summaryAmount, remaining < 0 ? styles.negativeAmount : styles.remainingAmount]}>
+                {remaining.toLocaleString('de-DE')}
+              </Text>
+            </View>
+          </LinearGradient>
         </View>
 
         {/* Month Selector - Horizontal Scroll */}
@@ -571,33 +588,41 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid - Numbers smaller and closer to bottom */}
+        {/* Budget Items Grid - Glossy Design */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
               <TouchableOpacity
-                style={[
-                  styles.budgetItem,
-                  item.isPinned && styles.pinnedBudgetItem,
-                ]}
+                style={styles.budgetItemWrapper}
                 onLongPress={() => handleLongPressItem(item.id)}
                 delayLongPress={500}
                 activeOpacity={0.7}
               >
-                <View style={styles.budgetItemHeader}>
-                  <Text style={styles.budgetItemName}>{item.name}</Text>
-                  <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
-                    <IconSymbol 
-                      ios_icon_name="xmark.circle.fill" 
-                      android_material_icon_name="cancel" 
-                      size={20} 
-                      color={colors.red} 
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.budgetItemAmountContainer}>
-                  <Text style={styles.budgetItemAmount}>{item.amount.toLocaleString('de-DE')}</Text>
-                </View>
+                <LinearGradient
+                  colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[
+                    styles.budgetItem,
+                    item.isPinned && styles.pinnedBudgetItem,
+                  ]}
+                >
+                  <View style={styles.glossyOverlay} />
+                  <View style={styles.budgetItemHeader}>
+                    <Text style={styles.budgetItemName}>{item.name}</Text>
+                    <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
+                      <IconSymbol 
+                        ios_icon_name="xmark.circle.fill" 
+                        android_material_icon_name="cancel" 
+                        size={20} 
+                        color={colors.red} 
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.budgetItemAmountContainer}>
+                    <Text style={styles.budgetItemAmount}>{item.amount.toLocaleString('de-DE')}</Text>
+                  </View>
+                </LinearGradient>
               </TouchableOpacity>
             </React.Fragment>
           ))}
@@ -977,12 +1002,29 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 60 : 80,
     paddingBottom: 120,
   },
-  balanceCard: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 24,
+  balanceCardWrapper: {
     marginBottom: 16,
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
+  balanceCard: {
+    borderRadius: 20,
+    padding: 24,
     minHeight: 140,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  glossyOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   balanceNewLayout: {
     flex: 1,
@@ -1008,11 +1050,18 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: colors.text,
   },
-  summaryCard: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 20,
+  summaryCardWrapper: {
     marginBottom: 16,
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
+  summaryCard: {
+    borderRadius: 20,
+    padding: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -1079,15 +1128,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
   },
-  budgetItem: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 20,
+  budgetItemWrapper: {
     width: '48%',
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
+  budgetItem: {
+    borderRadius: 20,
+    padding: 20,
     height: 140,
     justifyContent: 'space-between',
     borderWidth: 2,
     borderColor: 'transparent',
+    overflow: 'hidden',
   },
   pinnedBudgetItem: {
     borderColor: colors.green,

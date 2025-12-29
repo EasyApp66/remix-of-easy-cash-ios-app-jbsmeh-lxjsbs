@@ -8,6 +8,7 @@ import SnowAnimation from "@/components/SnowAnimation";
 import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Subscription {
   id: string;
@@ -240,41 +241,65 @@ export default function AboScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card - matching Budget page first bubble */}
-        <View style={styles.headerCard}>
-          <View style={styles.headerLayout}>
-            <View style={styles.headerLabelContainer}>
-              <Text style={styles.headerLabel}>{t('abosCounter')}</Text>
+        {/* Header Card - Glossy Design */}
+        <View style={styles.headerCardWrapper}>
+          <LinearGradient
+            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerCard}
+          >
+            <View style={styles.glossyOverlay} />
+            <View style={styles.headerLayout}>
+              <View style={styles.headerLabelContainer}>
+                <Text style={styles.headerLabel}>{t('abosCounter')}</Text>
+              </View>
+              <View style={styles.headerAmountContainer}>
+                <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
+              </View>
             </View>
-            <View style={styles.headerAmountContainer}>
-              <Text style={styles.headerAmount}>{totalAmount.toLocaleString('de-DE')}</Text>
-            </View>
-          </View>
+          </LinearGradient>
         </View>
 
-        {/* Total Subscriptions - TOTAL text center-left */}
-        <View style={styles.totalCard}>
-          <Text style={styles.totalLabel}>{t('total')}</Text>
-          <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
+        {/* Total Subscriptions - Glossy Design */}
+        <View style={styles.totalCardWrapper}>
+          <LinearGradient
+            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.totalCard}
+          >
+            <View style={styles.glossyOverlay} />
+            <Text style={styles.totalLabel}>{t('total')}</Text>
+            <Text style={styles.totalAmount}>{totalSubscriptions}</Text>
+          </LinearGradient>
         </View>
 
-        {/* Subscriptions List - name on left, amount on right */}
+        {/* Subscriptions List - Glossy Design */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
               <TouchableOpacity
-                style={[
-                  styles.subscriptionItem,
-                  subscription.isPinned && styles.pinnedSubscriptionItem,
-                ]}
+                style={styles.subscriptionItemWrapper}
                 onLongPress={() => handleLongPressSub(subscription.id)}
                 delayLongPress={500}
                 activeOpacity={0.7}
               >
-                <View style={styles.subscriptionContent}>
-                  <Text style={styles.subscriptionName}>{subscription.name}</Text>
-                  <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
-                </View>
+                <LinearGradient
+                  colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[
+                    styles.subscriptionItem,
+                    subscription.isPinned && styles.pinnedSubscriptionItem,
+                  ]}
+                >
+                  <View style={styles.glossyOverlay} />
+                  <View style={styles.subscriptionContent}>
+                    <Text style={styles.subscriptionName}>{subscription.name}</Text>
+                    <Text style={styles.subscriptionAmount}>{subscription.amount}</Text>
+                  </View>
+                </LinearGradient>
               </TouchableOpacity>
             </React.Fragment>
           ))}
@@ -525,12 +550,29 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 60 : 80,
     paddingBottom: 120,
   },
-  headerCard: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 24,
+  headerCardWrapper: {
     marginBottom: 16,
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
+  headerCard: {
+    borderRadius: 20,
+    padding: 24,
     minHeight: 140,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  glossyOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   headerLayout: {
     flex: 1,
@@ -557,16 +599,22 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 1,
   },
-  totalCard: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 20,
+  totalCardWrapper: {
     marginBottom: 16,
-    position: 'relative',
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
+  totalCard: {
+    borderRadius: 20,
+    padding: 20,
     minHeight: 80,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   totalLabel: {
     fontSize: 16,
@@ -581,13 +629,18 @@ const styles = StyleSheet.create({
   subscriptionsList: {
     gap: 12,
   },
+  subscriptionItemWrapper: {
+    borderRadius: 20,
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.15)',
+    elevation: 8,
+  },
   subscriptionItem: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     minHeight: 80,
     borderWidth: 2,
     borderColor: 'transparent',
+    overflow: 'hidden',
   },
   pinnedSubscriptionItem: {
     borderColor: colors.green,

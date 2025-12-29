@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import * as MailComposer from 'expo-mail-composer';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -185,43 +186,60 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Info Section */}
-        <View style={styles.userSection}>
-          <View style={styles.avatarContainer}>
-            <IconSymbol 
-              ios_icon_name="person.circle.fill" 
-              android_material_icon_name="account-circle" 
-              size={80} 
-              color={colors.green} 
-            />
-          </View>
-          {user ? (
-            <React.Fragment>
-              <Text style={styles.userName}>
-                {user.email?.split('@')[0] || 'User'}
-              </Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Text style={styles.userName}>{t('guest')}</Text>
-              <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
-            </React.Fragment>
-          )}
-          <View style={styles.premiumBadge}>
-            <Text style={styles.premiumText}>
-              {t('premium')}: {isPremium ? t('yes') : t('no')}
-            </Text>
-          </View>
+        {/* User Info Section - Modern Glossy Card */}
+        <View style={styles.userSectionWrapper}>
+          <LinearGradient
+            colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.userSection}
+          >
+            <View style={styles.glossyOverlay} />
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatarGlow}>
+                <IconSymbol 
+                  ios_icon_name="person.circle.fill" 
+                  android_material_icon_name="account-circle" 
+                  size={100} 
+                  color={colors.green} 
+                />
+              </View>
+            </View>
+            {user ? (
+              <React.Fragment>
+                <Text style={styles.userName}>
+                  {user.email?.split('@')[0] || 'User'}
+                </Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Text style={styles.userName}>{t('guest')}</Text>
+                <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
+              </React.Fragment>
+            )}
+            <View style={styles.premiumBadgeWrapper}>
+              <LinearGradient
+                colors={isPremium ? ['#A0FF6B', '#7FCC56'] : ['#3A3A3A', '#2A2A2A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.premiumBadge}
+              >
+                <Text style={[styles.premiumText, isPremium && styles.premiumTextActive]}>
+                  {t('premium')}: {isPremium ? t('yes') : t('no')}
+                </Text>
+              </LinearGradient>
+            </View>
+          </LinearGradient>
         </View>
 
-        {/* Menu Items */}
+        {/* Menu Items - Modern Cards */}
         <View style={styles.menuSection}>
           {menuItems.map((item) => (
             <Pressable 
               key={item.id}
               style={({ pressed }) => [
-                styles.menuItem,
+                styles.menuItemWrapper,
                 pressed && styles.menuItemPressed
               ]}
               onPress={() => {
@@ -229,21 +247,31 @@ export default function ProfileScreen() {
                 item.onPress();
               }}
             >
-              <View style={styles.menuItemLeft}>
+              <LinearGradient
+                colors={['#3A3A3A', '#2A2A2A', '#1A1A1A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.menuItem}
+              >
+                <View style={styles.menuItemGlossyOverlay} />
+                <View style={styles.menuItemLeft}>
+                  <View style={styles.iconContainer}>
+                    <IconSymbol 
+                      ios_icon_name={item.iosIcon} 
+                      android_material_icon_name={item.icon} 
+                      size={24} 
+                      color={colors.green} 
+                    />
+                  </View>
+                  <Text style={styles.menuItemText}>{item.title}</Text>
+                </View>
                 <IconSymbol 
-                  ios_icon_name={item.iosIcon} 
-                  android_material_icon_name={item.icon} 
-                  size={24} 
-                  color={colors.text} 
+                  ios_icon_name="chevron.right" 
+                  android_material_icon_name="chevron-right" 
+                  size={20} 
+                  color={colors.textSecondary} 
                 />
-                <Text style={styles.menuItemText}>{item.title}</Text>
-              </View>
-              <IconSymbol 
-                ios_icon_name="chevron.right" 
-                android_material_icon_name="chevron-right" 
-                size={20} 
-                color={colors.textSecondary} 
-              />
+              </LinearGradient>
             </Pressable>
           ))}
         </View>
@@ -276,55 +304,101 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 80,
     paddingBottom: 120,
+    paddingHorizontal: 16,
+  },
+  userSectionWrapper: {
+    marginBottom: 24,
+    borderRadius: 24,
+    boxShadow: '0px 8px 32px rgba(160, 255, 107, 0.2)',
+    elevation: 12,
   },
   userSection: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  glossyOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   avatarContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  avatarGlow: {
+    borderRadius: 50,
+    boxShadow: '0px 0px 30px rgba(160, 255, 107, 0.3)',
   },
   userName: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   userEmail: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  premiumBadgeWrapper: {
+    borderRadius: 24,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
+    elevation: 4,
   },
   premiumBadge: {
-    backgroundColor: colors.cardBackground,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 24,
   },
   premiumText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: colors.text,
   },
+  premiumTextActive: {
+    color: '#000000',
+  },
   menuSection: {
-    paddingVertical: 16,
+    gap: 12,
+    marginBottom: 24,
+  },
+  menuItemWrapper: {
+    borderRadius: 16,
+    boxShadow: '0px 4px 16px rgba(160, 255, 107, 0.1)',
+    elevation: 4,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey,
-    backgroundColor: colors.background,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  menuItemGlossyOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   menuItemPressed: {
-    backgroundColor: colors.cardBackground,
-    opacity: 0.8,
+    opacity: 0.7,
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -332,8 +406,17 @@ const styles = StyleSheet.create({
     gap: 16,
     flex: 1,
   },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(160, 255, 107, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   menuItemText: {
     fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
     flex: 1,
   },
@@ -344,5 +427,6 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
 });
