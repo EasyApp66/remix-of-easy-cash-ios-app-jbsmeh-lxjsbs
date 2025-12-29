@@ -69,7 +69,7 @@ export default function BudgetScreen() {
   const [showEditBalanceModal, setShowEditBalanceModal] = useState(false);
   const [showEditBalanceLabelModal, setShowEditBalanceLabelModal] = useState(false);
   const [editBalanceValue, setEditBalanceValue] = useState('');
-  const [editBalanceLabel, setEditBalanceLabel] = useState('KONTOSTAND');
+  const [editBalanceLabel, setEditBalanceLabel] = useState('BUDGET');
   
   const [showEditItemNameModal, setShowEditItemNameModal] = useState(false);
   const [showEditItemAmountModal, setShowEditItemAmountModal] = useState(false);

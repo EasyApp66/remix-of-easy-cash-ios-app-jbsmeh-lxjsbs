@@ -67,7 +67,7 @@ const translations: Translations = {
   errorTitle: { de: 'Fehler', en: 'Error' },
   
   // Abo Screen
-  abosCounter: { de: 'ABOS COUNTER', en: 'SUBSCRIPTIONS COUNTER' },
+  abosCounter: { de: 'ABOS ZÄHLER', en: 'SUBSCRIPTIONS COUNTER' },
   addNewSubscription: { de: 'Neues Abo hinzufügen', en: 'Add New Subscription' },
   subscriptionNamePlaceholder: { de: 'Name (z.B. Spotify)', en: 'Name (e.g. Spotify)' },
   subscriptionAmountPlaceholder: { de: 'Betrag pro Monat', en: 'Amount per month' },
