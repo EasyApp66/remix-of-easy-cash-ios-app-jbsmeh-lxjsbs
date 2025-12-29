@@ -7,6 +7,7 @@ interface LastAction {
   type: ActionType;
   data: any;
   timestamp: number;
+  previousRoute?: string; // Store the route where the action was triggered
 }
 
 interface LimitTrackingContextType {
@@ -15,6 +16,8 @@ interface LimitTrackingContextType {
   clearLastAction: () => void;
   shouldRollback: boolean;
   setShouldRollback: (value: boolean) => void;
+  previousRoute: string | null;
+  setPreviousRoute: (route: string | null) => void;
 }
 
 const LimitTrackingContext = createContext<LimitTrackingContextType | undefined>(undefined);
@@ -22,6 +25,7 @@ const LimitTrackingContext = createContext<LimitTrackingContextType | undefined>
 export function LimitTrackingProvider({ children }: { children: ReactNode }) {
   const [lastAction, setLastAction] = useState<LastAction | null>(null);
   const [shouldRollback, setShouldRollback] = useState(false);
+  const [previousRoute, setPreviousRoute] = useState<string | null>(null);
 
   const clearLastAction = () => {
     console.log('Clearing last action');
@@ -37,6 +41,8 @@ export function LimitTrackingProvider({ children }: { children: ReactNode }) {
         clearLastAction,
         shouldRollback,
         setShouldRollback,
+        previousRoute,
+        setPreviousRoute,
       }}
     >
       {children}

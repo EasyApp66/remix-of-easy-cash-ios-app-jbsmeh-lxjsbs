@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
+import { useLimitTracking } from '@/contexts/LimitTrackingContext';
 
 interface UsePremiumEnforcementProps {
   monthsCount: number;
@@ -16,6 +17,8 @@ export function usePremiumEnforcement({
   isPremium,
 }: UsePremiumEnforcementProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { setPreviousRoute } = useLimitTracking();
 
   // Check if user is trying to exceed limits
   const checkAndEnforceLimits = () => {
@@ -80,7 +83,11 @@ export function usePremiumEnforcement({
 
   // Function to redirect to premium purchase when limit is reached
   const redirectToPremium = () => {
-    console.log('Redirecting to premium purchase page');
+    console.log('Redirecting to premium purchase page from:', pathname);
+    
+    // Store the current route so we can navigate back to it
+    setPreviousRoute(pathname);
+    
     router.push({
       pathname: '/(tabs)/profile',
       params: { showPremium: 'true' },

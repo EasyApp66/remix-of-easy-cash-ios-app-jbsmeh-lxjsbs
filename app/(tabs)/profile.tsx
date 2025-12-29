@@ -17,19 +17,20 @@ export default function ProfileScreen() {
   const params = useLocalSearchParams();
   const { user, signOut } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
-  const { setShouldRollback } = useLimitTracking();
+  const { setShouldRollback, previousRoute, setPreviousRoute } = useLimitTracking();
   const [isPremium, setIsPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   // Check if we should show premium modal on mount (when redirected from limit)
   useEffect(() => {
     if (params.showPremium === 'true') {
+      console.log('Showing premium modal, previous route:', previousRoute);
       setShowPremiumModal(true);
     }
   }, [params]);
 
   const handleClosePremiumModal = () => {
-    console.log('Closing premium modal');
+    console.log('Closing premium modal, previous route:', previousRoute);
     
     // If this was triggered by a limit, trigger rollback
     if (params.showPremium === 'true') {
@@ -39,8 +40,16 @@ export default function ProfileScreen() {
     
     setShowPremiumModal(false);
     
-    // Navigate back to previous screen
-    router.back();
+    // Navigate back to the previous screen using replace
+    if (previousRoute) {
+      console.log('Navigating back to:', previousRoute);
+      router.replace(previousRoute);
+      setPreviousRoute(null); // Clear the stored route
+    } else {
+      // Fallback to budget screen if no previous route is stored
+      console.log('No previous route stored, navigating to budget');
+      router.replace('/(tabs)/budget');
+    }
   };
 
   const handleLogout = async () => {
