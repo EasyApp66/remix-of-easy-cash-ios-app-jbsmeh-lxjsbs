@@ -2,34 +2,34 @@
 {
   "expo": {
     "name": "Easy Budget",
-    "slug": "Easy Budget",
-    "version": "1.0.5",
+    "slug": "easy-budget",
+    "version": "1.0.6",
     "orientation": "portrait",
-    "icon": "./assets/images/natively-dark.png",
+    "icon": "./assets/images/final_quest_240x240.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/natively-dark.png",
+      "image": "./assets/images/final_quest_240x240.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.easybudget.app",
+      "bundleIdentifier": "com.ivanm66.easybudget",
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "5"
+      "buildNumber": "7"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/natively-dark.png",
+        "foregroundImage": "./assets/images/final_quest_240x240.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.easybudget.app",
-      "versionCode": 5
+      "package": "com.ivanm66.easybudget",
+      "versionCode": 7
     },
     "web": {
       "favicon": "./assets/images/final_quest_240x240.png",
@@ -45,6 +45,11 @@
     "scheme": "easybudget",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
     }
   }
 }

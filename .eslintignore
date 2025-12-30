@@ -1,7 +1,9 @@
+
 # Ignore generated files
-_expo/
+.expo/
 dist/
 web-build/
+public/
 
 # Ignore node modules
 node_modules/
@@ -9,3 +11,10 @@ node_modules/
 # Ignore build artifacts
 *.bundle.js
 *.bundle.js.map
+
+# Ignore babel plugins
+babel-plugins/
+
+# Ignore iOS/Android native folders
+ios/
+android/

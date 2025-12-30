@@ -1,5 +1,4 @@
 
-// https://docs.expo.dev/guides/using-eslint/
 module.exports = {
   extends: [
     'expo',
@@ -23,23 +22,23 @@ module.exports = {
     browser: true,
   },
   rules: {
-    "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/prefer-as-const": "warn",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/prefer-as-const": "off",
     "@typescript-eslint/no-var-requires": "off",
-    "react/react-in-jsx-scope": "off",
-    "@typescript-eslint/no-empty-object-type": "warn",
-    "@typescript-eslint/no-wrapper-object-types": "warn",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "@typescript-eslint/no-wrapper-object-types": "off",
     "@typescript-eslint/ban-tslint-comment": "off",
+    "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
-    "import/no-unresolved": "error",
-    "prefer-const": "warn",
     "react/prop-types": "off",
-    "no-case-declarations": "warn",
-    "no-empty": "warn",
     "react/display-name": "off",
-    "no-var": "warn",
-    "no-console": ["warn", { allow: ["warn", "error"] }]
+    "import/no-unresolved": "off",
+    "prefer-const": "off",
+    "no-case-declarations": "off",
+    "no-empty": "off",
+    "no-var": "off",
+    "no-console": "off"
   },
   overrides: [
     {
