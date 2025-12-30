@@ -5,8 +5,8 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { BudgetProvider } from '@/contexts/BudgetContext';
 import { LimitTrackingProvider } from '@/contexts/LimitTrackingContext';
-import { useEffect, useCallback } from 'react';
-import { LogBox, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { LogBox, Platform, View, ActivityIndicator } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
@@ -21,21 +21,49 @@ LogBox.ignoreLogs([
 ]);
 
 export default function RootLayout() {
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
     console.log('RootLayout: App initialized on platform:', Platform.OS);
     
-    // Hide splash screen after a short delay to ensure everything is loaded
-    const timer = setTimeout(async () => {
+    // Ensure everything is ready before rendering
+    const initializeApp = async () => {
       try {
-        await SplashScreen.hideAsync();
-        console.log('RootLayout: Splash screen hidden');
+        console.log('RootLayout: Starting app initialization...');
+        
+        // Wait for polyfills and modules to be fully loaded
+        // This ensures that window object and storage adapters are ready
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        console.log('RootLayout: App initialization complete');
+        setIsReady(true);
+        
+        // Hide splash screen after a short delay to ensure everything is loaded
+        setTimeout(async () => {
+          try {
+            await SplashScreen.hideAsync();
+            console.log('RootLayout: Splash screen hidden');
+          } catch (error) {
+            console.log('RootLayout: Error hiding splash screen:', error);
+          }
+        }, 800);
       } catch (error) {
-        console.log('RootLayout: Error hiding splash screen:', error);
+        console.error('RootLayout: Error during initialization:', error);
+        setIsReady(true); // Still set ready to avoid infinite loading
       }
-    }, 800);
+    };
 
-    return () => clearTimeout(timer);
+    initializeApp();
   }, []);
+
+  // Show loading indicator while initializing
+  if (!isReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
 
   return (
     <AuthProvider>
