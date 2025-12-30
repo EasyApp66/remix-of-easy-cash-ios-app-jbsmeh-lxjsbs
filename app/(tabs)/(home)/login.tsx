@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
-import SnowAnimation from '@/components/SnowAnimation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AnimatedButton from '@/components/AnimatedButton';
@@ -140,8 +139,6 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <SnowAnimation />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
