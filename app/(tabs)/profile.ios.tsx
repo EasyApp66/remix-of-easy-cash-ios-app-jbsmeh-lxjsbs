@@ -238,7 +238,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.versionSection}>
-          <Text style={styles.versionText}>{t('appVersion')} 1.0.4</Text>
+          <Text style={styles.versionText}>{t('appVersion')} 1.0.5</Text>
         </View>
       </ScrollView>
 

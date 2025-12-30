@@ -179,17 +179,17 @@ export default function ProfileScreen() {
               </View>
             </View>
             {user ? (
-              <>
+              <React.Fragment>
                 <Text style={styles.userName}>
                   {user.email?.split('@')[0] || 'User'}
                 </Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
-              </>
+              </React.Fragment>
             ) : (
-              <>
+              <React.Fragment>
                 <Text style={styles.userName}>{t('guest')}</Text>
                 <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
-              </>
+              </React.Fragment>
             )}
             
             {isAdmin && (
@@ -254,7 +254,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.versionSection}>
-          <Text style={styles.versionText}>{t('appVersion')} 1.0.4</Text>
+          <Text style={styles.versionText}>{t('appVersion')} 1.0.5</Text>
         </View>
       </ScrollView>
 
