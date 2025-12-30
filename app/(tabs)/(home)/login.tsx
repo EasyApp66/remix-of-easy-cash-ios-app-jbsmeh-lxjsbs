@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   Platform,
@@ -13,11 +12,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import SnowAnimation from '@/components/SnowAnimation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AnimatedButton from '@/components/AnimatedButton';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function LoginScreen() {
           const errorMessage = error.message || t('loginFailed');
           Alert.alert(t('error'), errorMessage);
         } else {
-          // Wait a bit for the auth state to update
+          // Navigate to budget screen with animation
           setTimeout(() => {
             console.log('Login successful, navigating to budget screen');
             router.replace('/(tabs)/budget');
@@ -123,30 +124,38 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Back Button */}
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <IconSymbol
-              ios_icon_name="chevron.left"
-              android_material_icon_name="arrow-back"
-              size={24}
-              color={colors.text}
-            />
-          </TouchableOpacity>
+          <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+            <AnimatedButton
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <IconSymbol
+                ios_icon_name="chevron.left"
+                android_material_icon_name="arrow-back"
+                size={24}
+                color={colors.text}
+              />
+            </AnimatedButton>
+          </Animated.View>
 
           {/* Header */}
-          <View style={styles.header}>
+          <Animated.View 
+            style={styles.header}
+            entering={FadeInDown.duration(500).delay(200)}
+          >
             <Text style={styles.title}>
               {isSignUp ? t('createAccount') : t('welcomeBack')}
             </Text>
             <Text style={styles.subtitle}>
               {isSignUp ? t('createAccountSubtitle') : t('signInSubtitle')}
             </Text>
-          </View>
+          </Animated.View>
 
           {/* Form */}
-          <View style={styles.form}>
+          <Animated.View 
+            style={styles.form}
+            entering={FadeIn.duration(600).delay(300)}
+          >
             <View style={styles.inputContainer}>
               <Text style={styles.label}>{t('email')}</Text>
               <TextInput
@@ -178,7 +187,7 @@ export default function LoginScreen() {
             </View>
 
             {!isSignUp && (
-              <TouchableOpacity
+              <AnimatedButton
                 style={styles.forgotPassword}
                 onPress={handleForgotPassword}
                 disabled={loading}
@@ -186,10 +195,10 @@ export default function LoginScreen() {
                 <Text style={styles.forgotPasswordText}>
                   {t('forgotPassword')}
                 </Text>
-              </TouchableOpacity>
+              </AnimatedButton>
             )}
 
-            <TouchableOpacity
+            <AnimatedButton
               style={[styles.submitButton, loading && styles.submitButtonDisabled]}
               onPress={handleSubmit}
               disabled={loading}
@@ -201,9 +210,9 @@ export default function LoginScreen() {
                   {isSignUp ? t('signUp') : t('signIn')}
                 </Text>
               )}
-            </TouchableOpacity>
+            </AnimatedButton>
 
-            <TouchableOpacity
+            <AnimatedButton
               style={styles.switchMode}
               onPress={() => {
                 setIsSignUp(!isSignUp);
@@ -217,8 +226,8 @@ export default function LoginScreen() {
                   {isSignUp ? t('signIn') : t('signUp')}
                 </Text>
               </Text>
-            </TouchableOpacity>
-          </View>
+            </AnimatedButton>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -236,74 +245,84 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingTop: Platform.OS === 'android' ? 60 : 80,
-    paddingBottom: 40,
-    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'android' ? 80 : 100,
+    paddingBottom: 60,
+    paddingHorizontal: 32,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    backgroundColor: colors.cardBackground,
+    borderRadius: 12,
   },
   header: {
-    marginBottom: 40,
+    marginBottom: 48,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 36,
+    fontWeight: '800',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 17,
     color: colors.textSecondary,
+    lineHeight: 24,
   },
   form: {
     width: '100%',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   input: {
     backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    fontSize: 17,
     color: colors.text,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.grey,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: 28,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   forgotPasswordText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.green,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   submitButton: {
     backgroundColor: colors.green,
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    boxShadow: '0px 4px 12px rgba(160, 255, 107, 0.3)',
+    elevation: 4,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '800',
     color: colors.background,
   },
   switchMode: {
@@ -311,11 +330,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   switchModeText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   switchModeLink: {
     color: colors.green,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

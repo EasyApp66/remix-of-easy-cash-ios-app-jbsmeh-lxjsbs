@@ -6,19 +6,23 @@ export default function HomeLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        gestureEnabled: false, // Disable swipe back gesture
+        animation: 'slide_from_right',
+        animationDuration: 250,
       }}
     >
       <Stack.Screen 
         name="index" 
         options={{
-          gestureEnabled: false,
+          headerShown: false,
+          animation: 'fade',
         }}
       />
       <Stack.Screen 
-        name="login"
+        name="login" 
         options={{
-          gestureEnabled: true, // Allow swipe back from login
+          headerShown: false,
+          animation: 'slide_from_right',
+          animationDuration: 250,
         }}
       />
     </Stack>

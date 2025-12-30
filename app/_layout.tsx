@@ -6,7 +6,7 @@ import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { BudgetProvider } from '@/contexts/BudgetContext';
 import { LimitTrackingProvider } from '@/contexts/LimitTrackingContext';
 import { useEffect, useCallback } from 'react';
-import { LogBox } from 'react-native';
+import { LogBox, Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
@@ -17,11 +17,12 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 // Ignore specific warnings that are not critical
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
+  'Sending `onAnimatedValueUpdate` with no listeners registered',
 ]);
 
 export default function RootLayout() {
   useEffect(() => {
-    console.log('RootLayout: App initialized');
+    console.log('RootLayout: App initialized on platform:', Platform.OS);
     
     // Hide splash screen after a short delay to ensure everything is loaded
     const timer = setTimeout(async () => {
@@ -31,7 +32,7 @@ export default function RootLayout() {
       } catch (error) {
         console.log('RootLayout: Error hiding splash screen:', error);
       }
-    }, 1000);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
@@ -42,13 +43,27 @@ export default function RootLayout() {
         <LimitTrackingProvider>
           <SubscriptionProvider>
             <BudgetProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack 
+                screenOptions={{ 
+                  headerShown: false,
+                  animation: 'fade',
+                  animationDuration: 200,
+                }}
+              >
+                <Stack.Screen 
+                  name="(tabs)" 
+                  options={{ 
+                    headerShown: false,
+                    animation: 'fade',
+                  }} 
+                />
                 <Stack.Screen 
                   name="modal" 
                   options={{ 
                     presentation: 'modal',
                     headerShown: false,
+                    animation: 'slide_from_bottom',
+                    animationDuration: 250,
                   }} 
                 />
                 <Stack.Screen 
@@ -56,6 +71,8 @@ export default function RootLayout() {
                   options={{ 
                     presentation: 'formSheet',
                     headerShown: false,
+                    animation: 'slide_from_bottom',
+                    animationDuration: 250,
                   }} 
                 />
                 <Stack.Screen 
@@ -64,6 +81,7 @@ export default function RootLayout() {
                     presentation: 'transparentModal',
                     headerShown: false,
                     animation: 'fade',
+                    animationDuration: 150,
                   }} 
                 />
               </Stack>

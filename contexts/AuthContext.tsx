@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
@@ -28,8 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
-  // Check if user is admin and has premium
-  const checkAdminAndPremiumStatus = async (userId: string) => {
+  // Check if user is admin and has premium - optimized with useCallback
+  const checkAdminAndPremiumStatus = useCallback(async (userId: string) => {
     try {
       console.log('AuthContext: Checking admin and premium status for user:', userId);
       
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('AuthContext: Exception checking admin/premium status:', error);
       return { isAdmin: false, isPremium: false };
     }
-  };
+  }, []);
 
   useEffect(() => {
     console.log('AuthContext: Initializing...');
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (session?.user) {
             setUser(session.user);
             
-            // Check admin and premium status
+            // Check admin and premium status in parallel
             const status = await checkAdminAndPremiumStatus(session.user.id);
             setIsAdmin(status.isAdmin);
             setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
@@ -114,9 +114,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthContext: Cleaning up subscription');
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkAdminAndPremiumStatus]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     console.log('AuthContext: Signing in with email:', email);
     
     // Check for admin login
@@ -124,37 +124,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthContext: Admin login detected');
       
       try {
-        // First, check if admin user exists in auth.users
-        const { data: existingUsers } = await supabase.auth.admin.listUsers();
-        const adminExists = existingUsers?.users?.some(
-          u => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
-        );
-
-        if (!adminExists) {
-          console.log('AuthContext: Admin user does not exist, needs to be created manually');
-          return { 
-            error: { 
-              message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.' 
-            } 
-          };
-        }
-
-        // Try to sign in
+        // Try to sign in directly first (faster)
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
+          // If sign in fails, check if admin user exists
+          if (error.message.includes('Invalid login credentials')) {
+            console.log('AuthContext: Admin user does not exist, needs to be created');
+            return { 
+              error: { 
+                message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.' 
+              } 
+            };
+          }
           console.error('AuthContext: Admin sign in error:', error);
           return { error };
         }
 
         console.log('AuthContext: Admin sign in successful');
         
-        // Ensure admin profile exists with correct flags
+        // Ensure admin profile exists with correct flags (non-blocking)
         if (data.user) {
-          const { error: profileError } = await supabase
+          supabase
             .from('profiles')
             .upsert({
               id: data.user.id,
@@ -164,13 +158,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               updated_at: new Date().toISOString(),
             }, {
               onConflict: 'id'
+            })
+            .then(({ error: profileError }) => {
+              if (profileError) {
+                console.error('AuthContext: Error updating admin profile:', profileError);
+              } else {
+                console.log('AuthContext: Admin profile updated successfully');
+              }
             });
-
-          if (profileError) {
-            console.error('AuthContext: Error updating admin profile:', profileError);
-          } else {
-            console.log('AuthContext: Admin profile updated successfully');
-          }
         }
 
         return { error: null };
@@ -196,9 +191,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('AuthContext: Sign in exception:', error);
       return { error };
     }
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     console.log('AuthContext: Signing up with email:', email);
     
     // Check if this is the admin email
@@ -221,9 +216,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         console.log('AuthContext: Sign up successful');
         
-        // Create profile for new user
+        // Create profile for new user (non-blocking)
         if (data.user) {
-          const { error: profileError } = await supabase
+          supabase
             .from('profiles')
             .insert({
               id: data.user.id,
@@ -232,13 +227,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               is_premium: isAdminEmail,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
+            })
+            .then(({ error: profileError }) => {
+              if (profileError) {
+                console.error('AuthContext: Error creating profile:', profileError);
+              } else {
+                console.log('AuthContext: User profile created successfully');
+              }
             });
-
-          if (profileError) {
-            console.error('AuthContext: Error creating profile:', profileError);
-          } else {
-            console.log('AuthContext: User profile created successfully');
-          }
         }
       }
       return { error };
@@ -246,9 +242,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('AuthContext: Sign up exception:', error);
       return { error };
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     console.log('AuthContext: Signing out');
     try {
       await supabase.auth.signOut();
@@ -258,9 +254,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('AuthContext: Sign out exception:', error);
     }
-  };
+  }, []);
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     console.log('AuthContext: Resetting password for email:', email);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -276,7 +272,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('AuthContext: Reset password exception:', error);
       return { error };
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

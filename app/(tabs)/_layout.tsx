@@ -73,7 +73,8 @@ export default function TabLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'none',
+          animation: 'fade',
+          animationDuration: 200,
         }}
       >
         <Stack.Screen 
@@ -81,12 +82,41 @@ export default function TabLayout() {
           name="index"
           options={{
             headerShown: false,
+            animation: 'fade',
           }}
         />
-        <Stack.Screen key="home" name="(home)" />
-        <Stack.Screen key="budget" name="budget" />
-        <Stack.Screen key="abo" name="abo" />
-        <Stack.Screen key="profile" name="profile" />
+        <Stack.Screen 
+          key="home" 
+          name="(home)"
+          options={{
+            animation: 'slide_from_right',
+            animationDuration: 250,
+          }}
+        />
+        <Stack.Screen 
+          key="budget" 
+          name="budget"
+          options={{
+            animation: 'fade',
+            animationDuration: 200,
+          }}
+        />
+        <Stack.Screen 
+          key="abo" 
+          name="abo"
+          options={{
+            animation: 'fade',
+            animationDuration: 200,
+          }}
+        />
+        <Stack.Screen 
+          key="profile" 
+          name="profile"
+          options={{
+            animation: 'fade',
+            animationDuration: 200,
+          }}
+        />
       </Stack>
       {shouldShowTabBar && <FloatingTabBar tabs={tabs} />}
     </>

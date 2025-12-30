@@ -2,48 +2,59 @@
 {
   "expo": {
     "name": "Easy Budget",
-    "slug": "Easy Budget",
-    "version": "1.00.1",
+    "slug": "easy-budget",
+    "version": "1.00.2",
     "orientation": "portrait",
-    "icon": "./assets/images/natively-dark.png",
+    "icon": "./assets/images/final_quest_240x240.png",
+    "scheme": "easybudget",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/natively-dark.png",
+      "image": "./assets/images/final_quest_240x240.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.easybudget.app",
+      "buildNumber": "3",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "buildNumber": "2"
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/natively-dark.png",
+        "foregroundImage": "./assets/images/final_quest_240x240.png",
         "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.easybudget.app",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
-      "favicon": "./assets/images/final_quest_240x240.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/final_quest_240x240.png"
     },
     "plugins": [
-      "expo-font",
       "expo-router",
-      "expo-web-browser",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/images/final_quest_240x240.png",
+          "imageWidth": 200
+        }
+      ]
     ],
-    "scheme": "easybudget",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
     }
-  },
-  "scheme": "Easy Budget"
+  }
 }
