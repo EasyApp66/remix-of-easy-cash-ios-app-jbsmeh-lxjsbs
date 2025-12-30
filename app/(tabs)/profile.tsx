@@ -4,11 +4,9 @@ import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert } from "
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
-import SnowAnimation from "@/components/SnowAnimation";
 import { PremiumModal } from "@/components/PremiumModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import * as MailComposer from 'expo-mail-composer';
 import { BlurView } from 'expo-blur';
 
@@ -17,38 +15,22 @@ export default function ProfileScreen() {
   const params = useLocalSearchParams();
   const { user, signOut, isAdmin, isPremium } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
-  const { setShouldRollback, previousRoute, setPreviousRoute } = useLimitTracking();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   // Check if we should show premium modal on mount (when redirected from limit)
   useEffect(() => {
     if (params.showPremium === 'true') {
-      console.log('Showing premium modal, previous route:', previousRoute);
+      console.log('Showing premium modal');
       setShowPremiumModal(true);
     }
-  }, [params, previousRoute]);
+  }, [params]);
 
   const handleClosePremiumModal = () => {
-    console.log('Closing premium modal, previous route:', previousRoute);
-    
-    // If this was triggered by a limit, trigger rollback
-    if (params.showPremium === 'true') {
-      console.log('Triggering rollback of last action');
-      setShouldRollback(true);
-    }
-    
+    console.log('Closing premium modal');
     setShowPremiumModal(false);
     
-    // Navigate back to the previous screen using replace
-    if (previousRoute) {
-      console.log('Navigating back to:', previousRoute);
-      router.replace(previousRoute);
-      setPreviousRoute(null); // Clear the stored route
-    } else {
-      // Fallback to budget screen if no previous route is stored
-      console.log('No previous route stored, navigating to budget');
-      router.replace('/(tabs)/budget');
-    }
+    // Navigate back to budget screen
+    router.replace('/(tabs)/budget');
   };
 
   const handleLogout = async () => {
@@ -187,9 +169,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Snow animation background */}
-      <SnowAnimation />
-
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

@@ -4,10 +4,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInp
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
-import SnowAnimation from "@/components/SnowAnimation";
-import { usePremiumEnforcement } from "@/hooks/usePremiumEnforcement";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useLimitTracking } from "@/contexts/LimitTrackingContext";
 import { useSubscription, Subscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
@@ -17,7 +14,6 @@ export default function AboScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const { isPremium } = useAuth();
-  const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
   const { subscriptions, setSubscriptions, loading: subscriptionLoading } = useSubscription();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
@@ -37,28 +33,6 @@ export default function AboScreen() {
   const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
 
-  // Premium enforcement hook
-  const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
-    monthsCount: 0,
-    maxExpensesPerMonth: 0,
-    subscriptionsCount: totalSubscriptions,
-    isPremium,
-  });
-
-  // Handle rollback when user closes premium modal after hitting limit
-  useEffect(() => {
-    if (shouldRollback && lastAction) {
-      console.log('Rolling back last action in abo screen:', lastAction);
-      
-      if (lastAction.type === 'addSubscription' && lastAction.data?.subId) {
-        setSubscriptions(subscriptions.filter(sub => sub.id !== lastAction.data.subId));
-        console.log('Rolled back subscription addition:', lastAction.data.subId);
-      }
-      
-      clearLastAction();
-    }
-  }, [shouldRollback, lastAction, clearLastAction, setSubscriptions, subscriptions]);
-
   // Sort subscriptions: pinned first
   const sortedSubscriptions = [...subscriptions].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
@@ -75,30 +49,11 @@ export default function AboScreen() {
         isPinned: false,
       };
       
-      if (!canPerformAction('addSubscription')) {
-        console.log('Subscription limit reached, redirecting to premium');
-        
-        setLastAction({
-          type: 'addSubscription',
-          data: { subId: newSub.id },
-          timestamp: Date.now(),
-        });
-        
-        setSubscriptions([...subscriptions, newSub]);
-        
-        setNewSubName('');
-        setNewSubAmount('');
-        setShowAddModal(false);
-        
-        redirectToPremium();
-        return;
-      }
-      
       setSubscriptions([...subscriptions, newSub]);
       setNewSubName('');
       setNewSubAmount('');
       setShowAddModal(false);
-      console.log('Added subscription within limits:', newSub);
+      console.log('Added subscription:', newSub);
     }
   };
 
@@ -140,25 +95,8 @@ export default function AboScreen() {
           isPinned: false,
         };
         
-        if (!canPerformAction('addSubscription')) {
-          console.log('Subscription limit reached when duplicating, redirecting to premium');
-          
-          setLastAction({
-            type: 'addSubscription',
-            data: { subId: duplicatedSub.id },
-            timestamp: Date.now(),
-          });
-          
-          setSubscriptions([...subscriptions, duplicatedSub]);
-          
-          redirectToPremium();
-          setShowSubMenu(false);
-          setSelectedSubForMenu(null);
-          return;
-        }
-        
         setSubscriptions([...subscriptions, duplicatedSub]);
-        console.log('Duplicated subscription within limits:', duplicatedSub);
+        console.log('Duplicated subscription:', duplicatedSub);
       }
     }
     setShowSubMenu(false);
@@ -253,7 +191,6 @@ export default function AboScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SnowAnimation />
 
       <ScrollView 
         style={styles.scrollView}

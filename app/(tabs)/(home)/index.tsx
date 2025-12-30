@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, Dimensions, ScrollView, Platform } from "react-
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
-import SnowAnimation from "@/components/SnowAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AnimatedButton from "@/components/AnimatedButton";
 
@@ -36,9 +35,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Snow animation background */}
-      <SnowAnimation />
-
       <ScrollView
         ref={scrollViewRef}
         horizontal
