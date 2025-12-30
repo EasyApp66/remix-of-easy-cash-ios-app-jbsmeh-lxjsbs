@@ -10,12 +10,21 @@ export default function TabsIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    console.log('TabsIndex: Auth state:', { user: !!user, loading });
+    
+    // Wait for auth to finish loading
+    if (loading) {
+      console.log('TabsIndex: Still loading auth...');
+      return;
+    }
 
+    // Navigate based on auth state
     const timer = setTimeout(() => {
       if (user) {
+        console.log('TabsIndex: User authenticated, navigating to budget');
         router.replace('/(tabs)/budget');
       } else {
+        console.log('TabsIndex: No user, navigating to home');
         router.replace('/(tabs)/(home)');
       }
     }, 100);
@@ -23,6 +32,7 @@ export default function TabsIndex() {
     return () => clearTimeout(timer);
   }, [user, loading, router]);
 
+  // Show loading state while checking auth
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={colors.green} />

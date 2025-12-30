@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
@@ -13,23 +14,30 @@ import { BlurView } from 'expo-blur';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 
 export default function AboScreen() {
+  const router = useRouter();
   const { t } = useLanguage();
   const { isPremium } = useAuth();
-  const { shouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
-  const { subscriptions, setSubscriptions } = useSubscription();
+  const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
+  const { subscriptions, setSubscriptions, loading: subscriptionLoading } = useSubscription();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubAmount, setNewSubAmount] = useState('');
+
+  // Menu state
   const [showSubMenu, setShowSubMenu] = useState(false);
   const [selectedSubForMenu, setSelectedSubForMenu] = useState<string | null>(null);
+
+  // Edit modals
   const [showEditNameModal, setShowEditNameModal] = useState(false);
   const [showEditAmountModal, setShowEditAmountModal] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAmount, setEditAmount] = useState('');
 
+  // Calculate total amount from subscriptions
   const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
   const totalSubscriptions = subscriptions.length;
 
+  // Premium enforcement hook
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: 0,
     maxExpensesPerMonth: 0,
@@ -37,15 +45,21 @@ export default function AboScreen() {
     isPremium,
   });
 
+  // Handle rollback when user closes premium modal after hitting limit
   useEffect(() => {
     if (shouldRollback && lastAction) {
+      console.log('Rolling back last action in abo screen:', lastAction);
+      
       if (lastAction.type === 'addSubscription' && lastAction.data?.subId) {
         setSubscriptions(subscriptions.filter(sub => sub.id !== lastAction.data.subId));
+        console.log('Rolled back subscription addition:', lastAction.data.subId);
       }
+      
       clearLastAction();
     }
-  }, [shouldRollback, lastAction, subscriptions, setSubscriptions, clearLastAction]);
+  }, [shouldRollback, lastAction]);
 
+  // Sort subscriptions: pinned first
   const sortedSubscriptions = [...subscriptions].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
@@ -62,6 +76,8 @@ export default function AboScreen() {
       };
       
       if (!canPerformAction('addSubscription')) {
+        console.log('Subscription limit reached, redirecting to premium');
+        
         setLastAction({
           type: 'addSubscription',
           data: { subId: newSub.id },
@@ -69,9 +85,11 @@ export default function AboScreen() {
         });
         
         setSubscriptions([...subscriptions, newSub]);
+        
         setNewSubName('');
         setNewSubAmount('');
         setShowAddModal(false);
+        
         redirectToPremium();
         return;
       }
@@ -80,20 +98,26 @@ export default function AboScreen() {
       setNewSubName('');
       setNewSubAmount('');
       setShowAddModal(false);
+      console.log('Added subscription within limits:', newSub);
     }
   };
 
   const handleDeleteSubscription = (id: string) => {
     setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+    console.log('Deleted subscription:', id);
   };
 
   const handleTogglePin = (id: string) => {
     setSubscriptions(subscriptions.map(sub =>
-      sub.id === id ? { ...sub, isPinned: !sub.isPinned } : sub
+      sub.id === id
+        ? { ...sub, isPinned: !sub.isPinned }
+        : sub
     ));
+    console.log('Toggled pin for subscription:', id);
   };
 
   const handleLongPressSub = (subId: string) => {
+    console.log('Long press on subscription:', subId);
     setSelectedSubForMenu(subId);
     setShowSubMenu(true);
   };
@@ -117,6 +141,8 @@ export default function AboScreen() {
         };
         
         if (!canPerformAction('addSubscription')) {
+          console.log('Subscription limit reached when duplicating, redirecting to premium');
+          
           setLastAction({
             type: 'addSubscription',
             data: { subId: duplicatedSub.id },
@@ -124,6 +150,7 @@ export default function AboScreen() {
           });
           
           setSubscriptions([...subscriptions, duplicatedSub]);
+          
           redirectToPremium();
           setShowSubMenu(false);
           setSelectedSubForMenu(null);
@@ -131,6 +158,7 @@ export default function AboScreen() {
         }
         
         setSubscriptions([...subscriptions, duplicatedSub]);
+        console.log('Duplicated subscription within limits:', duplicatedSub);
       }
     }
     setShowSubMenu(false);
@@ -166,8 +194,11 @@ export default function AboScreen() {
   const handleSaveName = () => {
     if (selectedSubForMenu && editName) {
       setSubscriptions(subscriptions.map(sub =>
-        sub.id === selectedSubForMenu ? { ...sub, name: editName } : sub
+        sub.id === selectedSubForMenu
+          ? { ...sub, name: editName }
+          : sub
       ));
+      console.log('Updated subscription name:', editName);
     }
     setShowEditNameModal(false);
     setSelectedSubForMenu(null);
@@ -177,14 +208,18 @@ export default function AboScreen() {
   const handleSaveAmount = () => {
     if (selectedSubForMenu && editAmount) {
       setSubscriptions(subscriptions.map(sub =>
-        sub.id === selectedSubForMenu ? { ...sub, amount: parseFloat(editAmount) } : sub
+        sub.id === selectedSubForMenu
+          ? { ...sub, amount: parseFloat(editAmount) }
+          : sub
       ));
+      console.log('Updated subscription amount:', editAmount);
     }
     setShowEditAmountModal(false);
     setSelectedSubForMenu(null);
     setEditAmount('');
   };
 
+  // Render left action (Pin) - swipe from left - ONLY ICON, NO TEXT
   const renderLeftActions = (subscription: Subscription) => {
     return (
       <View style={styles.leftActionContainer}>
@@ -200,6 +235,7 @@ export default function AboScreen() {
     );
   };
 
+  // Render right action (Delete) - swipe from right - ONLY ICON, NO TEXT
   const renderRightActions = () => {
     return (
       <View style={styles.rightActionContainer}>
@@ -224,6 +260,7 @@ export default function AboScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header Card - Glass Effect */}
         <View style={styles.headerCardWrapper}>
           <BlurView intensity={20} tint="dark" style={styles.headerCard}>
             <View style={styles.headerLayout}>
@@ -237,6 +274,7 @@ export default function AboScreen() {
           </BlurView>
         </View>
 
+        {/* Total Subscriptions - Glass Effect */}
         <View style={styles.totalCardWrapper}>
           <BlurView intensity={20} tint="dark" style={styles.totalCard}>
             <Text style={styles.totalLabel}>{t('total')}</Text>
@@ -244,6 +282,7 @@ export default function AboScreen() {
           </BlurView>
         </View>
 
+        {/* Subscriptions List - Glass Effect with Swipe Actions */}
         <View style={styles.subscriptionsList}>
           {sortedSubscriptions.map((subscription, index) => (
             <React.Fragment key={index}>
@@ -251,6 +290,7 @@ export default function AboScreen() {
                 renderLeftActions={() => renderLeftActions(subscription)}
                 renderRightActions={renderRightActions}
                 onSwipeableOpen={(direction) => {
+                  console.log('Swipe opened:', direction, subscription.id);
                   if (direction === 'left') {
                     handleTogglePin(subscription.id);
                   } else if (direction === 'right') {
@@ -299,9 +339,13 @@ export default function AboScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* Floating Add Button */}
       <TouchableOpacity 
         style={styles.floatingAddButton}
-        onPress={() => setShowAddModal(true)}
+        onPress={() => {
+          console.log('Add subscription button pressed');
+          setShowAddModal(true);
+        }}
         activeOpacity={0.8}
       >
         <IconSymbol 
@@ -312,6 +356,7 @@ export default function AboScreen() {
         />
       </TouchableOpacity>
 
+      {/* Add Subscription Modal */}
       <Modal
         visible={showAddModal}
         transparent
@@ -361,6 +406,7 @@ export default function AboScreen() {
         </View>
       </Modal>
 
+      {/* Subscription Menu Modal */}
       <Modal
         visible={showSubMenu}
         transparent
@@ -435,6 +481,7 @@ export default function AboScreen() {
         </TouchableOpacity>
       </Modal>
 
+      {/* Edit Name Modal */}
       <Modal
         visible={showEditNameModal}
         transparent
@@ -476,6 +523,7 @@ export default function AboScreen() {
         </View>
       </Modal>
 
+      {/* Edit Amount Modal */}
       <Modal
         visible={showEditAmountModal}
         transparent

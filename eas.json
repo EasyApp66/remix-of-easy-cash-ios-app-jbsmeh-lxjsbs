@@ -1,43 +1,16 @@
-
 {
-  "cli": {
-    "version": ">= 5.0.0"
-  },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": {
-        "simulator": true,
-        "buildConfiguration": "Debug"
-      },
-      "android": {
-        "buildType": "apk"
-      }
+      "autoIncrement": true
     },
     "preview": {
       "distribution": "internal",
-      "ios": {
-        "simulator": false,
-        "buildConfiguration": "Release",
-        "autoIncrement": true
-      },
-      "android": {
-        "buildType": "apk"
-      }
+      "autoIncrement": true
     },
     "production": {
-      "autoIncrement": true,
-      "ios": {
-        "simulator": false,
-        "buildConfiguration": "Release"
-      },
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "autoIncrement": true
     }
-  },
-  "submit": {
-    "production": {}
   }
 }

@@ -15,33 +15,45 @@ import { BlurView } from 'expo-blur';
 export default function ProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user, signOut, isPremium } = useAuth();
+  const { user, signOut } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const { setShouldRollback, previousRoute, setPreviousRoute } = useLimitTracking();
+  const [isPremium, setIsPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
+  // Check if we should show premium modal on mount (when redirected from limit)
   useEffect(() => {
     if (params.showPremium === 'true') {
+      console.log('Showing premium modal, previous route:', previousRoute);
       setShowPremiumModal(true);
     }
-  }, [params.showPremium]);
+  }, [params]);
 
   const handleClosePremiumModal = () => {
+    console.log('Closing premium modal, previous route:', previousRoute);
+    
+    // If this was triggered by a limit, trigger rollback
     if (params.showPremium === 'true') {
+      console.log('Triggering rollback of last action');
       setShouldRollback(true);
     }
     
     setShowPremiumModal(false);
     
+    // Navigate back to the previous screen using replace
     if (previousRoute) {
+      console.log('Navigating back to:', previousRoute);
       router.replace(previousRoute);
-      setPreviousRoute(null);
+      setPreviousRoute(null); // Clear the stored route
     } else {
+      // Fallback to budget screen if no previous route is stored
+      console.log('No previous route stored, navigating to budget');
       router.replace('/(tabs)/budget');
     }
   };
 
   const handleLogout = async () => {
+    console.log('Handle logout/login');
     if (user) {
       await signOut();
       router.replace('/(tabs)/(home)');
@@ -51,21 +63,26 @@ export default function ProfileScreen() {
   };
 
   const handleRestorePremium = async () => {
+    console.log('Restore Premium - Navigating to Welcome Screen');
+    // Sign out the user first
     if (user) {
       await signOut();
     }
+    // Navigate to welcome screen for re-login
     router.replace('/(tabs)/(home)');
   };
 
   const handleSendEmail = async (subject: string) => {
     try {
       const isAvailable = await MailComposer.isAvailableAsync();
+      console.log('Mail composer available:', isAvailable);
       
       if (isAvailable) {
-        await MailComposer.composeAsync({
+        const result = await MailComposer.composeAsync({
           recipients: ['ivanmirosnic006@gmail.com'],
           subject: subject,
         });
+        console.log('Mail composer result:', result);
       } else {
         Alert.alert(
           t('emailNotAvailable'),
@@ -117,28 +134,40 @@ export default function ProfileScreen() {
       title: t('agb'),
       icon: 'description',
       iosIcon: 'doc.text',
-      onPress: () => router.push('/(tabs)/legal/agb'),
+      onPress: () => {
+        console.log('Navigate to AGB');
+        router.push('/(tabs)/legal/agb');
+      },
     },
     {
       id: 'terms',
       title: t('terms'),
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
-      onPress: () => router.push('/(tabs)/legal/nutzungsbedingungen'),
+      onPress: () => {
+        console.log('Navigate to Nutzungsbedingungen');
+        router.push('/(tabs)/legal/nutzungsbedingungen');
+      },
     },
     {
       id: 'privacy',
       title: t('privacy'),
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
-      onPress: () => router.push('/(tabs)/legal/datenschutz'),
+      onPress: () => {
+        console.log('Navigate to Datenschutz');
+        router.push('/(tabs)/legal/datenschutz');
+      },
     },
     {
       id: 'imprint',
       title: t('imprint'),
       icon: 'info',
       iosIcon: 'info.circle',
-      onPress: () => router.push('/(tabs)/legal/impressum'),
+      onPress: () => {
+        console.log('Navigate to Impressum');
+        router.push('/(tabs)/legal/impressum');
+      },
     },
     {
       id: 'support',
@@ -158,6 +187,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
       <SnowAnimation />
 
       <ScrollView 
@@ -165,6 +195,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* User Info Section - Glass Effect */}
         <View style={styles.userSectionWrapper}>
           <BlurView intensity={30} tint="dark" style={styles.userSection}>
             <View style={styles.avatarContainer}>
@@ -204,6 +235,7 @@ export default function ProfileScreen() {
           </BlurView>
         </View>
 
+        {/* Menu Items - Glass Effect */}
         <View style={styles.menuSection}>
           {menuItems.map((item) => (
             <Pressable 
@@ -212,7 +244,10 @@ export default function ProfileScreen() {
                 styles.menuItemWrapper,
                 pressed && styles.menuItemPressed
               ]}
-              onPress={item.onPress}
+              onPress={() => {
+                console.log(`Menu item pressed: ${item.title}`);
+                item.onPress();
+              }}
             >
               <BlurView intensity={20} tint="dark" style={styles.menuItem}>
                 <View style={styles.menuItemLeft}>
@@ -237,11 +272,13 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* App Version */}
         <View style={styles.versionSection}>
-          <Text style={styles.versionText}>{t('appVersion')} 1.0.5</Text>
+          <Text style={styles.versionText}>{t('appVersion')} 1.00.00</Text>
         </View>
       </ScrollView>
 
+      {/* Premium Purchase Modal */}
       <PremiumModal 
         visible={showPremiumModal}
         onClose={handleClosePremiumModal}

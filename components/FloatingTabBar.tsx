@@ -42,27 +42,36 @@ export default function FloatingTabBar({
   tabs,
   containerWidth = screenWidth * 0.6,
   borderRadius = 30,
-  bottomMargin = 20
+  bottomMargin
 }: FloatingTabBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const theme = useTheme();
   const animatedValue = useSharedValue(0);
 
+  // Improved active tab detection with better path matching
   const activeTabIndex = React.useMemo(() => {
+    // Find the best matching tab based on the current pathname
     let bestMatch = -1;
     let bestMatchScore = 0;
 
     tabs.forEach((tab, index) => {
       let score = 0;
 
+      // Exact route match gets highest score
       if (pathname === tab.route) {
         score = 100;
-      } else if (pathname.startsWith(tab.route as string)) {
+      }
+      // Check if pathname starts with tab route (for nested routes)
+      else if (pathname.startsWith(tab.route as string)) {
         score = 80;
-      } else if (pathname.includes(tab.name)) {
+      }
+      // Check if pathname contains the tab name
+      else if (pathname.includes(tab.name)) {
         score = 60;
-      } else if (tab.route.includes('/(tabs)/') && pathname.includes(tab.route.split('/(tabs)/')[1])) {
+      }
+      // Check for partial matches in the route
+      else if (tab.route.includes('/(tabs)/') && pathname.includes(tab.route.split('/(tabs)/')[1])) {
         score = 40;
       }
 
@@ -72,6 +81,7 @@ export default function FloatingTabBar({
       }
     });
 
+    // Default to first tab if no match found
     return bestMatch >= 0 ? bestMatch : 0;
   }, [pathname, tabs]);
 
@@ -106,6 +116,7 @@ export default function FloatingTabBar({
     };
   });
 
+  // Dynamic styles based on theme
   const dynamicStyles = {
     blurContainer: {
       ...styles.blurContainer,
@@ -130,6 +141,9 @@ export default function FloatingTabBar({
         },
       }),
     },
+    background: {
+      ...styles.background,
+    },
     indicator: {
       ...styles.indicator,
       backgroundColor: theme.dark
@@ -145,22 +159,22 @@ export default function FloatingTabBar({
         styles.container,
         {
           width: containerWidth,
-          marginBottom: bottomMargin
+          marginBottom: bottomMargin ?? 20
         }
       ]}>
         <BlurView
           intensity={80}
           style={[dynamicStyles.blurContainer, { borderRadius }]}
         >
-          <View style={styles.background} />
+          <View style={dynamicStyles.background} />
           <Animated.View style={[dynamicStyles.indicator, indicatorStyle]} />
           <View style={styles.tabsContainer}>
             {tabs.map((tab, index) => {
               const isActive = activeTabIndex === index;
 
               return (
+                <React.Fragment key={index}>
                 <TouchableOpacity
-                  key={index}
                   style={styles.tab}
                   onPress={() => handleTabPress(tab.route)}
                   activeOpacity={0.7}
@@ -183,6 +197,7 @@ export default function FloatingTabBar({
                     </Text>
                   </View>
                 </TouchableOpacity>
+                </React.Fragment>
               );
             })}
           </View>

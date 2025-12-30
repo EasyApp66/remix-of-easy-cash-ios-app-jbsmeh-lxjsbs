@@ -109,11 +109,6 @@ export default function LoginScreen() {
     );
   };
 
-  const handleSkipLogin = () => {
-    console.log('Skipping login, navigating to budget screen');
-    router.replace('/(tabs)/budget');
-  };
-
   return (
     <View style={styles.container}>
       <SnowAnimation />
@@ -223,29 +218,6 @@ export default function LoginScreen() {
                 </Text>
               </Text>
             </TouchableOpacity>
-
-            {/* Skip Login Button */}
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>oder</Text>
-              <View style={styles.divider} />
-            </View>
-
-            <TouchableOpacity
-              style={styles.skipButton}
-              onPress={handleSkipLogin}
-              disabled={loading}
-            >
-              <IconSymbol
-                ios_icon_name="arrow.right.circle"
-                android_material_icon_name="arrow-forward"
-                size={20}
-                color={colors.text}
-              />
-              <Text style={styles.skipButtonText}>
-                Ohne Anmeldung fortfahren
-              </Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -345,38 +317,5 @@ const styles = StyleSheet.create({
   switchModeLink: {
     color: colors.green,
     fontWeight: '600',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.grey,
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  skipButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: colors.grey,
-    gap: 8,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
   },
 });

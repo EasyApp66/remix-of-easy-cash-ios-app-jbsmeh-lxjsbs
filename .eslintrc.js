@@ -1,4 +1,4 @@
-
+// https://docs.expo.dev/guides/using-eslint/
 module.exports = {
   extends: [
     'expo',
@@ -26,23 +26,22 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/prefer-as-const": "off",
     "@typescript-eslint/no-var-requires": "off",
+    "react/react-in-jsx-scope": "off",
     "@typescript-eslint/no-empty-object-type": "off",
     "@typescript-eslint/no-wrapper-object-types": "off",
     "@typescript-eslint/ban-tslint-comment": "off",
-    "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
-    "react/prop-types": "off",
-    "react/display-name": "off",
-    "import/no-unresolved": "off",
+    "import/no-unresolved": "error",
     "prefer-const": "off",
+    "react/prop-types": 1,
     "no-case-declarations": "off",
     "no-empty": "off",
-    "no-var": "off",
-    "no-console": "off"
+    "react/display-name": "off",
+    "no-var": "off"
   },
   overrides: [
     {
-      files: ['metro.config.js', 'babel.config.js'],
+      files: ['metro.config.js'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off'
       }

@@ -1,24 +1,21 @@
 
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform, Alert } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { signInWithApple } = useAuth();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
 
-  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+  const handleScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const page = Math.round(offsetX / width);
     setCurrentPage(page);
@@ -26,38 +23,6 @@ export default function HomeScreen() {
 
   const handleEmailLogin = () => {
     router.push('/(tabs)/(home)/login');
-  };
-
-  const handleAppleSignIn = async () => {
-    if (Platform.OS !== 'ios') {
-      Alert.alert(
-        'Nicht verfügbar',
-        'Apple Sign In ist nur auf iOS-Geräten verfügbar.'
-      );
-      return;
-    }
-
-    setIsAppleSignInLoading(true);
-    
-    try {
-      const { error } = await signInWithApple();
-      
-      if (error) {
-        console.error('HomeScreen: Apple Sign In error:', error);
-        Alert.alert(
-          'Fehler',
-          error.message || 'Bei der Anmeldung mit Apple ist ein Fehler aufgetreten.'
-        );
-      }
-    } catch (error) {
-      console.error('HomeScreen: Apple Sign In exception:', error);
-      Alert.alert(
-        'Fehler',
-        'Bei der Anmeldung mit Apple ist ein unerwarteter Fehler aufgetreten.'
-      );
-    } finally {
-      setIsAppleSignInLoading(false);
-    }
   };
 
   const handleTermsPress = () => {
@@ -70,6 +35,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation background */}
       <SnowAnimation />
 
       <ScrollView
@@ -81,14 +47,15 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
         style={styles.scrollView}
       >
+        {/* Welcome Screen */}
         <View style={[styles.page, { width }]}>
           <View style={styles.welcomeContainer}>
-            <View style={styles.headerSection}>
+            <View style={[styles.headerSection, { marginBottom: 3 }]}>
               <Text style={styles.welcomeTitle}>
                 {t('welcomeGreeting')} <Text style={styles.greenText}>EASY BUDGET</Text>
               </Text>
               <View style={styles.subtitleContainer}>
-                <Text style={styles.welcomeSubtitle}>
+                <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
                   {t('welcomeTrackBudget')}{'\n'}
                   <Text style={styles.greenText}>BUDGET</Text>
                   {'\n\n'}
@@ -96,12 +63,13 @@ export default function HomeScreen() {
                   <Text style={styles.greenText}>ABOS</Text>
                 </Text>
               </View>
-              <View style={styles.spacer} />
+              {/* 20 pixel spacer after "und deine ABOs" */}
+              <View style={{ height: 20 }} />
             </View>
 
             <View style={styles.loginSection}>
               <TouchableOpacity 
-                style={[styles.loginButton, styles.emailButton]}
+                style={[styles.loginButton, styles.emailButton, { backgroundColor: colors.green, marginBottom: 1 }]}
                 onPress={handleEmailLogin}
               >
                 <IconSymbol 
@@ -110,23 +78,17 @@ export default function HomeScreen() {
                   size={20} 
                   color={colors.background} 
                 />
-                <Text style={styles.emailButtonText}>{t('continueWithEmail')}</Text>
+                <Text style={[styles.loginButtonText, { color: colors.background }]}>{t('continueWithEmail')}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.loginButton, styles.appleButton]}
-                onPress={handleAppleSignIn}
-                disabled={isAppleSignInLoading}
-              >
+              <TouchableOpacity style={[styles.loginButton, styles.appleButton]}>
                 <IconSymbol 
                   ios_icon_name="apple.logo" 
                   android_material_icon_name="apple" 
                   size={20} 
                   color="#000000" 
                 />
-                <Text style={styles.appleButtonText}>
-                  {isAppleSignInLoading ? 'Wird geladen...' : t('continueWithApple')}
-                </Text>
+                <Text style={[styles.loginButtonText, styles.appleButtonText]}>{t('continueWithApple')}</Text>
               </TouchableOpacity>
 
               <Text style={styles.termsText}>
@@ -137,6 +99,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Swipe indicator */}
         <View style={[styles.page, { width }]}>
           <View style={styles.swipeIndicatorContainer}>
             <Text style={styles.swipeIndicatorText}>← Swipe to Budget Screen</Text>
@@ -196,12 +159,10 @@ const styles = StyleSheet.create({
   greenText: {
     color: colors.green,
   },
-  spacer: {
-    height: 20,
-  },
   loginSection: {
     width: '100%',
     gap: 12,
+    marginBottom: 0,
   },
   loginButton: {
     flexDirection: 'row',
@@ -213,20 +174,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emailButton: {
-    backgroundColor: colors.green,
-    marginBottom: 1,
-  },
-  emailButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.background,
+    backgroundColor: '#E57373',
   },
   appleButton: {
     backgroundColor: '#FFFFFF',
   },
-  appleButtonText: {
+  loginButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    color: colors.text,
+  },
+  appleButtonText: {
     color: '#000000',
   },
   termsText: {
