@@ -63,15 +63,43 @@ export default function LoginScreen() {
         const { error } = await signIn(email, password);
         if (error) {
           console.error('Sign in error:', error);
-          // Show user-friendly error message
-          const errorMessage = error.message || t('loginFailed');
-          Alert.alert(t('error'), errorMessage);
+          
+          // Check if this is an admin account that needs registration
+          if (error.needsRegistration) {
+            Alert.alert(
+              'Admin-Konto erstellen',
+              'Das Admin-Konto existiert noch nicht. Möchten Sie es jetzt erstellen?',
+              [
+                {
+                  text: 'Abbrechen',
+                  style: 'cancel',
+                },
+                {
+                  text: 'Registrieren',
+                  onPress: () => {
+                    setIsSignUp(true);
+                  },
+                },
+              ]
+            );
+          } else {
+            // Show user-friendly error message
+            let errorMessage = error.message || t('loginFailed');
+            
+            // Translate common error messages to German
+            if (errorMessage.includes('Invalid login credentials')) {
+              errorMessage = 'Ungültige Anmeldedaten. Bitte überprüfen Sie Ihre E-Mail und Ihr Passwort.';
+            } else if (errorMessage.includes('Email not confirmed')) {
+              errorMessage = 'E-Mail noch nicht bestätigt. Bitte überprüfen Sie Ihr E-Mail-Postfach.';
+            }
+            
+            Alert.alert('Fehler', errorMessage);
+          }
         } else {
-          // Navigate to budget screen with animation
-          setTimeout(() => {
-            console.log('Login successful, navigating to budget screen');
-            router.replace('/(tabs)/budget');
-          }, 100);
+          // Login successful - navigate to budget screen
+          console.log('Login successful, navigating to budget screen');
+          // Use replace to prevent going back to login screen
+          router.replace('/(tabs)/budget');
         }
       }
     } catch (error: any) {

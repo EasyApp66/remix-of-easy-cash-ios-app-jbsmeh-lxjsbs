@@ -132,11 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           // If sign in fails, check if admin user exists
-          if (error.message.includes('Invalid login credentials')) {
-            console.log('AuthContext: Admin user does not exist, needs to be created');
+          if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+            console.log('AuthContext: Admin user does not exist or email not confirmed, needs to be created');
             return { 
               error: { 
-                message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.' 
+                message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.',
+                needsRegistration: true
               } 
             };
           }
