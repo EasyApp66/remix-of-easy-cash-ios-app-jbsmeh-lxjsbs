@@ -26,7 +26,7 @@ export default function ProfileScreen() {
       console.log('Showing premium modal, previous route:', previousRoute);
       setShowPremiumModal(true);
     }
-  }, [params]);
+  }, [params, previousRoute]);
 
   const handleClosePremiumModal = () => {
     console.log('Closing premium modal, previous route:', previousRoute);

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -26,31 +26,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscriptions, setSubscriptionsState] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load data from Supabase when user logs in
-  useEffect(() => {
-    if (user) {
-      console.log('SubscriptionContext: User logged in, loading subscription data from Supabase');
-      loadFromSupabase().catch(error => {
-        console.error('SubscriptionContext: Error loading data:', error);
-      });
-    }
-  }, [user]);
-
-  // Auto-sync to Supabase whenever subscriptions change (debounced)
-  useEffect(() => {
-    if (user && subscriptions.length >= 0) {
-      const timeoutId = setTimeout(() => {
-        console.log('SubscriptionContext: Auto-syncing subscription data to Supabase');
-        syncToSupabase().catch(error => {
-          console.error('SubscriptionContext: Error syncing data:', error);
-        });
-      }, 1000); // Debounce for 1 second
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [subscriptions, user]);
-
-  const loadFromSupabase = async () => {
+  const loadFromSupabase = useCallback(async () => {
     if (!user) {
       console.log('SubscriptionContext: No user, skipping Supabase load');
       return;
@@ -92,9 +68,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const syncToSupabase = async () => {
+  const syncToSupabase = useCallback(async () => {
     if (!user) {
       console.log('SubscriptionContext: No user, skipping Supabase sync');
       return;
@@ -150,7 +126,31 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('SubscriptionContext: Exception syncing subscription data:', error);
     }
-  };
+  }, [user, subscriptions]);
+
+  // Load data from Supabase when user logs in
+  useEffect(() => {
+    if (user) {
+      console.log('SubscriptionContext: User logged in, loading subscription data from Supabase');
+      loadFromSupabase().catch(error => {
+        console.error('SubscriptionContext: Error loading data:', error);
+      });
+    }
+  }, [user, loadFromSupabase]);
+
+  // Auto-sync to Supabase whenever subscriptions change (debounced)
+  useEffect(() => {
+    if (user && subscriptions.length >= 0) {
+      const timeoutId = setTimeout(() => {
+        console.log('SubscriptionContext: Auto-syncing subscription data to Supabase');
+        syncToSupabase().catch(error => {
+          console.error('SubscriptionContext: Error syncing data:', error);
+        });
+      }, 1000); // Debounce for 1 second
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [subscriptions, user, syncToSupabase]);
 
   const setSubscriptions = (newSubscriptions: Subscription[]) => {
     console.log('SubscriptionContext: Setting subscriptions:', newSubscriptions.length);

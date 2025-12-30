@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
@@ -57,7 +57,7 @@ export default function AboScreen() {
       
       clearLastAction();
     }
-  }, [shouldRollback, lastAction]);
+  }, [shouldRollback, lastAction, clearLastAction, setSubscriptions, subscriptions]);
 
   // Sort subscriptions: pinned first
   const sortedSubscriptions = [...subscriptions].sort((a, b) => {

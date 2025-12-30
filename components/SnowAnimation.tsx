@@ -34,7 +34,7 @@ const Snowflake = ({ delay }: { delay: number }) => {
     };
 
     startAnimation();
-  }, [delay]);
+  }, [delay, opacity, translateX, translateY]);
 
   const size = 4 + Math.random() * 6;
 

@@ -65,7 +65,7 @@ if (isReactNative) {
       },
     };
     
-    // @ts-ignore - Creating a minimal window object for SSR
+    // @ts-expect-error - Creating a minimal window object for SSR
     global.window = mockWindow as any;
     console.log('Polyfills: Window object created');
   }
@@ -77,7 +77,7 @@ if (isReactNative) {
     // Create a minimal localStorage implementation
     const storage: { [key: string]: string } = {};
     
-    // @ts-ignore
+    // @ts-expect-error - Creating a minimal localStorage implementation
     window.localStorage = {
       getItem: (key: string) => {
         console.log(`Polyfills: localStorage.getItem called for key: ${key}`);

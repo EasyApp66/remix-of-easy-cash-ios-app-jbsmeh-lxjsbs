@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
@@ -52,7 +52,7 @@ export default function BudgetScreen() {
     if (months.length > 0 && !months.find(m => m.id === selectedMonthId)) {
       setSelectedMonthId(months[0].id);
     }
-  }, [months]);
+  }, [months, selectedMonthId]);
 
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const accountBalance = selectedMonth?.accountBalance || 0;
@@ -88,7 +88,7 @@ export default function BudgetScreen() {
       
       clearLastAction();
     }
-  }, [shouldRollback, lastAction]);
+  }, [shouldRollback, lastAction, clearLastAction, months, setMonths]);
   
   // Sort items: pinned first, then by creation order
   const sortedBudgetItems = [...budgetItems].sort((a, b) => {

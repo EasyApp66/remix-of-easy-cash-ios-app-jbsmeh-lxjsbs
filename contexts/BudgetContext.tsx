@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -48,31 +48,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   ]);
   const [loading, setLoading] = useState(false);
 
-  // Load data from Supabase when user logs in
-  useEffect(() => {
-    if (user) {
-      console.log('BudgetContext: User logged in, loading budget data from Supabase');
-      loadFromSupabase().catch(error => {
-        console.error('BudgetContext: Error loading data:', error);
-      });
-    }
-  }, [user]);
-
-  // Auto-sync to Supabase whenever months change (debounced)
-  useEffect(() => {
-    if (user && months.length > 0) {
-      const timeoutId = setTimeout(() => {
-        console.log('BudgetContext: Auto-syncing budget data to Supabase');
-        syncToSupabase().catch(error => {
-          console.error('BudgetContext: Error syncing data:', error);
-        });
-      }, 1000); // Debounce for 1 second
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [months, user]);
-
-  const loadFromSupabase = async () => {
+  const loadFromSupabase = useCallback(async () => {
     if (!user) {
       console.log('BudgetContext: No user, skipping Supabase load');
       return;
@@ -134,9 +110,9 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const syncToSupabase = async () => {
+  const syncToSupabase = useCallback(async () => {
     if (!user) {
       console.log('BudgetContext: No user, skipping Supabase sync');
       return;
@@ -225,7 +201,31 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('BudgetContext: Exception syncing budget data:', error);
     }
-  };
+  }, [user, months]);
+
+  // Load data from Supabase when user logs in
+  useEffect(() => {
+    if (user) {
+      console.log('BudgetContext: User logged in, loading budget data from Supabase');
+      loadFromSupabase().catch(error => {
+        console.error('BudgetContext: Error loading data:', error);
+      });
+    }
+  }, [user, loadFromSupabase]);
+
+  // Auto-sync to Supabase whenever months change (debounced)
+  useEffect(() => {
+    if (user && months.length > 0) {
+      const timeoutId = setTimeout(() => {
+        console.log('BudgetContext: Auto-syncing budget data to Supabase');
+        syncToSupabase().catch(error => {
+          console.error('BudgetContext: Error syncing data:', error);
+        });
+      }, 1000); // Debounce for 1 second
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [months, user, syncToSupabase]);
 
   const setMonths = (newMonths: MonthData[]) => {
     console.log('BudgetContext: Setting months:', newMonths.length);
