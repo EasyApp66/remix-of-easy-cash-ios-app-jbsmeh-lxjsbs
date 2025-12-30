@@ -18,7 +18,7 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const page = Math.round(offsetX / width);
     setCurrentPage(page);
@@ -29,9 +29,6 @@ export default function HomeScreen() {
   };
 
   const handleAppleSignIn = async () => {
-    console.log('HomeScreen: Apple Sign In button pressed');
-    
-    // Show alert that Apple Sign In is only available on iOS
     if (Platform.OS !== 'ios') {
       Alert.alert(
         'Nicht verfügbar',
@@ -51,9 +48,6 @@ export default function HomeScreen() {
           'Fehler',
           error.message || 'Bei der Anmeldung mit Apple ist ein Fehler aufgetreten.'
         );
-      } else {
-        console.log('HomeScreen: Apple Sign In successful');
-        // Navigation will happen automatically via AuthContext state change
       }
     } catch (error) {
       console.error('HomeScreen: Apple Sign In exception:', error);
@@ -76,7 +70,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Snow animation background */}
       <SnowAnimation />
 
       <ScrollView
@@ -88,15 +81,14 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
         style={styles.scrollView}
       >
-        {/* Welcome Screen */}
         <View style={[styles.page, { width }]}>
           <View style={styles.welcomeContainer}>
-            <View style={[styles.headerSection, { marginBottom: 3 }]}>
+            <View style={styles.headerSection}>
               <Text style={styles.welcomeTitle}>
                 {t('welcomeGreeting')} <Text style={styles.greenText}>EASY BUDGET</Text>
               </Text>
               <View style={styles.subtitleContainer}>
-                <Text style={[styles.welcomeSubtitle, { fontSize: 48 }]}>
+                <Text style={styles.welcomeSubtitle}>
                   {t('welcomeTrackBudget')}{'\n'}
                   <Text style={styles.greenText}>BUDGET</Text>
                   {'\n\n'}
@@ -104,13 +96,12 @@ export default function HomeScreen() {
                   <Text style={styles.greenText}>ABOS</Text>
                 </Text>
               </View>
-              {/* 20 pixel spacer after "und deine ABOs" */}
-              <View style={{ height: 20 }} />
+              <View style={styles.spacer} />
             </View>
 
             <View style={styles.loginSection}>
               <TouchableOpacity 
-                style={[styles.loginButton, styles.emailButton, { backgroundColor: colors.green, marginBottom: 1 }]}
+                style={[styles.loginButton, styles.emailButton]}
                 onPress={handleEmailLogin}
               >
                 <IconSymbol 
@@ -119,7 +110,7 @@ export default function HomeScreen() {
                   size={20} 
                   color={colors.background} 
                 />
-                <Text style={[styles.loginButtonText, { color: colors.background }]}>{t('continueWithEmail')}</Text>
+                <Text style={styles.emailButtonText}>{t('continueWithEmail')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -133,7 +124,7 @@ export default function HomeScreen() {
                   size={20} 
                   color="#000000" 
                 />
-                <Text style={[styles.loginButtonText, styles.appleButtonText]}>
+                <Text style={styles.appleButtonText}>
                   {isAppleSignInLoading ? 'Wird geladen...' : t('continueWithApple')}
                 </Text>
               </TouchableOpacity>
@@ -146,7 +137,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Swipe indicator */}
         <View style={[styles.page, { width }]}>
           <View style={styles.swipeIndicatorContainer}>
             <Text style={styles.swipeIndicatorText}>← Swipe to Budget Screen</Text>
@@ -206,10 +196,12 @@ const styles = StyleSheet.create({
   greenText: {
     color: colors.green,
   },
+  spacer: {
+    height: 20,
+  },
   loginSection: {
     width: '100%',
     gap: 12,
-    marginBottom: 0,
   },
   loginButton: {
     flexDirection: 'row',
@@ -221,17 +213,20 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emailButton: {
-    backgroundColor: '#E57373',
+    backgroundColor: colors.green,
+    marginBottom: 1,
+  },
+  emailButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.background,
   },
   appleButton: {
     backgroundColor: '#FFFFFF',
   },
-  loginButtonText: {
+  appleButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
-  },
-  appleButtonText: {
     color: '#000000',
   },
   termsText: {

@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput, Modal, Alert } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import SnowAnimation from "@/components/SnowAnimation";
@@ -13,55 +12,41 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
 
 export default function BudgetScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
   const { t } = useLanguage();
   const { isPremium } = useAuth();
-  const { shouldRollback, setShouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
-  const { months, setMonths, loading: budgetLoading } = useBudget();
+  const { shouldRollback, lastAction, clearLastAction, setLastAction } = useLimitTracking();
+  const { months, setMonths } = useBudget();
   
   const [selectedMonthId, setSelectedMonthId] = useState(months[0]?.id || '1');
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
-  
-  // Month menu state
   const [showMonthMenu, setShowMonthMenu] = useState(false);
   const [selectedMonthForMenu, setSelectedMonthForMenu] = useState<string | null>(null);
-  
-  // Item menu state
   const [showItemMenu, setShowItemMenu] = useState(false);
   const [selectedItemForMenu, setSelectedItemForMenu] = useState<string | null>(null);
-  
-  // Edit modals
   const [showEditBalanceModal, setShowEditBalanceModal] = useState(false);
   const [showEditBalanceLabelModal, setShowEditBalanceLabelModal] = useState(false);
   const [editBalanceValue, setEditBalanceValue] = useState('');
   const [editBalanceLabel, setEditBalanceLabel] = useState('BUDGET');
-  
   const [showEditItemNameModal, setShowEditItemNameModal] = useState(false);
   const [showEditItemAmountModal, setShowEditItemAmountModal] = useState(false);
   const [editItemName, setEditItemName] = useState('');
   const [editItemAmount, setEditItemAmount] = useState('');
-  
   const [showEditMonthNameModal, setShowEditMonthNameModal] = useState(false);
   const [editMonthName, setEditMonthName] = useState('');
 
-  // Update selected month when months change
   useEffect(() => {
     if (months.length > 0 && !months.find(m => m.id === selectedMonthId)) {
       setSelectedMonthId(months[0].id);
     }
-  }, [months]);
+  }, [months, selectedMonthId]);
 
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const accountBalance = selectedMonth?.accountBalance || 0;
   const budgetItems = selectedMonth?.budgetItems || [];
-  
-  // Calculate max expenses per month for premium enforcement
   const maxExpensesPerMonth = Math.max(...months.map(m => m.budgetItems.length), 0);
   
-  // Premium enforcement hook
   const { canPerformAction, redirectToPremium } = usePremiumEnforcement({
     monthsCount: months.length,
     maxExpensesPerMonth,
@@ -69,35 +54,27 @@ export default function BudgetScreen() {
     isPremium,
   });
 
-  // Handle rollback when user closes premium modal after hitting limit
   useEffect(() => {
     if (shouldRollback && lastAction) {
-      console.log('Rolling back last action:', lastAction);
-      
       if (lastAction.type === 'addMonth' && lastAction.data?.monthId) {
         setMonths(months.filter(m => m.id !== lastAction.data.monthId));
-        console.log('Rolled back month addition:', lastAction.data.monthId);
       } else if (lastAction.type === 'addExpense' && lastAction.data?.itemId && lastAction.data?.monthId) {
         setMonths(months.map(m => 
           m.id === lastAction.data.monthId 
             ? { ...m, budgetItems: m.budgetItems.filter(item => item.id !== lastAction.data.itemId) }
             : m
         ));
-        console.log('Rolled back expense addition:', lastAction.data.itemId);
       }
-      
       clearLastAction();
     }
-  }, [shouldRollback, lastAction]);
+  }, [shouldRollback, lastAction, months, setMonths, clearLastAction]);
   
-  // Sort items: pinned first, then by creation order
   const sortedBudgetItems = [...budgetItems].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
     return 0;
   });
   
-  // Sort months: pinned first, then by creation order
   const sortedMonths = [...months].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
@@ -117,8 +94,6 @@ export default function BudgetScreen() {
       };
       
       if (!canPerformAction('addExpense')) {
-        console.log('Expense limit reached, redirecting to premium');
-        
         setLastAction({
           type: 'addExpense',
           data: { itemId: newItem.id, monthId: selectedMonthId },
@@ -134,7 +109,6 @@ export default function BudgetScreen() {
         setNewItemName('');
         setNewItemAmount('');
         setShowAddModal(false);
-        
         redirectToPremium();
         return;
       }
@@ -148,7 +122,6 @@ export default function BudgetScreen() {
       setNewItemName('');
       setNewItemAmount('');
       setShowAddModal(false);
-      console.log('Added expense within limits:', newItem);
     }
   };
 
@@ -186,8 +159,6 @@ export default function BudgetScreen() {
     };
     
     if (!canPerformAction('addMonth')) {
-      console.log('Month limit reached, redirecting to premium');
-      
       setLastAction({
         type: 'addMonth',
         data: { monthId: newMonth.id },
@@ -196,14 +167,12 @@ export default function BudgetScreen() {
       
       setMonths([...months, newMonth]);
       setSelectedMonthId(newMonth.id);
-      
       redirectToPremium();
       return;
     }
     
     setMonths([...months, newMonth]);
     setSelectedMonthId(newMonth.id);
-    console.log('Added month within limits:', newMonth);
   };
 
   const handleLongPressMonth = (monthId: string) => {
@@ -240,8 +209,6 @@ export default function BudgetScreen() {
         };
         
         if (!canPerformAction('addMonth')) {
-          console.log('Month limit reached when duplicating, redirecting to premium');
-          
           setLastAction({
             type: 'addMonth',
             data: { monthId: duplicatedMonth.id },
@@ -249,7 +216,6 @@ export default function BudgetScreen() {
           });
           
           setMonths([...months, duplicatedMonth]);
-          
           redirectToPremium();
           setShowMonthMenu(false);
           setSelectedMonthForMenu(null);
@@ -257,7 +223,6 @@ export default function BudgetScreen() {
         }
         
         setMonths([...months, duplicatedMonth]);
-        console.log('Duplicated month within limits:', duplicatedMonth);
       }
     }
     setShowMonthMenu(false);
@@ -321,8 +286,6 @@ export default function BudgetScreen() {
         };
         
         if (!canPerformAction('addExpense')) {
-          console.log('Expense limit reached when duplicating, redirecting to premium');
-          
           setLastAction({
             type: 'addExpense',
             data: { itemId: duplicatedItem.id, monthId: selectedMonthId },
@@ -346,7 +309,6 @@ export default function BudgetScreen() {
             ? { ...m, budgetItems: [...m.budgetItems, duplicatedItem] }
             : m
         ));
-        console.log('Duplicated expense within limits:', duplicatedItem);
       }
     }
     setShowItemMenu(false);
@@ -445,7 +407,6 @@ export default function BudgetScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Balance Card - Glass Effect */}
         <View style={styles.balanceCardWrapper}>
           <BlurView intensity={20} tint="dark" style={styles.balanceCard}>
             <View style={styles.balanceNewLayout}>
@@ -465,7 +426,6 @@ export default function BudgetScreen() {
           </BlurView>
         </View>
 
-        {/* Total and Remaining - Glass Effect */}
         <View style={styles.summaryCardWrapper}>
           <BlurView intensity={20} tint="dark" style={styles.summaryCard}>
             <View style={styles.summaryRow}>
@@ -481,7 +441,6 @@ export default function BudgetScreen() {
           </BlurView>
         </View>
 
-        {/* Month Selector - Horizontal Scroll */}
         <View style={styles.monthSelectorContainer}>
           <TouchableOpacity style={styles.addMonthButton} onPress={handleAddMonth}>
             <IconSymbol 
@@ -525,7 +484,6 @@ export default function BudgetScreen() {
           </ScrollView>
         </View>
 
-        {/* Budget Items Grid - Glass Effect */}
         <View style={styles.budgetGrid}>
           {sortedBudgetItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -566,7 +524,6 @@ export default function BudgetScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Add Button */}
       <TouchableOpacity 
         style={styles.floatingAddButton}
         onPress={() => setShowAddModal(true)}
@@ -579,7 +536,6 @@ export default function BudgetScreen() {
         />
       </TouchableOpacity>
 
-      {/* Add Item Modal */}
       <Modal
         visible={showAddModal}
         transparent
@@ -626,7 +582,6 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* Month Menu Modal */}
       <Modal
         visible={showMonthMenu}
         transparent
@@ -672,7 +627,6 @@ export default function BudgetScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Item Menu Modal */}
       <Modal
         visible={showItemMenu}
         transparent
@@ -722,7 +676,6 @@ export default function BudgetScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Edit Balance Modal */}
       <Modal
         visible={showEditBalanceModal}
         transparent
@@ -762,7 +715,6 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* Edit Balance Label Modal */}
       <Modal
         visible={showEditBalanceLabelModal}
         transparent
@@ -801,7 +753,6 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* Edit Item Name Modal */}
       <Modal
         visible={showEditItemNameModal}
         transparent
@@ -840,7 +791,6 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* Edit Item Amount Modal */}
       <Modal
         visible={showEditItemAmountModal}
         transparent
@@ -880,7 +830,6 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* Edit Month Name Modal */}
       <Modal
         visible={showEditMonthNameModal}
         transparent

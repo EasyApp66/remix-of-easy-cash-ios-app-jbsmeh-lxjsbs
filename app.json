@@ -1,8 +1,9 @@
+
 {
   "expo": {
     "name": "Easy Budget",
     "slug": "Easy Budget",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
     "userInterfaceStyle": "automatic",
@@ -19,7 +20,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +29,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.easybudget.app",
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/images/final_quest_240x240.png",
@@ -45,6 +46,5 @@
     "experiments": {
       "typedRoutes": true
     }
-  },
-  "scheme": "Easy Budget"
+  }
 }

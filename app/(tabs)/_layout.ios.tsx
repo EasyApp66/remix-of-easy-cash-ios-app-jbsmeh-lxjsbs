@@ -8,10 +8,6 @@ export default function TabLayout() {
   const { loading } = useAuth();
   const pathname = usePathname();
 
-  console.log('iOS Tab Layout - Current pathname:', pathname);
-
-  // Determine if we should show the tab bar
-  // Hide on welcome, login, and registration pages
   const isAuthScreen = 
     pathname === '/(tabs)' || 
     pathname === '/(tabs)/(home)' || 
@@ -22,60 +18,29 @@ export default function TabLayout() {
   
   const shouldShowTabBar = !loading && !isAuthScreen;
 
-  console.log('iOS Tab bar visibility:', { 
-    shouldShowTabBar, 
-    loading, 
-    pathname,
-    isAuthScreen
-  });
-
   return (
     <NativeTabs>
-      <NativeTabs.Trigger 
-        key="index" 
-        name="index"
-        hidden={true}
-      >
+      <NativeTabs.Trigger name="index" hidden={true}>
         <Icon sf="house.fill" />
         <Label>Home</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger 
-        key="home" 
-        name="(home)"
-        hidden={true}
-      >
+      <NativeTabs.Trigger name="(home)" hidden={true}>
         <Icon sf="house.fill" />
         <Label>Home</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger 
-        key="budget" 
-        name="budget"
-        hidden={!shouldShowTabBar}
-      >
+      <NativeTabs.Trigger name="budget" hidden={!shouldShowTabBar}>
         <Icon sf="dollarsign.circle.fill" />
         <Label>Budget</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger 
-        key="abo" 
-        name="abo"
-        hidden={!shouldShowTabBar}
-      >
+      <NativeTabs.Trigger name="abo" hidden={!shouldShowTabBar}>
         <Icon sf="repeat.circle.fill" />
         <Label>Abos</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger 
-        key="profile" 
-        name="profile"
-        hidden={!shouldShowTabBar}
-      >
+      <NativeTabs.Trigger name="profile" hidden={!shouldShowTabBar}>
         <Icon sf="person.fill" />
         <Label>Profil</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger 
-        key="legal" 
-        name="legal"
-        hidden={true}
-      >
+      <NativeTabs.Trigger name="legal" hidden={true}>
         <Icon sf="doc.text.fill" />
         <Label>Legal</Label>
       </NativeTabs.Trigger>

@@ -10,27 +10,21 @@ export default function TabLayout() {
   const pathname = usePathname();
   const { loading } = useAuth();
 
-  console.log('Tab Layout - Current pathname:', pathname);
-
-  // Handle Android back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // If we're on a root tab screen, prevent back navigation
       const rootPaths = ['/(tabs)/budget', '/(tabs)/abo', '/(tabs)/profile', '/(tabs)/(home)'];
       const isRootPath = rootPaths.some(path => pathname === path || pathname.startsWith(path));
       
       if (isRootPath) {
-        console.log('Back button pressed on root tab, preventing navigation');
-        return true; // Prevent default back behavior
+        return true;
       }
       
-      return false; // Allow default back behavior for other screens
+      return false;
     });
 
     return () => backHandler.remove();
   }, [pathname]);
 
-  // Define the tabs configuration - only 3 tabs now
   const tabs: TabBarItem[] = [
     {
       name: 'budget',
@@ -52,8 +46,6 @@ export default function TabLayout() {
     },
   ];
 
-  // Determine if we should show the tab bar
-  // Hide on welcome, login, and registration pages
   const isAuthScreen = 
     pathname === '/(tabs)' || 
     pathname === '/(tabs)/(home)' || 
@@ -64,14 +56,6 @@ export default function TabLayout() {
   
   const shouldShowTabBar = !loading && !isAuthScreen;
 
-  console.log('Tab bar visibility:', { 
-    shouldShowTabBar, 
-    loading, 
-    pathname,
-    isAuthScreen
-  });
-
-  // For Android and Web, use Stack navigation with conditional floating tab bar
   return (
     <>
       <Stack
@@ -80,17 +64,11 @@ export default function TabLayout() {
           animation: 'none',
         }}
       >
-        <Stack.Screen 
-          key="index" 
-          name="index"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen key="home" name="(home)" />
-        <Stack.Screen key="budget" name="budget" />
-        <Stack.Screen key="abo" name="abo" />
-        <Stack.Screen key="profile" name="profile" />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(home)" />
+        <Stack.Screen name="budget" />
+        <Stack.Screen name="abo" />
+        <Stack.Screen name="profile" />
       </Stack>
       {shouldShowTabBar && <FloatingTabBar tabs={tabs} />}
     </>

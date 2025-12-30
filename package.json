@@ -1,7 +1,7 @@
 
 {
   "name": "Easy Budget",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "main": "index.ts",
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start --clear",
@@ -10,7 +10,8 @@
     "web": "EXPO_NO_TELEMETRY=1 expo start --web --clear",
     "build:web": "expo export -p web && npx workbox generateSW workbox-config.js",
     "build:android": "expo prebuild -p android",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
