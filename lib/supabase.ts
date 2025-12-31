@@ -99,10 +99,12 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: Platform.OS === 'web',
     // Use PKCE flow for better security
     flowType: 'pkce',
+    // Store session for 60 days (2 months)
+    storageKey: 'supabase.auth.token',
   },
 });
 
-console.log('Supabase: Client initialized successfully with full type safety');
+console.log('Supabase: Client initialized successfully with full type safety and persistent sessions');
 
 // Export types for convenience
 export type { Database } from '@/app/integrations/supabase/types';

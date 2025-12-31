@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,12 +21,21 @@ import AnimatedButton from '@/components/AnimatedButton';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Automatically navigate to budget screen when user is authenticated
+  useEffect(() => {
+    if (user) {
+      console.log('LoginScreen: User authenticated, navigating to budget screen');
+      // Use replace to prevent going back to login screen
+      router.replace('/(tabs)/budget');
+    }
+  }, [user, router]);
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -59,7 +68,8 @@ export default function LoginScreen() {
         }
       } else {
         // Sign in (handles both admin and regular users)
-        const { error } = await signIn(email, password);
+        const { error, success } = await signIn(email, password);
+        
         if (error) {
           console.error('Sign in error:', error);
           
@@ -90,15 +100,27 @@ export default function LoginScreen() {
               errorMessage = 'Ungültige Anmeldedaten. Bitte überprüfen Sie Ihre E-Mail und Ihr Passwort.';
             } else if (errorMessage.includes('Email not confirmed')) {
               errorMessage = 'E-Mail noch nicht bestätigt. Bitte überprüfen Sie Ihr E-Mail-Postfach.';
+            } else if (errorMessage.includes('Invalid')) {
+              errorMessage = 'Falsches Passwort oder E-Mail-Adresse. Bitte versuchen Sie es erneut.';
             }
             
-            Alert.alert('Fehler', errorMessage);
+            Alert.alert('Anmeldung fehlgeschlagen', errorMessage);
           }
-        } else {
-          // Login successful - navigate to budget screen
-          console.log('Login successful, navigating to budget screen');
-          // Use replace to prevent going back to login screen
-          router.replace('/(tabs)/budget');
+        } else if (success) {
+          // Login successful - the useEffect will handle navigation
+          console.log('Login successful, waiting for auth state update');
+          // Show a brief success message
+          Alert.alert(
+            'Erfolgreich angemeldet',
+            'Sie werden zur Budget-Seite weitergeleitet...',
+            [],
+            { cancelable: false }
+          );
+          
+          // Give a moment for the alert to show, then the useEffect will navigate
+          setTimeout(() => {
+            // The useEffect will handle navigation when user state updates
+          }, 500);
         }
       }
     } catch (error: any) {

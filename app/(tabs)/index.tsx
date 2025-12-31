@@ -3,14 +3,18 @@ import { Redirect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
 import { colors } from '@/styles/commonStyles';
+import { useEffect } from 'react';
 
 export default function TabsIndex() {
   const { user, loading } = useAuth();
 
-  console.log('TabsIndex: Checking auth state', { user: !!user, loading });
+  useEffect(() => {
+    console.log('TabsIndex: Auth state changed', { user: !!user, loading });
+  }, [user, loading]);
 
   // Show loading indicator while checking auth
   if (loading) {
+    console.log('TabsIndex: Loading auth state...');
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.green} />

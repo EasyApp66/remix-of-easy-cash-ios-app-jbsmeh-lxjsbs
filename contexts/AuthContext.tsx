@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isPremium: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; success?: boolean }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -140,11 +140,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               error: { 
                 message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.',
                 needsRegistration: true
-              } 
+              },
+              success: false
             };
           }
           console.error('AuthContext: Admin sign in error:', error);
-          return { error };
+          return { error, success: false };
         }
 
         console.log('AuthContext: Admin sign in successful');
@@ -171,28 +172,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
         }
 
-        return { error: null };
+        return { error: null, success: true };
       } catch (error) {
         console.error('AuthContext: Admin sign in exception:', error);
-        return { error };
+        return { error, success: false };
       }
     }
 
     // Regular user login
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
       if (error) {
         console.error('AuthContext: Sign in error:', error);
-      } else {
-        console.log('AuthContext: Sign in successful');
+        return { error, success: false };
       }
-      return { error };
+      
+      console.log('AuthContext: Sign in successful');
+      return { error: null, success: true };
     } catch (error) {
       console.error('AuthContext: Sign in exception:', error);
-      return { error };
+      return { error, success: false };
     }
   }, []);
 
