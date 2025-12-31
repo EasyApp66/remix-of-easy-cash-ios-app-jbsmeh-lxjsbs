@@ -1,8 +1,7 @@
-
 {
   "expo": {
     "name": "Easy Budget",
-    "slug": "easy-budget",
+    "slug": "Easy Budget",
     "version": "1.00.2",
     "orientation": "portrait",
     "icon": "./assets/images/final_quest_240x240.png",
@@ -18,7 +17,9 @@
       "bundleIdentifier": "com.easybudget.app",
       "buildNumber": "3",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -56,5 +57,6 @@
         "projectId": "your-project-id"
       }
     }
-  }
+  },
+  "scheme": "Easy Budget"
 }

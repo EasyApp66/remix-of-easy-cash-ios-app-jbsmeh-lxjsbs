@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert, Modal, TextInput, TouchableOpacity } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import * as MailComposer from 'expo-mail-composer';
 import { BlurView } from 'expo-blur';
+import { supabase } from "@/lib/supabase";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -16,6 +17,34 @@ export default function ProfileScreen() {
   const { user, signOut, isAdmin, isPremium } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [userName, setUserName] = useState<string>('');
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [tempName, setTempName] = useState('');
+
+  // Load user name from Supabase
+  useEffect(() => {
+    const loadUserName = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error loading user name:', error);
+          } else if (data?.name) {
+            setUserName(data.name);
+          }
+        } catch (error) {
+          console.error('Error loading user name:', error);
+        }
+      }
+    };
+
+    loadUserName();
+  }, [user]);
 
   // Check if we should show premium modal on mount (when redirected from limit)
   useEffect(() => {
@@ -79,6 +108,39 @@ export default function ProfileScreen() {
         [{ text: t('ok') }]
       );
     }
+  };
+
+  const handleOpenNameModal = () => {
+    setTempName(userName);
+    setShowNameModal(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!user) {
+      console.log('No user logged in');
+      setShowNameModal(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name: tempName || null })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error saving name:', error);
+        Alert.alert(t('error'), 'Fehler beim Speichern des Namens');
+      } else {
+        setUserName(tempName);
+        console.log('Name saved successfully:', tempName);
+      }
+    } catch (error) {
+      console.error('Error saving name:', error);
+      Alert.alert(t('error'), 'Fehler beim Speichern des Namens');
+    }
+
+    setShowNameModal(false);
   };
 
   const menuItems = [
@@ -187,19 +249,13 @@ export default function ProfileScreen() {
                 />
               </View>
             </View>
-            {user ? (
-              <React.Fragment>
-                <Text style={styles.userName}>
-                  {user.email?.split('@')[0] || 'User'}
-                </Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <Text style={styles.userName}>{t('guest')}</Text>
-                <Text style={styles.userEmail}>{t('notLoggedIn')}</Text>
-              </React.Fragment>
-            )}
+            
+            {/* Clickable Name Field */}
+            <TouchableOpacity onPress={handleOpenNameModal} activeOpacity={0.7}>
+              <Text style={styles.userName}>
+                {userName || 'Namen eingeben'}
+              </Text>
+            </TouchableOpacity>
             
             {/* Admin Badge */}
             {isAdmin && (
@@ -268,11 +324,67 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Email Display Section */}
+        {user && (
+          <View style={styles.emailSectionWrapper}>
+            <BlurView intensity={20} tint="dark" style={styles.emailSection}>
+              <View style={styles.emailRow}>
+                <IconSymbol 
+                  ios_icon_name="envelope.fill" 
+                  android_material_icon_name="email" 
+                  size={20} 
+                  color={colors.green} 
+                />
+                <Text style={styles.emailText}>{user.email}</Text>
+              </View>
+            </BlurView>
+          </View>
+        )}
+
         {/* App Version */}
         <View style={styles.versionSection}>
           <Text style={styles.versionText}>{t('appVersion')} 1.00.00</Text>
         </View>
       </ScrollView>
+
+      {/* Name Input Modal */}
+      <Modal
+        visible={showNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Namen eingeben</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Dein Name"
+              placeholderTextColor={colors.textSecondary}
+              value={tempName}
+              onChangeText={setTempName}
+              autoFocus
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowNameModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Abbrechen</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveName}
+              >
+                <Text style={styles.saveButtonText}>Speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Premium Purchase Modal - Only show for non-admins */}
       {!isAdmin && (
@@ -328,12 +440,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 6,
-  },
-  userEmail: {
-    fontSize: 16,
-    color: colors.textSecondary,
     marginBottom: 20,
+    textAlign: 'center',
   },
   adminBadgeWrapper: {
     borderRadius: 24,
@@ -426,6 +534,31 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
   },
+  emailSectionWrapper: {
+    marginBottom: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  emailSection: {
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(42, 42, 42, 0.4)',
+  },
+  emailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  emailText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    flex: 1,
+  },
   versionSection: {
     alignItems: 'center',
     paddingVertical: 24,
@@ -434,5 +567,60 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  input: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.grey,
+  },
+  saveButton: {
+    backgroundColor: colors.green,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
   },
 });

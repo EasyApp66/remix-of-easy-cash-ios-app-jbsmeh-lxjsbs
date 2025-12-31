@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useBudget, BudgetItem, MonthData } from "@/contexts/BudgetContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
+import { GlassView } from 'expo-glass-effect';
 
 export default function BudgetScreen() {
   const router = useRouter();
@@ -369,13 +370,18 @@ export default function BudgetScreen() {
 
         {/* Month Selector - Horizontal Scroll */}
         <View style={styles.monthSelectorContainer}>
-          <TouchableOpacity style={styles.addMonthButton} onPress={handleAddMonth}>
-            <IconSymbol 
-              ios_icon_name="plus.circle.fill" 
-              android_material_icon_name="add-circle" 
-              size={24} 
-              color={colors.green} 
-            />
+          <TouchableOpacity style={styles.addMonthButtonWrapper} onPress={handleAddMonth}>
+            <GlassView 
+              style={styles.addMonthButton} 
+              glassEffectStyle="regular"
+            >
+              <IconSymbol 
+                ios_icon_name="plus.circle.fill" 
+                android_material_icon_name="add-circle" 
+                size={24} 
+                color={colors.green} 
+              />
+            </GlassView>
           </TouchableOpacity>
           
           <ScrollView 
@@ -452,17 +458,23 @@ export default function BudgetScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Add Button */}
+      {/* Floating Add Button with Glassmorphism */}
       <TouchableOpacity 
-        style={styles.floatingAddButton}
+        style={styles.floatingAddButtonWrapper}
         onPress={() => setShowAddModal(true)}
+        activeOpacity={0.8}
       >
-        <IconSymbol 
-          ios_icon_name="plus.circle.fill" 
-          android_material_icon_name="add-circle" 
-          size={56} 
-          color={colors.green} 
-        />
+        <GlassView 
+          style={styles.floatingAddButton} 
+          glassEffectStyle="regular"
+        >
+          <IconSymbol 
+            ios_icon_name="plus.circle.fill" 
+            android_material_icon_name="add-circle" 
+            size={56} 
+            color={colors.green} 
+          />
+        </GlassView>
       </TouchableOpacity>
 
       {/* Add Item Modal */}
@@ -900,9 +912,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  addMonthButtonWrapper: {
+    marginRight: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   addMonthButton: {
     padding: 8,
-    marginRight: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(160, 255, 107, 0.3)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(42, 42, 42, 0.6)' : 'transparent',
   },
   monthScrollView: {
     flex: 1,
@@ -976,11 +996,25 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: colors.text,
   },
-  floatingAddButton: {
+  floatingAddButtonWrapper: {
     position: 'absolute',
     bottom: 100,
     right: 24,
     zIndex: 100,
+    borderRadius: 30,
+    overflow: 'hidden',
+    boxShadow: '0px 8px 24px rgba(160, 255, 107, 0.4)',
+    elevation: 12,
+  },
+  floatingAddButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(160, 255, 107, 0.3)',
+    backgroundColor: Platform.OS === 'android' ? 'rgba(42, 42, 42, 0.6)' : 'transparent',
   },
   modalOverlay: {
     flex: 1,
