@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import * as MailComposer from 'expo-mail-composer';
 import { BlurView } from 'expo-blur';
 import { supabase } from "@/lib/supabase";
+import SnowBackground from '@/components/SnowBackground';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -231,6 +232,9 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Snow animation in the background */}
+      <SnowBackground />
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

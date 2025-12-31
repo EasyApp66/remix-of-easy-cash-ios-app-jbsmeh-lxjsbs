@@ -9,6 +9,8 @@ import { useBudget, BudgetItem, MonthData } from "@/contexts/BudgetContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
 import { GlassView } from 'expo-glass-effect';
+import * as Haptics from 'expo-haptics';
+import SnowBackground from '@/components/SnowBackground';
 
 export default function BudgetScreen() {
   const router = useRouter();
@@ -74,6 +76,9 @@ export default function BudgetScreen() {
 
   const handleAddItem = () => {
     if (newItemName && newItemAmount && selectedMonth) {
+      // Haptic feedback when adding expense
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
       const newItem: BudgetItem = {
         id: Date.now().toString(),
         name: newItemName.toUpperCase(),
@@ -133,6 +138,8 @@ export default function BudgetScreen() {
   };
 
   const handleLongPressMonth = (monthId: string) => {
+    // Haptic feedback on long press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedMonthForMenu(monthId);
     setShowMonthMenu(true);
   };
@@ -196,6 +203,8 @@ export default function BudgetScreen() {
   };
 
   const handleLongPressItem = (itemId: string) => {
+    // Haptic feedback on long press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedItemForMenu(itemId);
     setShowItemMenu(true);
   };
@@ -300,6 +309,8 @@ export default function BudgetScreen() {
   };
 
   const handleEditBalance = () => {
+    // Haptic feedback on long press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setEditBalanceValue(accountBalance.toString());
     setShowEditBalanceModal(true);
   };
@@ -317,6 +328,8 @@ export default function BudgetScreen() {
   };
 
   const handleEditBalanceLabel = () => {
+    // Haptic feedback on long press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowEditBalanceLabelModal(true);
   };
 
@@ -324,8 +337,16 @@ export default function BudgetScreen() {
     setShowEditBalanceLabelModal(false);
   };
 
+  const handleOpenAddModal = () => {
+    // Haptic feedback when opening add modal
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowAddModal(true);
+  };
+
   return (
     <View style={styles.container}>
+      {/* Snow animation in the background */}
+      <SnowBackground />
 
       <ScrollView 
         style={styles.scrollView}
@@ -338,12 +359,16 @@ export default function BudgetScreen() {
             <View style={styles.balanceNewLayout}>
               <TouchableOpacity 
                 onPress={handleEditBalanceLabel}
+                onLongPress={handleEditBalanceLabel}
+                delayLongPress={500}
                 style={styles.balanceLabelContainer}
               >
                 <Text style={[styles.balanceLabel, { fontSize: 19 }]}>{editBalanceLabel}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={handleEditBalance}
+                onLongPress={handleEditBalance}
+                delayLongPress={500}
                 style={styles.balanceAmountContainer}
               >
                 <Text style={[styles.balanceAmount, { marginBottom: 1, fontSize: 37 }]}>{accountBalance.toLocaleString('de-DE')}</Text>
@@ -461,7 +486,7 @@ export default function BudgetScreen() {
       {/* Floating Add Button with Glassmorphism */}
       <TouchableOpacity 
         style={styles.floatingAddButtonWrapper}
-        onPress={() => setShowAddModal(true)}
+        onPress={handleOpenAddModal}
         activeOpacity={0.8}
       >
         <GlassView 

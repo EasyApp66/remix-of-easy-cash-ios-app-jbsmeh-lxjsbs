@@ -9,6 +9,15 @@ import { useSubscription, Subscription } from "@/contexts/SubscriptionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { BlurView } from 'expo-blur';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
+import SnowBackground from '@/components/SnowBackground';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 export default function AboScreen() {
   const router = useRouter();
@@ -72,6 +81,8 @@ export default function AboScreen() {
   };
 
   const handleLongPressSub = (subId: string) => {
+    // Haptic feedback on long press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     console.log('Long press on subscription:', subId);
     setSelectedSubForMenu(subId);
     setShowSubMenu(true);
@@ -191,6 +202,8 @@ export default function AboScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      {/* Snow animation in the background */}
+      <SnowBackground />
 
       <ScrollView 
         style={styles.scrollView}
@@ -227,6 +240,8 @@ export default function AboScreen() {
                 renderLeftActions={() => renderLeftActions(subscription)}
                 renderRightActions={renderRightActions}
                 onSwipeableOpen={(direction) => {
+                  // Haptic feedback on swipe
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   console.log('Swipe opened:', direction, subscription.id);
                   if (direction === 'left') {
                     handleTogglePin(subscription.id);
@@ -236,7 +251,7 @@ export default function AboScreen() {
                 }}
                 overshootLeft={false}
                 overshootRight={false}
-                friction={1}
+                friction={2}
                 leftThreshold={80}
                 rightThreshold={80}
                 enableTrackpadTwoFingerGesture
@@ -280,6 +295,8 @@ export default function AboScreen() {
       <TouchableOpacity 
         style={styles.floatingAddButton}
         onPress={() => {
+          // Haptic feedback when opening add modal
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           console.log('Add subscription button pressed');
           setShowAddModal(true);
         }}

@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -120,23 +121,17 @@ export default function FloatingTabBar({
   const dynamicStyles = {
     blurContainer: {
       ...styles.blurContainer,
-      borderWidth: 1.2,
-      borderColor: 'rgba(255, 255, 255, 1)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
       ...Platform.select({
         ios: {
-          backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.8)'
-            : 'rgba(255, 255, 255, 0.6)',
+          backgroundColor: 'transparent',
         },
         android: {
-          backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.95)'
-            : 'rgba(255, 255, 255, 0.6)',
+          backgroundColor: 'rgba(28, 28, 30, 0.3)',
         },
         web: {
-          backgroundColor: theme.dark
-            ? 'rgba(28, 28, 30, 0.95)'
-            : 'rgba(255, 255, 255, 0.6)',
+          backgroundColor: 'rgba(28, 28, 30, 0.3)',
           backdropFilter: 'blur(10px)',
         },
       }),
@@ -163,9 +158,19 @@ export default function FloatingTabBar({
         }
       ]}>
         <BlurView
-          intensity={80}
+          intensity={40}
           style={[dynamicStyles.blurContainer, { borderRadius }]}
         >
+          {/* Subtle gradient overlay */}
+          <LinearGradient
+            colors={[
+              'transparent',
+              theme.dark ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.08)'
+            ]}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
           <View style={dynamicStyles.background} />
           <Animated.View style={[dynamicStyles.indicator, indicatorStyle]} />
           <View style={styles.tabsContainer}>
