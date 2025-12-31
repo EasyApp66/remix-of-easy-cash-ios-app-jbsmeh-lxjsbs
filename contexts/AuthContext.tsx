@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Admin credentials
 const ADMIN_EMAIL = 'mirosnic.ivan@icloud.com';
@@ -246,14 +248,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    console.log('AuthContext: Signing out');
+    console.log('AuthContext: Starting sign out process...');
     try {
-      await supabase.auth.signOut();
+      // 1. Sign out from Supabase (this will trigger the auth state change listener)
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('AuthContext: Supabase sign out error:', error);
+        throw error;
+      }
+      
+      console.log('AuthContext: Supabase sign out successful');
+      
+      // 2. Clear local state immediately
+      setSession(null);
+      setUser(null);
       setIsAdmin(false);
       setIsPremium(false);
-      console.log('AuthContext: Sign out successful');
+      
+      // 3. Clear AsyncStorage (native platforms)
+      try {
+        const keys = await AsyncStorage.getAllKeys();
+        console.log('AuthContext: Clearing AsyncStorage keys:', keys);
+        await AsyncStorage.multiRemove(keys);
+        console.log('AuthContext: AsyncStorage cleared successfully');
+      } catch (storageError) {
+        console.error('AuthContext: Error clearing AsyncStorage:', storageError);
+      }
+      
+      // 4. Clear web localStorage if on web platform
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const supabaseKeys = Object.keys(window.localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          console.log('AuthContext: Clearing web localStorage keys:', supabaseKeys);
+          supabaseKeys.forEach(key => window.localStorage.removeItem(key));
+          console.log('AuthContext: Web localStorage cleared successfully');
+        } catch (webStorageError) {
+          console.error('AuthContext: Error clearing web localStorage:', webStorageError);
+        }
+      }
+      
+      console.log('AuthContext: Sign out completed successfully');
     } catch (error) {
       console.error('AuthContext: Sign out exception:', error);
+      // Even if there's an error, clear local state
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      setIsPremium(false);
+      throw error;
     }
   }, []);
 

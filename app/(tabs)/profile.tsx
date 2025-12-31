@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert, Modal, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Alert, Modal, TextInput, TouchableOpacity, Linking } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -11,6 +11,7 @@ import * as MailComposer from 'expo-mail-composer';
 import { BlurView } from 'expo-blur';
 import { supabase } from "@/lib/supabase";
 import SnowBackground from '@/components/SnowBackground';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -66,8 +67,44 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     console.log('Handle logout/login');
     if (user) {
-      await signOut();
-      router.replace('/(tabs)/(home)');
+      try {
+        console.log('Starting logout process...');
+        
+        // 1. Sign out from Supabase
+        await signOut();
+        console.log('Supabase signOut completed');
+        
+        // 2. Clear all AsyncStorage data
+        try {
+          await AsyncStorage.clear();
+          console.log('AsyncStorage cleared');
+        } catch (storageError) {
+          console.error('Error clearing AsyncStorage:', storageError);
+        }
+        
+        // 3. Clear web localStorage if on web platform
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+          try {
+            window.localStorage.clear();
+            console.log('Web localStorage cleared');
+          } catch (webStorageError) {
+            console.error('Error clearing web localStorage:', webStorageError);
+          }
+        }
+        
+        // 4. Navigate to welcome screen and reset navigation stack
+        console.log('Navigating to welcome screen...');
+        router.replace('/(tabs)/(home)');
+        
+        console.log('Logout completed successfully');
+      } catch (error) {
+        console.error('Error during logout:', error);
+        Alert.alert(
+          'Logout Fehler',
+          'Es gab ein Problem beim Ausloggen. Bitte versuchen Sie es erneut.',
+          [{ text: 'OK' }]
+        );
+      }
     } else {
       router.push('/(tabs)/(home)/login');
     }
@@ -144,6 +181,33 @@ export default function ProfileScreen() {
     setShowNameModal(false);
   };
 
+  // Function to open external URLs in browser
+  const openExternalURL = async (url: string, title: string) => {
+    try {
+      console.log(`Opening external URL: ${url}`);
+      const supported = await Linking.canOpenURL(url);
+      
+      if (supported) {
+        await Linking.openURL(url);
+        console.log(`Successfully opened ${title}`);
+      } else {
+        console.error(`Cannot open URL: ${url}`);
+        Alert.alert(
+          'Fehler',
+          `Die URL konnte nicht geöffnet werden: ${url}`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error(`Error opening ${title}:`, error);
+      Alert.alert(
+        'Fehler',
+        `Die Seite konnte nicht geöffnet werden. Bitte versuchen Sie es später erneut.`,
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   const menuItems = [
     {
       id: 'auth',
@@ -179,40 +243,28 @@ export default function ProfileScreen() {
       title: t('agb'),
       icon: 'description',
       iosIcon: 'doc.text',
-      onPress: () => {
-        console.log('Navigate to AGB');
-        router.push('/(tabs)/legal/agb');
-      },
+      onPress: () => openExternalURL('https://www.easycash-app.com/agb', 'AGB'),
     },
     {
       id: 'terms',
       title: t('terms'),
       icon: 'gavel',
       iosIcon: 'doc.text.fill',
-      onPress: () => {
-        console.log('Navigate to Nutzungsbedingungen');
-        router.push('/(tabs)/legal/nutzungsbedingungen');
-      },
+      onPress: () => openExternalURL('https://www.easycash-app.com/nutzungsbedingungen', 'Nutzungsbedingungen'),
     },
     {
       id: 'privacy',
       title: t('privacy'),
       icon: 'privacy-tip',
       iosIcon: 'lock.shield',
-      onPress: () => {
-        console.log('Navigate to Datenschutz');
-        router.push('/(tabs)/legal/datenschutz');
-      },
+      onPress: () => openExternalURL('https://www.easycash-app.com/datenschutz', 'Datenschutzerklärung'),
     },
     {
       id: 'imprint',
       title: t('imprint'),
       icon: 'info',
       iosIcon: 'info.circle',
-      onPress: () => {
-        console.log('Navigate to Impressum');
-        router.push('/(tabs)/legal/impressum');
-      },
+      onPress: () => openExternalURL('https://www.easycash-app.com/impressum', 'Impressum'),
     },
     {
       id: 'support',
