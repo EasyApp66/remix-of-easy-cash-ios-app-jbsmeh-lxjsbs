@@ -1,25 +1,16 @@
 
-import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, ScrollView, Platform } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "@/styles/commonStyles";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AnimatedButton from "@/components/AnimatedButton";
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
-const { width } = Dimensions.get('window');
-
-export default function HomeScreen() {
+export default function WelcomeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const handleScroll = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const page = Math.round(offsetX / width);
-    setCurrentPage(page);
-  };
 
   const handleEmailLogin = () => {
     router.push('/(tabs)/(home)/login');
@@ -35,87 +26,70 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        style={styles.scrollView}
+      {/* Header Section - Takes up more space */}
+      <Animated.View 
+        style={styles.headerSection}
+        entering={FadeInDown.duration(600).delay(200)}
       >
-        {/* Welcome Screen */}
-        <View style={[styles.page, { width }]}>
-          <View style={styles.welcomeContainer}>
-            {/* Header Section - Takes up more space */}
-            <View style={styles.headerSection}>
-              <Text style={styles.welcomeTitle}>
-                {t('welcomeGreeting')}{'\n'}
-                <Text style={styles.greenText}>EASY BUDGET</Text>
-              </Text>
-              <View style={styles.subtitleContainer}>
-                <Text style={styles.welcomeSubtitle}>
-                  {t('welcomeTrackBudget')}{'\n'}
-                  <Text style={styles.greenText}>BUDGET</Text>
-                  {'\n\n'}
-                  {t('welcomeAnd')}{'\n'}
-                  <Text style={styles.greenText}>ABOS</Text>
-                </Text>
-              </View>
-            </View>
-
-            {/* Login Section - Positioned at bottom with more spacing */}
-            <View style={styles.loginSection}>
-              <AnimatedButton 
-                style={[styles.loginButton, styles.emailButton]}
-                onPress={handleEmailLogin}
-              >
-                <IconSymbol 
-                  ios_icon_name="envelope.fill" 
-                  android_material_icon_name="email" 
-                  size={22} 
-                  color={colors.background} 
-                />
-                <Text style={[styles.loginButtonText, { color: colors.background }]}>
-                  {t('continueWithEmail')}
-                </Text>
-              </AnimatedButton>
-
-              <AnimatedButton 
-                style={[styles.loginButton, styles.appleButton]}
-                onPress={() => console.log('Apple login not implemented yet')}
-              >
-                <IconSymbol 
-                  ios_icon_name="apple.logo" 
-                  android_material_icon_name="apple" 
-                  size={22} 
-                  color="#000000" 
-                />
-                <Text style={[styles.loginButtonText, styles.appleButtonText]}>
-                  {t('continueWithApple')}
-                </Text>
-              </AnimatedButton>
-
-              <Text style={styles.termsText}>
-                {t('welcomeTermsText')}{'\n'}
-                <Text style={styles.termsLink} onPress={handleTermsPress}>
-                  {t('terms')}
-                </Text> {t('welcomeTermsAnd')} <Text style={styles.termsLink} onPress={handlePrivacyPress}>
-                  {t('privacy')}
-                </Text>
-              </Text>
-            </View>
-          </View>
+        <Text style={styles.welcomeTitle}>
+          {t('welcomeGreeting')}{'\n'}
+          <Text style={styles.greenText}>EASY BUDGET</Text>
+        </Text>
+        <View style={styles.subtitleContainer}>
+          <Text style={styles.welcomeSubtitle}>
+            {t('welcomeTrackBudget')}{'\n'}
+            <Text style={styles.greenText}>BUDGET</Text>
+            {'\n\n'}
+            {t('welcomeAnd')}{'\n'}
+            <Text style={styles.greenText}>ABOS</Text>
+          </Text>
         </View>
+      </Animated.View>
 
-        {/* Swipe indicator */}
-        <View style={[styles.page, { width }]}>
-          <View style={styles.swipeIndicatorContainer}>
-            <Text style={styles.swipeIndicatorText}>← Swipe to Budget Screen</Text>
-            <Text style={styles.swipeHintText}>Or use the tab bar below</Text>
-          </View>
-        </View>
-      </ScrollView>
+      {/* Login Section - Positioned at bottom with more spacing */}
+      <Animated.View 
+        style={styles.loginSection}
+        entering={FadeInUp.duration(600).delay(400)}
+      >
+        <AnimatedButton 
+          style={[styles.loginButton, styles.emailButton]}
+          onPress={handleEmailLogin}
+        >
+          <IconSymbol 
+            ios_icon_name="envelope.fill" 
+            android_material_icon_name="email" 
+            size={22} 
+            color={colors.background} 
+          />
+          <Text style={[styles.loginButtonText, { color: colors.background }]}>
+            {t('continueWithEmail')}
+          </Text>
+        </AnimatedButton>
+
+        <AnimatedButton 
+          style={[styles.loginButton, styles.appleButton]}
+          onPress={() => console.log('Apple login not implemented yet')}
+        >
+          <IconSymbol 
+            ios_icon_name="apple.logo" 
+            android_material_icon_name="apple" 
+            size={22} 
+            color="#000000" 
+          />
+          <Text style={[styles.loginButtonText, styles.appleButtonText]}>
+            {t('continueWithApple')}
+          </Text>
+        </AnimatedButton>
+
+        <Text style={styles.termsText}>
+          {t('welcomeTermsText')}{'\n'}
+          <Text style={styles.termsLink} onPress={handleTermsPress}>
+            {t('terms')}
+          </Text> {t('welcomeTermsAnd')} <Text style={styles.termsLink} onPress={handlePrivacyPress}>
+            {t('privacy')}
+          </Text>
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -124,22 +98,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  scrollView: {
-    flex: 1,
-    zIndex: 2,
-  },
-  page: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  welcomeContainer: {
-    flex: 1,
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'android' ? 80 : 100,
     paddingBottom: 60,
     paddingHorizontal: 32,
-    width: '100%',
   },
   headerSection: {
     flex: 1,
@@ -217,23 +179,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     color: colors.green,
     fontWeight: '600',
-  },
-  swipeIndicatorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  swipeIndicatorText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  swipeHintText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
 });

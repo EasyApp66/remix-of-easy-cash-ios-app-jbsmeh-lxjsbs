@@ -12,6 +12,8 @@ export default function TabLayout() {
   // Hide on welcome and login pages, show only when user is authenticated
   const isWelcomeOrLogin = pathname === '/(tabs)' || 
                            pathname === '/(tabs)/(home)' || 
+                           pathname === '/(tabs)/(home)/' ||
+                           pathname === '/(tabs)/(home)/index' ||
                            pathname === '/(tabs)/(home)/login' ||
                            pathname.includes('/login');
   
@@ -38,7 +40,7 @@ export default function TabLayout() {
       <NativeTabs.Trigger 
         key="home" 
         name="(home)"
-        hidden={shouldShowTabBar}
+        hidden={true}
       >
         <Icon sf="house.fill" />
         <Label>Home</Label>
