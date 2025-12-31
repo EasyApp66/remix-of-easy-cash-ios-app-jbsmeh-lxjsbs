@@ -1,16 +1,25 @@
 
-import { Stack } from 'expo-router';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
-import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
-import { BudgetProvider } from '@/contexts/BudgetContext';
-import { useEffect, useState } from 'react';
-import { LogBox, Platform, View, ActivityIndicator } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import "react-native-reanimated";
+import React, { useEffect, useState } from "react";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useColorScheme, View, ActivityIndicator, Platform, LogBox } from "react-native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  Theme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { BudgetProvider } from "@/contexts/BudgetContext";
 
-// Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync().catch(() => {
-  console.log('SplashScreen: Already hidden or error preventing auto hide');
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync().catch((error) => {
+  console.log('SplashScreen preventAutoHideAsync error:', error);
 });
 
 // Ignore specific warnings that are not critical
@@ -19,74 +28,113 @@ LogBox.ignoreLogs([
   'Sending `onAnimatedValueUpdate` with no listeners registered',
 ]);
 
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
+
 export default function RootLayout() {
-  const [isReady, setIsReady] = useState(false);
+  const colorScheme = useColorScheme();
+  const [loaded, fontError] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  });
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    console.log('RootLayout: App initialized on platform:', Platform.OS);
+    console.log('RootLayout: Initializing on platform:', Platform.OS);
     
-    // Ensure everything is ready before rendering
-    const initializeApp = async () => {
+    async function prepare() {
       try {
-        console.log('RootLayout: Starting app initialization...');
+        // Log font loading status
+        if (fontError) {
+          console.error('RootLayout: Font loading error:', fontError);
+        }
         
-        // Wait for polyfills and modules to be fully loaded
-        // This ensures that window object and storage adapters are ready
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        console.log('RootLayout: App initialization complete');
-        setIsReady(true);
-        
-        // Hide splash screen after a short delay to ensure everything is loaded
-        setTimeout(async () => {
-          try {
-            await SplashScreen.hideAsync();
-            console.log('RootLayout: Splash screen hidden');
-          } catch (error) {
-            console.log('RootLayout: Error hiding splash screen:', error);
-          }
-        }, 800);
-      } catch (error) {
-        console.error('RootLayout: Error during initialization:', error);
-        setIsReady(true); // Still set ready to avoid infinite loading
+        if (loaded) {
+          console.log('RootLayout: Fonts loaded successfully');
+          
+          // Small delay to ensure everything is ready
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          setAppReady(true);
+          
+          // Hide splash screen
+          await SplashScreen.hideAsync();
+          console.log('RootLayout: Splash screen hidden');
+        }
+      } catch (e) {
+        console.error('RootLayout: Error during preparation:', e);
+        // Still set app as ready to avoid infinite loading
+        setAppReady(true);
       }
-    };
+    }
 
-    initializeApp();
-  }, []);
+    prepare();
+  }, [loaded, fontError]);
 
-  // Show loading indicator while initializing
-  if (!isReady) {
+  // Show loading screen while fonts are loading
+  if (!loaded || !appReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color="#4CAF50" />
       </View>
     );
   }
 
+  const CustomDefaultTheme: Theme = {
+    ...DefaultTheme,
+    dark: false,
+    colors: {
+      primary: "rgb(0, 122, 255)",
+      background: "rgb(242, 242, 247)",
+      card: "rgb(255, 255, 255)",
+      text: "rgb(0, 0, 0)",
+      border: "rgb(216, 216, 220)",
+      notification: "rgb(255, 59, 48)",
+    },
+  };
+
+  const CustomDarkTheme: Theme = {
+    ...DarkTheme,
+    colors: {
+      primary: "rgb(10, 132, 255)",
+      background: "rgb(1, 1, 1)",
+      card: "rgb(28, 28, 30)",
+      text: "rgb(255, 255, 255)",
+      border: "rgb(44, 44, 46)",
+      notification: "rgb(255, 69, 58)",
+    },
+  };
+
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <SubscriptionProvider>
-          <BudgetProvider>
-            <Stack 
-              screenOptions={{ 
-                headerShown: false,
-                animation: 'fade',
-                animationDuration: 200,
-              }}
-            >
-              <Stack.Screen 
-                name="(tabs)" 
-                options={{ 
-                  headerShown: false,
-                  animation: 'fade',
-                }} 
-              />
-            </Stack>
-          </BudgetProvider>
-        </SubscriptionProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <>
+      <StatusBar style="auto" animated />
+      <ThemeProvider
+        value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
+      >
+        <AuthProvider>
+          <LanguageProvider>
+            <SubscriptionProvider>
+              <BudgetProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'fade',
+                    animationDuration: 200,
+                  }}
+                >
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{
+                      headerShown: false,
+                      animation: 'fade',
+                    }}
+                  />
+                </Stack>
+              </BudgetProvider>
+            </SubscriptionProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </>
   );
 }

@@ -9,7 +9,7 @@ export default function TabsIndex() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    console.log('TabsIndex: Auth state changed', { user: !!user, loading });
+    console.log('TabsIndex: Auth state -', { hasUser: !!user, loading });
   }, [user, loading]);
 
   // Show loading indicator while checking auth

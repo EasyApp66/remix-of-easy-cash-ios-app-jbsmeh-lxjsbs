@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
-  // Check if user is admin and has premium - optimized with useCallback
+  // Check if user is admin and has premium
   const checkAdminAndPremiumStatus = useCallback(async (userId: string) => {
     try {
       console.log('AuthContext: Checking admin and premium status for user:', userId);
@@ -60,22 +60,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('AuthContext: Initializing...');
     
+    let mounted = true;
+    
     const initAuth = async () => {
       try {
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
         if (error) {
           console.error('AuthContext: Error getting initial session:', error);
         } else {
           console.log('AuthContext: Initial session:', session ? 'Found' : 'None');
           setSession(session);
+          
           if (session?.user) {
             setUser(session.user);
             
-            // Check admin and premium status in parallel
+            // Check admin and premium status
             const status = await checkAdminAndPremiumStatus(session.user.id);
+            
+            if (!mounted) return;
+            
             setIsAdmin(status.isAdmin);
-            setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
+            setIsPremium(status.isPremium || status.isAdmin);
             
             console.log('AuthContext: User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
           }
@@ -83,7 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('AuthContext: Exception getting initial session:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -91,6 +102,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      
       console.log('AuthContext: Auth state changed:', _event, session ? 'Session exists' : 'No session');
       setSession(session);
       
@@ -99,8 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Check admin and premium status
         const status = await checkAdminAndPremiumStatus(session.user.id);
+        
+        if (!mounted) return;
+        
         setIsAdmin(status.isAdmin);
-        setIsPremium(status.isPremium || status.isAdmin); // Admins always have premium
+        setIsPremium(status.isPremium || status.isAdmin);
         
         console.log('AuthContext: User status - Admin:', status.isAdmin, 'Premium:', status.isPremium);
       } else {
@@ -113,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      mounted = false;
       console.log('AuthContext: Cleaning up subscription');
       subscription.unsubscribe();
     };
@@ -126,18 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthContext: Admin login detected');
       
       try {
-        // Try to sign in directly first (faster)
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
-          // If sign in fails, check if admin user exists
           if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
-            console.log('AuthContext: Admin user does not exist or email not confirmed, needs to be created');
-            return { 
-              error: { 
+            console.log('AuthContext: Admin user does not exist or email not confirmed');
+            return {
+              error: {
                 message: 'Admin-Konto muss zuerst erstellt werden. Bitte registrieren Sie sich mit dieser E-Mail-Adresse.',
                 needsRegistration: true
               },
@@ -150,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('AuthContext: Admin sign in successful');
         
-        // Ensure admin profile exists with correct flags (non-blocking)
+        // Ensure admin profile exists (non-blocking)
         if (data.user) {
           supabase
             .from('profiles')
@@ -166,8 +181,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .then(({ error: profileError }) => {
               if (profileError) {
                 console.error('AuthContext: Error updating admin profile:', profileError);
-              } else {
-                console.log('AuthContext: Admin profile updated successfully');
               }
             });
         }
@@ -202,7 +215,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = useCallback(async (email: string, password: string) => {
     console.log('AuthContext: Signing up with email:', email);
     
-    // Check if this is the admin email
     const isAdminEmail = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     
     try {
@@ -237,8 +249,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .then(({ error: profileError }) => {
               if (profileError) {
                 console.error('AuthContext: Error creating profile:', profileError);
-              } else {
-                console.log('AuthContext: User profile created successfully');
               }
             });
         }
@@ -253,7 +263,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     console.log('AuthContext: Starting sign out process...');
     try {
-      // 1. Sign out from Supabase (this will trigger the auth state change listener)
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -263,13 +273,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log('AuthContext: Supabase sign out successful');
       
-      // 2. Clear local state immediately
+      // Clear local state
       setSession(null);
       setUser(null);
       setIsAdmin(false);
       setIsPremium(false);
       
-      // 3. Clear AsyncStorage (native platforms)
+      // Clear AsyncStorage
       try {
         const keys = await AsyncStorage.getAllKeys();
         console.log('AuthContext: Clearing AsyncStorage keys:', keys);
@@ -279,10 +289,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('AuthContext: Error clearing AsyncStorage:', storageError);
       }
       
-      // 4. Clear web localStorage if on web platform
+      // Clear web localStorage if on web
       if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
         try {
-          const supabaseKeys = Object.keys(window.localStorage).filter(key => 
+          const supabaseKeys = Object.keys(window.localStorage).filter(key =>
             key.startsWith('sb-') || key.includes('supabase')
           );
           console.log('AuthContext: Clearing web localStorage keys:', supabaseKeys);
@@ -296,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthContext: Sign out completed successfully');
     } catch (error) {
       console.error('AuthContext: Sign out exception:', error);
-      // Even if there's an error, clear local state
+      // Clear local state even on error
       setSession(null);
       setUser(null);
       setIsAdmin(false);
